@@ -73,44 +73,72 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* =============================================
-       LOGO — Sidebar
+       LOGO SIDEBAR — corrigida (sem Tailwind hidden)
        ============================================= */
     #sidebarLogoWrap {
-      width: 40px; height: 40px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     #sidebarLogoDefault {
-      width: 40px; height: 40px; border-radius: 9999px;
-      display: flex; align-items: center; justify-content: center;
-      background: #eab308; flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #eab308;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
+    /* ✅ LOGO IMG — usa display:none/block pelo JS, nunca Tailwind */
     #sidebarLogoImg {
-      width: 40px; height: 40px; border-radius: 9999px;
-      object-fit: contain;   /* ✅ mostra imagem completa sem cortar */
+      position: absolute;
+      inset: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: contain;
       object-position: center;
       background: white;
-      display: block;
-      flex-shrink: 0;
+      display: none; /* JS controla */
+      border: 2px solid rgba(255,255,255,0.3);
     }
 
     /* =============================================
-       LOGO — Preview em Configurações
+       LOGO PREVIEW — Configurações
        ============================================= */
     .logo-preview-box {
-      width: 96px; height: 96px;
-      min-width: 64px; min-height: 64px;
-      max-width: 25vw; max-height: 25vw;
+      width: 96px;
+      height: 96px;
+      min-width: 64px;
+      min-height: 64px;
+      max-width: 25vw;
+      max-height: 25vw;
       border-radius: 12px;
       border: 2px solid #e2e8f0;
       background: #f9fafb;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       overflow: hidden;
       flex-shrink: 0;
+      position: relative;
+    }
+    #logoPreviewIcon {
+      display: flex; /* JS controla */
     }
     #logoPreviewImg {
-      width: 100%; height: 100%;
-      object-fit: contain;   /* ✅ mostra imagem completa sem cortar */
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
       object-position: center;
+      display: none; /* JS controla */
     }
     @media (max-width: 420px) {
       .logo-preview-box { width: 72px; height: 72px; }
@@ -142,18 +170,18 @@
 <aside class="sidebar w-64 flex flex-col" id="sidebar">
   <div class="p-5 border-b border-blue-800">
     <div class="flex items-center gap-3">
-      <!-- ✅ Logo Sidebar corrigida -->
+      <!-- ✅ LOGO SIDEBAR — estrutura corrigida -->
       <div id="sidebarLogoWrap">
         <div id="sidebarLogoDefault">
           <i class="fas fa-church text-white text-sm"></i>
         </div>
-        <img id="sidebarLogoImg" src="" alt="Logo" class="hidden">
+        <img id="sidebarLogoImg" src="" alt="Logo da Igreja">
       </div>
-      <div>
-        <h1 class="text-white font-bold text-sm leading-tight" id="sidebarNomeIgreja">IEQ Esplanada</h1>
+      <div class="flex-1 min-w-0">
+        <h1 class="text-white font-bold text-sm leading-tight truncate" id="sidebarNomeIgreja">IEQ Esplanada</h1>
         <p class="text-blue-300 text-xs">Sistema Financeiro</p>
       </div>
-      <button onclick="toggleSidebar()" class="ml-auto text-blue-300 hover:text-white lg:hidden">
+      <button onclick="toggleSidebar()" class="ml-auto text-blue-300 hover:text-white lg:hidden flex-shrink-0">
         <i class="fas fa-times text-lg"></i>
       </button>
     </div>
@@ -263,11 +291,10 @@
           <div class="space-y-3" id="dashDistribuicoes"></div>
         </div>
 
-        <!-- ✅ CARD MÉTRICAS DE CULTO — com Ceia (1º domingo), Missões soma e Média/Pessoa -->
+        <!-- CARD MÉTRICAS DE CULTO -->
         <div class="card p-4">
           <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-users text-teal-600"></i> Métricas de Culto (mês)</h3>
           <div class="space-y-3">
-            <!-- Presentes na Ceia = presentes do culto do 1º domingo -->
             <div class="text-center p-3 bg-blue-50 rounded-xl">
               <p class="text-3xl font-bold text-blue-600" id="kpi-presentes">0</p>
               <p class="text-sm text-gray-600 mt-1">Presentes na Ceia</p>
@@ -283,7 +310,7 @@
                 <p class="text-xs text-gray-600">Média/Pessoa</p>
               </div>
             </div>
-            <!-- ✅ NOVO: Somatória das Ofertas de Missões do mês -->
+            <!-- ✅ Oferta de Missões = SOMA do campo missoes de todos os cultos do mês -->
             <div class="text-center p-3 bg-teal-50 rounded-xl border border-teal-200">
               <p class="text-2xl font-bold text-teal-600" id="kpi-missoes-mes">R$ 0,00</p>
               <p class="text-sm text-gray-600 mt-1">Oferta de Missões (mês)</p>
@@ -545,10 +572,10 @@
           <p class="text-xs text-gray-400 mb-4">A logo será exibida na sidebar e nos relatórios impressos.</p>
 
           <div class="flex items-center gap-4 mb-4">
-            <!-- ✅ Preview responsivo com object-fit: contain -->
+            <!-- ✅ Preview com posicionamento absoluto -->
             <div class="logo-preview-box" id="logoPreviewWrap">
               <i class="fas fa-church text-gray-300 text-3xl" id="logoPreviewIcon"></i>
-              <img id="logoPreviewImg" src="" alt="Logo" class="hidden">
+              <img id="logoPreviewImg" src="" alt="Logo">
             </div>
             <div>
               <p class="text-sm font-semibold text-gray-700" id="logoPreviewLabel">Nenhuma logo configurada</p>
@@ -626,7 +653,7 @@
               <p class="text-xs text-gray-500">Entradas</p>
             </div>
             <div class="bg-gray-50 rounded-lg p-3 text-center">
-              <p class="text-xl font-bold text-yellow-600" id="cfgVersao">v3.5</p>
+              <p class="text-xl font-bold text-yellow-600" id="cfgVersao">v3.6</p>
               <p class="text-xs text-gray-500">Versão</p>
             </div>
           </div>
@@ -934,6 +961,7 @@
       totalDizimos:    parseFloat(c.totalDizimos)    || 0,
       totalOfertas:    parseFloat(c.totalOfertas)    || 0,
       totalArrecadado: parseFloat(c.totalArrecadado) || 0,
+      // ✅ missoes: garante sempre número, 0 se vazio/nulo/NaN
       missoes:         parseFloat(c.missoes)         || 0,
       especiais:       parseFloat(c.especiais)       || 0,
       outras:          parseFloat(c.outras)          || 0,
@@ -974,11 +1002,10 @@
   }
 
   // ============================================================
-  // ✅ AJUSTE 1 — Calcula o 1º domingo do mês e retorna presentes
+  // LÓGICA: 1º DOMINGO DO MÊS
   // ============================================================
   function getPrimeiroDomingoDoMes(monthKey) {
     const [y, m] = monthKey.split('-').map(Number);
-    // Percorre do dia 1 ao 7 procurando domingo (getDay() === 0)
     for (let d = 1; d <= 7; d++) {
       if (new Date(y, m - 1, d).getDay() === 0) {
         return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -987,31 +1014,18 @@
     return null;
   }
 
-  /**
-   * Retorna a quantidade de presentes do culto do 1º domingo do mês.
-   * Se não houver culto cadastrado exatamente nessa data,
-   * procura o culto com data mais próxima dentro dos primeiros 7 dias.
-   * Retorna { presentes, data, encontrado }
-   */
   function getPresentesCeia(monthKey) {
     const primDom = getPrimeiroDomingoDoMes(monthKey);
     if (!primDom) return { presentes: 0, data: null, encontrado: false };
-
     const cultosMes = getCultosMes(monthKey);
     if (!cultosMes.length) return { presentes: 0, data: primDom, encontrado: false };
-
-    // Tenta encontrar culto exatamente no 1º domingo
     const exato = cultosMes.find(c => c.data === primDom);
     if (exato) return { presentes: exato.presentes || 0, data: exato.data, encontrado: true };
-
-    // Fallback: culto mais próximo nos primeiros 7 dias do mês
-    const [y, mo] = monthKey.split('-').map(Number);
     const candidatos = cultosMes.filter(c => {
       const d = parseInt((c.data || '').split('-')[2] || '99');
       return d >= 1 && d <= 7;
     });
     if (!candidatos.length) return { presentes: 0, data: primDom, encontrado: false };
-
     const tPrim = new Date(primDom + 'T00:00:00').getTime();
     candidatos.sort((a, b) =>
       Math.abs(new Date(a.data+'T00:00:00').getTime() - tPrim) -
@@ -1030,10 +1044,10 @@
     });
     updatePageSubtitleForMonth();
     const pag = document.querySelector('.page.active')?.id?.replace('page-','') || 'dashboard';
-    if (pag === 'dashboard')    renderDashboard();
-    if (pag === 'culto')        renderCultos();
-    if (pag === 'entradas')     renderEntradas();
-    if (pag === 'despesas')     filtrarDespesas();
+    if (pag === 'dashboard')     renderDashboard();
+    if (pag === 'culto')         renderCultos();
+    if (pag === 'entradas')      renderEntradas();
+    if (pag === 'despesas')      filtrarDespesas();
     if (pag === 'distribuicoes') renderDistribuicoesMes();
   }
 
@@ -1128,7 +1142,7 @@
   }
 
   // ============================================================
-  // ✅ AJUSTE 3 — LOGO: sidebar + preview com object-fit:contain
+  // ✅ LOGO — controle via display:block/none (sem Tailwind hidden)
   // ============================================================
   let _logoBase64Temp = null;
 
@@ -1148,11 +1162,11 @@
   }
 
   function mostrarPreviewLogo(src) {
-    // Esconde ícone, mostra imagem completa
-    document.getElementById('logoPreviewIcon').classList.add('hidden');
+    // ✅ Usa display direto — sem Tailwind
+    document.getElementById('logoPreviewIcon').style.display = 'none';
     const img = document.getElementById('logoPreviewImg');
     img.src = src;
-    img.classList.remove('hidden');
+    img.style.display = 'block';
     document.getElementById('logoPreviewLabel').textContent = 'Logo carregada — clique em Salvar';
     document.getElementById('btnRemoverLogo').style.display = 'inline-flex';
   }
@@ -1171,9 +1185,11 @@
     if (!confirm('Remover a logo da igreja?')) return;
     DB.config.logo = null; _logoBase64Temp = null;
     localStorage.setItem('ieq_config', JSON.stringify(DB.config));
+    // ✅ Reseta preview
     const img = document.getElementById('logoPreviewImg');
-    img.classList.add('hidden'); img.src = '';
-    document.getElementById('logoPreviewIcon').classList.remove('hidden');
+    img.style.display = 'none';
+    img.src = '';
+    document.getElementById('logoPreviewIcon').style.display = 'flex';
     document.getElementById('logoPreviewLabel').textContent = 'Nenhuma logo configurada';
     document.getElementById('btnRemoverLogo').style.display = 'none';
     document.getElementById('logoFileInput').value = '';
@@ -1181,17 +1197,18 @@
     showNotification('🗑️ Logo removida.','info');
   }
 
+  // ✅ SIDEBAR LOGO — display:block/none, nunca classList hidden
   function aplicarLogoSidebar(src) {
     const def = document.getElementById('sidebarLogoDefault');
     const img = document.getElementById('sidebarLogoImg');
     if (src) {
-      def.classList.add('hidden');
-      img.src = src;
-      img.classList.remove('hidden');
+      def.style.display  = 'none';
+      img.src            = src;
+      img.style.display  = 'block';
     } else {
-      def.classList.remove('hidden');
-      img.classList.add('hidden');
-      img.src = '';
+      def.style.display  = 'flex';
+      img.style.display  = 'none';
+      img.src            = '';
     }
   }
 
@@ -1206,7 +1223,7 @@
   }
 
   function aplicarConfiguracoes() {
-    if (DB.config.logo)      aplicarLogoSidebar(DB.config.logo);
+    if (DB.config.logo)       aplicarLogoSidebar(DB.config.logo);
     if (DB.config.nomeIgreja) document.getElementById('sidebarNomeIgreja').textContent = DB.config.nomeIgreja;
   }
 
@@ -1216,7 +1233,14 @@
     if (cfg.endereco)   document.getElementById('cfg-endereco').value   = cfg.endereco;
     if (cfg.pastor)     document.getElementById('cfg-pastor').value     = cfg.pastor;
     if (cfg.tesoureiro) document.getElementById('cfg-tesoureiro').value = cfg.tesoureiro;
-    if (cfg.logo) mostrarPreviewLogo(cfg.logo);
+    if (cfg.logo) {
+      mostrarPreviewLogo(cfg.logo);
+    } else {
+      document.getElementById('logoPreviewImg').style.display  = 'none';
+      document.getElementById('logoPreviewIcon').style.display = 'flex';
+      document.getElementById('btnRemoverLogo').style.display  = 'none';
+      document.getElementById('logoPreviewLabel').textContent  = 'Nenhuma logo configurada';
+    }
     document.getElementById('cfgQtdCultos').textContent   = DB.cultos.length;
     document.getElementById('cfgQtdDespesas').textContent = DB.despesas.length;
     document.getElementById('cfgQtdEntradas').textContent = DB.entradas.length;
@@ -1334,34 +1358,36 @@
   }
 
   // ============================================================
-  // ✅ AJUSTE 1 — Métricas de Culto: Ceia = 1º domingo | Missões = soma do mês
+  // ✅ MÉTRICAS DE CULTO
+  // Missões = SOMA do campo missoes de todos os cultos do mês
+  // Se não houver valor lançado → exibe R$ 0,00
   // ============================================================
   function renderMetricasCultoMes() {
-    const cultos  = getCultosMes(GLOBAL_MONTH);
-    const totalArrec = sum(cultos, c => c.totalArrecadado || 0);
+    const cultos = getCultosMes(GLOBAL_MONTH);
 
-    // --- Presentes na Ceia: campo "presentes" do culto do 1º domingo ---
+    // Presentes na Ceia (1º domingo)
     const { presentes: presentesCeia, data: dataCeia, encontrado } = getPresentesCeia(GLOBAL_MONTH);
-
     let infoCeia = '1º domingo do mês';
-    if (encontrado && dataCeia) {
-      infoCeia = `Culto de ${fmtDate(dataCeia)}`;
-    } else if (dataCeia) {
-      infoCeia = `Sem culto em ${fmtDate(dataCeia)}`;
-    }
+    if (encontrado && dataCeia)  infoCeia = `Culto de ${fmtDate(dataCeia)}`;
+    else if (dataCeia)           infoCeia = `Sem culto em ${fmtDate(dataCeia)}`;
 
-    // --- Oferta de Missões: SOMA do campo "missoes" de todos os cultos do mês ---
-    const totalMissoesMes = sum(cultos, c => c.missoes || 0);
+    // ✅ Missões: soma do campo missoes de TODOS os cultos do mês
+    // parseFloat + || 0 garante que null/undefined/""/NaN viram 0
+    const totalMissoesMes = cultos.reduce((acc, c) => {
+      return acc + (parseFloat(c.missoes) || 0);
+    }, 0);
 
-    // --- Média/Pessoa: total arrecadado / total presentes no mês ---
-    const totalPresentes = sum(cultos, c => c.presentes || 0);
-    const media = totalPresentes > 0 ? (totalArrec / totalPresentes) : 0;
+    // Média/Pessoa
+    const totalArrec     = cultos.reduce((a, c) => a + (parseFloat(c.totalArrecadado) || 0), 0);
+    const totalPresentes = cultos.reduce((a, c) => a + (parseInt(c.presentes)         || 0), 0);
+    const media          = totalPresentes > 0 ? (totalArrec / totalPresentes) : 0;
 
-    document.getElementById('kpi-cultos').textContent        = cultos.length;
-    document.getElementById('kpi-presentes').textContent     = presentesCeia;
+    document.getElementById('kpi-cultos').textContent         = cultos.length;
+    document.getElementById('kpi-presentes').textContent      = presentesCeia;
     document.getElementById('kpi-presentes-info').textContent = infoCeia;
-    document.getElementById('kpi-media-pessoa').textContent  = fmt(media);
-    document.getElementById('kpi-missoes-mes').textContent   = fmt(totalMissoesMes);
+    document.getElementById('kpi-media-pessoa').textContent   = fmt(media);
+    // ✅ Se totalMissoesMes === 0 exibe "R$ 0,00"
+    document.getElementById('kpi-missoes-mes').textContent    = fmt(totalMissoesMes);
   }
 
   function renderMovimentacoesMes() {
@@ -1394,6 +1420,10 @@
     if (chartDp) chartDp.destroy();
     const cats={};
     getDespesasMes(GLOBAL_MONTH).forEach(d=>{cats[d.categoria]=(cats[d.categoria]||0)+d.valor;});
+    if (!Object.keys(cats).length) {
+      chartDp=new Chart(ctx,{type:'doughnut',data:{labels:['Sem dados'],datasets:[{data:[1],backgroundColor:['#e5e7eb'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+      return;
+    }
     chartDp=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#F59E0B','#3B82F6','#8B5CF6','#EC4899','#6B7280','#10B981','#F97316','#14B8A6','#84CC16','#EF4444'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${fmt(ctx.parsed)}`}}}}});
   }
 
@@ -1537,9 +1567,10 @@
     document.getElementById('listaOfertas').innerHTML='';
     (c.ofertas||[]).forEach(o=>adicionarOferta(o.nome||'',o.valor||0,o.forma||'Caixa'));
     if(!(c.ofertas||[]).length) adicionarOferta();
-    document.getElementById('c-missoes').value  = c.missoes||0;
-    document.getElementById('c-especiais').value= c.especiais||0;
-    document.getElementById('c-outras').value   = c.outras||0;
+    // ✅ missoes: parseFloat garante 0 se vazio
+    document.getElementById('c-missoes').value  = parseFloat(c.missoes)  || 0;
+    document.getElementById('c-especiais').value= parseFloat(c.especiais)|| 0;
+    document.getElementById('c-outras').value   = parseFloat(c.outras)   || 0;
     calcTotalCulto();
     openModal('modalNovoCulto');
   }
@@ -1551,19 +1582,28 @@
     const isEdit=!!document.getElementById('c-id').value;
     const cultoIdExistente=document.getElementById('c-id').value;
     const cultoData={
-      data:document.getElementById('c-data').value,horario:document.getElementById('c-horario').value,
-      pastor:document.getElementById('c-pastor').value,pregador:document.getElementById('c-pregador').value,
-      tipo:document.getElementById('c-tipo').value,cura:+document.getElementById('c-cura').value||0,
-      presentes:+document.getElementById('c-presentes').value||0,visitantes:+document.getElementById('c-visitantes').value||0,
+      data:document.getElementById('c-data').value,
+      horario:document.getElementById('c-horario').value,
+      pastor:document.getElementById('c-pastor').value,
+      pregador:document.getElementById('c-pregador').value,
+      tipo:document.getElementById('c-tipo').value,
+      cura:+document.getElementById('c-cura').value||0,
+      presentes:+document.getElementById('c-presentes').value||0,
+      visitantes:+document.getElementById('c-visitantes').value||0,
       criancas:+document.getElementById('c-criancas').value||0,
-      dizimistas:JSON.stringify(coletarDizimistas()),totalDizimos:totalDiz,
-      ofertas:JSON.stringify(coletarOfertas()),totalOfertas:totalOf,
-      missoes:+document.getElementById('c-missoes').value||0,
-      especiais:+document.getElementById('c-especiais').value||0,
-      outras:+document.getElementById('c-outras').value||0,
-      totalArrecadado:total,caixaLocal:+document.getElementById('c-caixa').value||0,
+      dizimistas:JSON.stringify(coletarDizimistas()),
+      totalDizimos:totalDiz,
+      ofertas:JSON.stringify(coletarOfertas()),
+      totalOfertas:totalOf,
+      // ✅ missoes: sempre número, nunca string vazia
+      missoes:   parseFloat(document.getElementById('c-missoes').value)   || 0,
+      especiais: parseFloat(document.getElementById('c-especiais').value) || 0,
+      outras:    parseFloat(document.getElementById('c-outras').value)    || 0,
+      totalArrecadado:total,
+      caixaLocal:+document.getElementById('c-caixa').value||0,
       contaCorrente:+document.getElementById('c-conta').value||0,
-      atualizadoEm:nowIso,criadoEm:nowIso
+      atualizadoEm:nowIso,
+      criadoEm:nowIso
     };
     setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
     try {
@@ -1601,6 +1641,9 @@
     document.getElementById('totalOfertasLabel').textContent='R$ 0,00';
     document.getElementById('c-caixa').value='0';
     document.getElementById('c-conta').value='0';
+    document.getElementById('c-missoes').value='0';
+    document.getElementById('c-especiais').value='0';
+    document.getElementById('c-outras').value='0';
     const hoje=new Date().toISOString().split('T')[0];
     document.getElementById('c-data').value=hoje;
     document.getElementById('c-horario').value='19:30';
@@ -1630,9 +1673,8 @@
 
     tbody.innerHTML=lista.map(c=>{
       const idx=DB.cultos.indexOf(c);
-      // ✅ Destaca o culto do 1º domingo com badge 🍞
-      const isPrimDom = c.data === primDom;
-      const ceiaTag   = isPrimDom ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700" title="1º Domingo — Ceia">🍞 Ceia</span>` : '';
+      const isPrimDom = primDom && c.data === primDom;
+      const ceiaTag   = isPrimDom ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700" title="1º Domingo">🍞 Ceia</span>` : '';
       const rowBg     = isPrimDom ? 'bg-blue-50' : '';
       return `<tr class="table-row border-b border-gray-50 ${rowBg}">
         <td class="p-2 text-sm font-medium">${fmtDate(c.data)}${ceiaTag}</td>
@@ -1656,11 +1698,12 @@
   }
 
   function atualizarTotaisCultos(lista) {
+    // ✅ missoes: parseFloat garante 0 se vazio/nulo
     const t=lista.reduce((a,c)=>({
-      dizimos:a.dizimos+(c.totalDizimos||0),
-      ofertas:a.ofertas+(c.totalOfertas||0)+(c.especiais||0),
-      missoes:a.missoes+(c.missoes||0),
-      total:a.total+(c.totalArrecadado||0)
+      dizimos: a.dizimos  + (parseFloat(c.totalDizimos)    || 0),
+      ofertas: a.ofertas  + (parseFloat(c.totalOfertas)    || 0) + (parseFloat(c.especiais) || 0),
+      missoes: a.missoes  + (parseFloat(c.missoes)         || 0),
+      total:   a.total    + (parseFloat(c.totalArrecadado) || 0)
     }),{dizimos:0,ofertas:0,missoes:0,total:0});
     document.getElementById('tot-dizimos').textContent     =fmt(t.dizimos);
     document.getElementById('tot-ofertas').textContent     =fmt(t.ofertas);
@@ -1677,10 +1720,9 @@
       ?c.ofertas.map(o=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(o.nome||'—')}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(o.valor)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center"><span style="background:${o.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${o.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(o.forma)}</span></td></tr>`).join('')
       :`<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhuma oferta registrada</td></tr>`;
 
-    // ✅ Logo no relatório: object-fit:contain para aparecer completa
-    const logoSrc = DB.config.logo||null;
+    const logoSrc = DB.config.logo || null;
     const logoHtml = logoSrc
-      ? `<img src="${logoSrc}" style="width:72px;height:72px;border-radius:12px;object-fit:contain;background:#fff;padding:4px;border:1px solid #e5e7eb;margin-bottom:8px">`
+      ? `<img src="${logoSrc}" style="width:72px;height:72px;border-radius:12px;object-fit:contain;background:#fff;padding:4px;border:1px solid #e5e7eb;display:block;margin:0 auto 8px">`
       : `<div style="font-size:32px;margin-bottom:8px">⛪</div>`;
     const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ ESPLANADA');
 
@@ -1715,7 +1757,7 @@
           <tr><th colspan="2" style="background:#1e3a5f;color:white;padding:8px 12px;text-align:left;font-size:13px">RESUMO FINANCEIRO</th></tr>
           <tr><td style="padding:7px 12px;font-size:13px">Dízimos</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.totalDizimos||0)}</td></tr>
           <tr style="background:#f9fafb"><td style="padding:7px 12px;font-size:13px">Ofertas Gerais</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.totalOfertas||0)}</td></tr>
-          <tr><td style="padding:7px 12px;font-size:13px">Ofertas Missões</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.missoes||0)}</td></tr>
+          <tr><td style="padding:7px 12px;font-size:13px">Ofertas Missões</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(parseFloat(c.missoes)||0)}</td></tr>
           <tr style="background:#f9fafb"><td style="padding:7px 12px;font-size:13px">Ofertas Especiais</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.especiais||0)}</td></tr>
           <tr><td style="padding:7px 12px;font-size:13px">Outras Entradas</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.outras||0)}</td></tr>
           <tr style="background:#1e3a5f"><td style="padding:10px 12px;font-weight:700;color:white;font-size:15px">TOTAL ARRECADADO</td><td style="padding:10px 12px;text-align:right;font-weight:700;color:#c8a951;font-size:16px">${fmt(c.totalArrecadado||0)}</td></tr>
@@ -1732,10 +1774,9 @@
   function imprimirCulto() {
     const conteudo=document.getElementById('printArea').innerHTML;
     const w=window.open('','_blank','width=800,height=900');
-    // ✅ Logo no print: object-fit:contain para aparecer completa
     w.document.write(`<html><head><title>REFC</title><style>
       body{font-family:'Segoe UI',Arial,sans-serif;padding:24px;max-width:720px;margin:0 auto}
-      img{max-width:100%;height:auto}
+      img{max-width:100%;height:auto;object-fit:contain}
       @media print{button{display:none!important}}
     </style></head><body>${conteudo}
     <div style="text-align:center;margin-top:20px">
@@ -1752,11 +1793,11 @@
       for (const ent of DB.entradas.filter(e=>String(e.cultoId)===String(id))) { try{await apiDelete('entradas',ent.id);}catch(e){} }
       DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
       DB.saveLocal(); setSyncStatus('synced');
-      if(!silent) showNotification('🗑️ Culto excluído do Sheets','info');
+      if(!silent) showNotification('🗑️ Culto excluído','info');
     } catch(err) {
       DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
       DB.saveLocal(); setSyncStatus('error');
-      if(!silent) showNotification('⚠️ Excluído localmente (erro no Sheets)','warning');
+      if(!silent) showNotification('⚠️ Excluído localmente','warning');
     }
   }
   async function excluirCulto(idx) {
@@ -1927,7 +1968,6 @@
     const entMes=sum(getEntradasMes(ms),e=>e.valor), saiMes=sum(getDespesasMes(ms),d=>d.valor);
     const h=getHistoricoRow(ms), prev=getHistoricoRow(prevMonthKey(ms));
     const saldoAnt=h?.saldoAnt??(prev?.saldoFinal??0), saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
-    // ✅ Logo no relatório mensal: object-fit:contain
     const logoHtml=DB.config.logo?`<img src="${DB.config.logo}" style="width:60px;height:60px;border-radius:10px;object-fit:contain;background:#fff;padding:3px;border:1px solid #e5e7eb;vertical-align:middle;margin-right:10px">`:'⛪';
     const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ Esplanada');
     const despLista=getDespesasMes(ms);
@@ -1940,7 +1980,7 @@
       td{padding:8px 10px;border-bottom:1px solid #eee}
       .total{font-weight:bold;background:#f8f8f8}
       .green{color:#059669}.red{color:#dc2626}
-      img{max-width:100%;height:auto}
+      img{max-width:100%;height:auto;object-fit:contain}
     </style></head><body>
       <h1>${logoHtml} ${nomeIgreja} — Relatório Financeiro</h1>
       <h2>${monthLabel(ms)}</h2>
@@ -1984,7 +2024,7 @@
     document.getElementById('filtroCultoMes').value=GLOBAL_MONTH;
     resetFormCulto();
     inicializarSistema();
-    console.log('✅ IEQ Financeiro v3.5 — Ceia=1ºDomingo | Missões=soma | Logo=contain');
+    console.log('✅ IEQ Financeiro v3.6 — Missões=soma | Logo=display nativo | Ceia=1ºDomingo');
   });
 </script>
 </body>
