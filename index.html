@@ -540,12 +540,13 @@ const API_URL = "https://script.google.com/macros/s/AKfycbx8QavNoMhHxMsWxYJSyZhx
 // FUNÇÕES DE API — CORRIGIDAS
 // ============================================================
 async function apiGet(sheet) {
-    const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=get`;
+    // CORRIGIDO: action=getAll (não "get")
+    const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
-    if (json.error) throw new Error(json.error);
-    return Array.isArray(json) ? json : (json.data || []);
+    if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
+    return json.data || [];
 }
 
 async function apiSave(sheet, data) {
@@ -556,20 +557,18 @@ async function apiSave(sheet, data) {
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
-    if (json.error) throw new Error(json.error);
-    return json;
+    if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
+    return json.data; // retorna { id: '...' }
 }
 
 async function apiDelete(sheet, id) {
-    const resp = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', sheet, id })
-    });
+    // CORRIGIDO: delete via GET (igual ao doGet do Apps Script)
+    const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
+    const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
-    if (json.error) throw new Error(json.error);
-    return json;
+    if (!json.ok) throw new Error(json.error || 'Erro ao excluir');
+    return json.data;
 }
 
 // ============================================================
