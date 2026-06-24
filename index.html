@@ -650,53 +650,48 @@ const DESPESAS_PADRAO = [
 async function inicializarSistema() {
     mostrarLoading(true);
     setSyncStatus('syncing');
-
-    // Carrega cache local como fallback imediato
     DB.loadLocal();
+    if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
 
-    // Se não há cache, usa despesas padrão
-    if (DB.despesas.length === 0) {
-        DB.despesas = [...DESPESAS_PADRAO];
-    }
+    // Timeout de segurança — 8 segundos
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout de conexão')), 8000)
+    );
 
     try {
-        // Carrega dados do Google Sheets em paralelo
-        const [cultosSheets, despesasSheets, entradasSheets] = await Promise.allSettled([
-            apiGet('cultos'),
-            apiGet('despesas'),
-            apiGet('entradas')
+        const resultados = await Promise.race([
+            Promise.allSettled([
+                apiGet('cultos'),
+                apiGet('despesas'),
+                apiGet('entradas')
+            ]),
+            timeout
         ]);
 
-        // Atualiza apenas se a requisição foi bem-sucedida
-        if (cultosSheets.status === 'fulfilled' && cultosSheets.value.length > 0) {
-            DB.cultos = cultosSheets.value.map(normalizarCulto);
+        // Processa resultados normalmente
+        const [cultosRes, despesasRes, entradasRes] = resultados;
+        if (cultosRes.status === 'fulfilled' && cultosRes.value?.ok) {
+            DB.cultos = cultosRes.value.data;
         }
-        if (despesasSheets.status === 'fulfilled' && despesasSheets.value.length > 0) {
-            // Mescla despesas padrão com as do Sheets (evita duplicatas por ID)
-            const sheetsIds = new Set(despesasSheets.value.map(d => String(d.id)));
-            const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
-            DB.despesas = [...padraoFiltrado, ...despesasSheets.value.map(normalizarDespesa)];
-        } else if (despesasSheets.status === 'fulfilled') {
-            DB.despesas = [...DESPESAS_PADRAO];
+        if (despesasRes.status === 'fulfilled' && despesasRes.value?.ok) {
+            DB.despesas = despesasRes.value.data;
         }
-        if (entradasSheets.status === 'fulfilled') {
-            DB.entradas = entradasSheets.value.map(normalizarEntrada);
+        if (entradasRes.status === 'fulfilled' && entradasRes.value?.ok) {
+            DB.entradas = entradasRes.value.data;
         }
 
         DB.saveLocal();
         setSyncStatus('synced');
-        showNotification('✅ Dados sincronizados com Google Sheets', 'success');
+
     } catch (err) {
-        console.warn('Aviso: usando dados locais. Erro:', err);
+        console.warn('⚠️ Falha ao sincronizar:', err.message);
         setSyncStatus('error');
-        showNotification('⚠️ Modo offline — usando dados locais', 'warning');
+        // Continua com dados locais
+    } finally {
+        mostrarLoading(false);
+        renderizarDashboard();
     }
-
-    // Renderiza a tela inicial
-    renderDashboard();
-    mostrarLoading(false);
 }
-
 // ============================================================
 // NORMALIZAÇÃO DE DADOS VINDOS DO SHEETS
 // (o Sheets retorna tudo como string — precisamos converter)
