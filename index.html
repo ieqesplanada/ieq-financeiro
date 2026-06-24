@@ -555,40 +555,61 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxnsmbmEoQRNCdYws0LH-n5
 /**
  * Busca todos os registros de uma aba (sheet)
  */
-async function apiGet(sheet) {
-    const url = `${API_URL}?action=getAll&sheet=${encodeURIComponent(sheet)}`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
-    return json.data || [];
-}
+async function inicializarSistema() {
+    mostrarLoading(true);
+    setSyncStatus('syncing');
 
-/**
- * Salva um registro em uma aba (sheet). Retorna o ID gerado.
- */
-async function apiSave(sheet, data) {
-    const resp = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'save', sheet, data })
-    });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
-    return json.data; // { id: ... }
-}
+    // Carrega cache local como fallback imediato
+    DB.loadLocal();
 
-/**
- * Deleta um registro pelo ID em uma aba (sheet).
- */
-async function apiDelete(sheet, id) {
-    const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro ao deletar');
-    return true;
+    // Se não há cache, usa despesas padrão
+    if (DB.despesas.length === 0) {
+        DB.despesas = [...DESPESAS_PADRAO];
+    }
+
+    // Timeout de segurança: se demorar mais de 8s, usa dados locais
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout de conexão')), 8000)
+    );
+
+    try {
+        // Carrega dados do Google Sheets em paralelo (com timeout)
+        const [cultosSheets, despesasSheets, entradasSheets] = await Promise.race([
+            Promise.allSettled([
+                apiGet('cultos'),
+                apiGet('despesas'),
+                apiGet('entradas')
+            ]),
+            timeout.then(() => { throw new Error('Timeout'); })
+        ]);
+
+        if (cultosSheets.status === 'fulfilled' && cultosSheets.value.length > 0) {
+            DB.cultos = cultosSheets.value.map(normalizarCulto);
+        }
+        if (despesasSheets.status === 'fulfilled' && despesasSheets.value.length > 0) {
+            const sheetsIds = new Set(despesasSheets.value.map(d => String(d.id)));
+            const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
+            DB.despesas = [...padraoFiltrado, ...despesasSheets.value.map(normalizarDespesa)];
+        } else if (despesasSheets.status === 'fulfilled') {
+            DB.despesas = [...DESPESAS_PADRAO];
+        }
+        if (entradasSheets.status === 'fulfilled') {
+            DB.entradas = entradasSheets.value.map(normalizarEntrada);
+        }
+
+        DB.saveLocal();
+        setSyncStatus('synced');
+        showNotification('✅ Dados sincronizados com Google Sheets', 'success');
+
+    } catch (err) {
+        console.warn('Aviso: usando dados locais. Erro:', err.message);
+        setSyncStatus('error');
+        showNotification('⚠️ Modo offline — usando dados locais', 'warning');
+    }
+
+    // SEMPRE renderiza e esconde o loading, independente do resultado
+    renderDashboard();
+    mostrarLoading(false);
 }
 
 // ============================================================
