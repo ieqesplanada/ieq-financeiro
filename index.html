@@ -1437,7 +1437,7 @@
       {nome:'FIRE',         pct:0.03,cor:'bg-orange-500'},
     ];
     const valores=calc.map(x=>({...x,valor:base*x.pct}));
-    const missoes={nome:'Missões',valor:30.00,cor:'bg-teal-500'};
+    const missoes={nome:'Missões',valor:0.00,cor:'bg-teal-500'};
     const totalDistrib=valores.reduce((s,x)=>s+x.valor,0)+missoes.valor;
 
     const container=document.getElementById('dashDistribuicoes');
