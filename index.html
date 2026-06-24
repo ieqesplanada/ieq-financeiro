@@ -548,23 +548,42 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxnsmbmEoQRNCdYws0LH-n5YXt_YyRSYjPwG86xHw_mwgY7gzQkgP7qqTxcrGKV2VXx/exec";
 
 // ============================================================
-// FUNÇÕES DE COMUNICAÇÃO COM GOOGLE SHEETS
+// FUNÇÕES DE API — COMUNICAÇÃO COM GOOGLE APPS SCRIPT
 // ============================================================
 
-/**
- * Busca todos os registros de uma aba (sheet)
- */
-async function inicializarSistema() {
-    mostrarLoading(true);
-    setSyncStatus('syncing');
+async function apiGet(sheet) {
+    const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=get`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    if (json.error) throw new Error(json.error);
+    return Array.isArray(json) ? json : (json.data || []);
+}
 
-    // Carrega cache local como fallback imediato
-    DB.loadLocal();
+async function apiSave(sheet, data) {
+    const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save', sheet, data })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    if (json.error) throw new Error(json.error);
+    return json;
+}
 
-    // Se não há cache, usa despesas padrão
-    if (DB.despesas.length === 0) {
-        DB.despesas = [...DESPESAS_PADRAO];
-    }
+async function apiDelete(sheet, id) {
+    const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', sheet, id })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    if (json.error) throw new Error(json.error);
+    return json;
+}
+
 
     // Timeout de segurança: se demorar mais de 8s, usa dados locais
     const timeout = new Promise((_, reject) =>
