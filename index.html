@@ -552,13 +552,14 @@ async function apiGet(sheet) {
 async function apiSave(sheet, data) {
     const resp = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // ✅ 'text/plain' evita preflight OPTIONS (problema de CORS no Apps Script)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'save', sheet, data })
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
-    return json.data; // retorna { id: '...' }
+    return json.data;
 }
 
 async function apiDelete(sheet, id) {
