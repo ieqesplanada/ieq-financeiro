@@ -22,7 +22,6 @@
         .page.active { display: block; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 16px; }
         .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
-        .progress-bar { transition: width 0.5s ease; }
         .sidebar {
             position: fixed; left: -280px; top: 0; z-index: 999;
             width: 260px; height: 100vh; overflow-y: auto;
@@ -74,6 +73,10 @@
         #loadingOverlay.hidden { display: none; }
         .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #c8a951; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* Logo upload */
+        .logo-upload-area { border: 2px dashed #c8a951; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fffbeb; }
+        .logo-upload-area:hover { border-color: #1e3a5f; background: #eff6ff; }
+        #sidebarLogo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -89,11 +92,15 @@
 <aside class="sidebar w-64 flex flex-col" id="sidebar">
     <div class="p-5 border-b border-blue-800">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-church text-white text-sm"></i>
+            <!-- Logo dinâmica da sidebar -->
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center" id="sidebarLogoWrap">
+                <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center" id="sidebarLogoDefault">
+                    <i class="fas fa-church text-white text-sm"></i>
+                </div>
+                <img id="sidebarLogoImg" src="" alt="Logo" class="hidden w-10 h-10 rounded-full object-cover">
             </div>
             <div>
-                <h1 class="text-white font-bold text-sm leading-tight">IEQ Esplanada</h1>
+                <h1 class="text-white font-bold text-sm leading-tight" id="sidebarNomeIgreja">IEQ Esplanada</h1>
                 <p class="text-blue-300 text-xs">Sistema Financeiro</p>
             </div>
             <button onclick="toggleSidebar()" class="ml-auto text-blue-300 hover:text-white lg:hidden">
@@ -109,6 +116,7 @@
         <button onclick="showPage('distribuicoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-distribuicoes"><i class="fas fa-share-alt w-4"></i> Distribuições</button>
         <button onclick="showPage('relatorios')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-relatorios"><i class="fas fa-file-alt w-4"></i> Relatórios</button>
         <button onclick="showPage('historico')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-historico"><i class="fas fa-history w-4"></i> Histórico</button>
+        <button onclick="showPage('configuracoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-configuracoes"><i class="fas fa-cog w-4"></i> Configurações</button>
     </nav>
     <div class="p-4 border-t border-blue-800">
         <div class="flex items-center gap-3">
@@ -142,11 +150,12 @@
                     <i class="fas fa-sync-alt"></i>
                 </button>
                 <select class="input-field text-xs sm:text-sm" style="width:auto;min-width:120px;max-width:160px" id="globalMonthSelector" onchange="changeGlobalMonth()">
-                    <option value="1-2026">Jan 2026</option>
-                    <option value="2-2026">Fev 2026</option>
-                    <option value="3-2026">Mar 2026</option>
-                    <option value="4-2026">Abr 2026</option>
-                    <option value="5-2026" selected>Mai 2026</option>
+                    <option value="2026-01">Jan 2026</option>
+                    <option value="2026-02">Fev 2026</option>
+                    <option value="2026-03">Mar 2026</option>
+                    <option value="2026-04">Abr 2026</option>
+                    <option value="2026-05" selected>Mai 2026</option>
+                    <option value="2026-06">Jun 2026</option>
                 </select>
             </div>
         </div>
@@ -272,13 +281,32 @@
                 <p class="text-gray-500 text-sm">Entradas alimentadas automaticamente pelos relatórios de culto</p>
                 <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onclick="openModal('modalNovaEntrada')"><i class="fas fa-plus"></i> Entrada Manual</button>
             </div>
+
+            <!-- FILTRO MÊS/ANO ENTRADAS -->
+            <div class="card p-4 mb-4">
+                <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-calendar text-gray-400"></i>
+                        <label class="text-sm text-gray-600 font-medium whitespace-nowrap">Filtrar por Mês:</label>
+                    </div>
+                    <input type="month" id="filtroEntradaMes" class="input-field text-sm sm:w-48" value="2026-05" onchange="renderEntradas()">
+                    <button class="btn-secondary text-sm" onclick="limparFiltroEntradas()"><i class="fas fa-times mr-1"></i> Todos</button>
+                    <span class="text-sm text-gray-500 flex items-center sm:ml-auto">
+                        Total filtrado: <strong class="ml-1 text-green-600" id="totalEntradasFiltro">R$ 0,00</strong>
+                    </span>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                <div class="card p-4 border-l-4 border-green-500"><p class="text-xs text-gray-500">Entradas do Mês</p><p class="text-xl font-bold text-green-600">R$ 3.483,14</p></div>
+                <div class="card p-4 border-l-4 border-green-500"><p class="text-xs text-gray-500">Entradas do Mês Filtrado</p><p class="text-xl font-bold text-green-600" id="kpiEntradasMes">R$ 0,00</p></div>
                 <div class="card p-4 border-l-4 border-blue-500"><p class="text-xs text-gray-500">Saldo Anterior</p><p class="text-xl font-bold text-blue-600">R$ 1.099,81</p></div>
-                <div class="card p-4 border-l-4 border-purple-500"><p class="text-xs text-gray-500">Total Disponível</p><p class="text-xl font-bold text-purple-600">R$ 4.582,95</p></div>
+                <div class="card p-4 border-l-4 border-purple-500"><p class="text-xs text-gray-500">Total Registros</p><p class="text-xl font-bold text-purple-600" id="kpiQtdEntradas">0</p></div>
             </div>
             <div class="card p-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2"><h3 class="font-bold text-gray-800 text-sm">Registro de Entradas</h3><input type="text" placeholder="Buscar..." class="input-field text-sm sm:w-40"></div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                    <h3 class="font-bold text-gray-800 text-sm">Registro de Entradas</h3>
+                    <input type="text" id="buscaEntrada" placeholder="Buscar descrição..." class="input-field text-sm sm:w-48" oninput="renderEntradas()">
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full" style="min-width:450px">
                         <thead><tr class="text-left text-xs text-gray-500 border-b"><th class="pb-2 font-semibold">Data</th><th class="pb-2 font-semibold">Descrição</th><th class="pb-2 font-semibold hidden sm:table-cell">Origem</th><th class="pb-2 font-semibold text-right">Valor</th><th class="pb-2 font-semibold">Ações</th></tr></thead>
@@ -296,14 +324,20 @@
             </div>
             <div class="card p-4 mb-4">
                 <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
-                    <select class="input-field text-sm sm:w-auto" id="filtroCat">
+                    <!-- FILTRO MÊS/ANO DESPESAS -->
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-calendar text-gray-400 text-sm"></i>
+                        <label class="text-sm text-gray-600 font-medium whitespace-nowrap">Mês:</label>
+                    </div>
+                    <input type="month" id="filtroDespesaMes" class="input-field text-sm sm:w-44" value="2026-05" onchange="filtrarDespesas()">
+                    <select class="input-field text-sm sm:w-auto" id="filtroCat" onchange="filtrarDespesas()">
                         <option value="">Todas as categorias</option>
                         <option>ENERGIA</option><option>AGUA</option><option>CED</option><option>CND</option>
                         <option>CONTADOR</option><option>TAXA REGIONAL</option><option>COMBUSTIVEL</option>
                         <option>PREBENDA</option><option>PAPELARIA</option><option>DARF</option><option>MATERIAL</option><option>OUTROS</option>
                     </select>
-                    <div class="flex gap-2">
-                        <button class="btn-secondary text-sm flex-1 sm:flex-none" onclick="filtrarDespesas()">Filtrar</button>
+                    <div class="flex gap-2 items-center">
+                        <button class="btn-secondary text-sm" onclick="limparFiltrosDespesas()"><i class="fas fa-times mr-1"></i> Todos</button>
                         <span class="text-sm text-gray-500 flex items-center ml-auto sm:ml-2">Total: <strong class="ml-1" id="totalDespesasFiltro">R$ 0,00</strong></span>
                     </div>
                 </div>
@@ -379,6 +413,111 @@
             </div>
             <div class="card p-4"><h3 class="font-bold text-gray-800 mb-4 text-sm">Evolução de Saldos</h3><canvas id="chartSaldos"></canvas></div>
         </div>
+
+        <!-- ===================== CONFIGURAÇÕES ===================== -->
+        <div class="page" id="page-configuracoes">
+            <div class="max-w-2xl mx-auto space-y-5">
+
+                <!-- LOGO DA IGREJA -->
+                <div class="card p-5">
+                    <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm">
+                        <i class="fas fa-image text-yellow-500"></i> Logo da Igreja
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">A logo será exibida na sidebar e nos relatórios impressos.</p>
+
+                    <!-- Preview atual -->
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-20 h-20 rounded-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50" id="logoPreviewWrap">
+                            <i class="fas fa-church text-gray-300 text-3xl" id="logoPreviewIcon"></i>
+                            <img id="logoPreviewImg" src="" alt="Logo" class="hidden w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-700" id="logoPreviewLabel">Nenhuma logo configurada</p>
+                            <p class="text-xs text-gray-400">JPG, PNG ou SVG — Máx. 2MB</p>
+                        </div>
+                    </div>
+
+                    <!-- Área de upload -->
+                    <div class="logo-upload-area" id="logoUploadArea" onclick="document.getElementById('logoFileInput').click()" ondragover="event.preventDefault()" ondrop="handleLogoDrop(event)">
+                        <i class="fas fa-cloud-upload-alt text-yellow-500 text-3xl mb-2"></i>
+                        <p class="text-sm font-semibold text-gray-700">Clique ou arraste a imagem aqui</p>
+                        <p class="text-xs text-gray-400 mt-1">Formatos aceitos: JPG, PNG, SVG, WebP</p>
+                    </div>
+                    <input type="file" id="logoFileInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
+
+                    <div class="flex gap-3 mt-4">
+                        <button class="btn-primary flex-1 text-sm" onclick="salvarLogo()">
+                            <i class="fas fa-save mr-2"></i> Salvar Logo
+                        </button>
+                        <button class="btn-danger text-sm px-4" onclick="removerLogo()" id="btnRemoverLogo" style="display:none">
+                            <i class="fas fa-trash mr-1"></i> Remover
+                        </button>
+                    </div>
+                </div>
+
+                <!-- INFORMAÇÕES DA IGREJA -->
+                <div class="card p-5">
+                    <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm">
+                        <i class="fas fa-church text-blue-600"></i> Informações da Igreja
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">Aparecerá nos relatórios e no cabeçalho.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Nome da Igreja</label>
+                            <input type="text" id="cfg-nome-igreja" class="input-field text-sm" placeholder="Ex: IEQ Esplanada" value="IEQ Esplanada">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Endereço</label>
+                            <input type="text" id="cfg-endereco" class="input-field text-sm" placeholder="Endereço completo">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label>
+                                <input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão">
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label>
+                                <input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-primary w-full mt-4 text-sm" onclick="salvarConfiguracoes()">
+                        <i class="fas fa-save mr-2"></i> Salvar Configurações
+                    </button>
+                </div>
+
+                <!-- DADOS DO SISTEMA -->
+                <div class="card p-5">
+                    <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm">
+                        <i class="fas fa-database text-purple-600"></i> Dados do Sistema
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">Gerencie o cache local do sistema.</p>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-gray-50 rounded-lg p-3 text-center">
+                            <p class="text-xl font-bold text-blue-600" id="cfgQtdCultos">0</p>
+                            <p class="text-xs text-gray-500">Cultos</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 text-center">
+                            <p class="text-xl font-bold text-red-600" id="cfgQtdDespesas">0</p>
+                            <p class="text-xs text-gray-500">Despesas</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 text-center">
+                            <p class="text-xl font-bold text-green-600" id="cfgQtdEntradas">0</p>
+                            <p class="text-xs text-gray-500">Entradas</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 text-center">
+                            <p class="text-xl font-bold text-yellow-600" id="cfgVersao">v3.2</p>
+                            <p class="text-xs text-gray-500">Versão</p>
+                        </div>
+                    </div>
+                    <button class="w-full py-2 border-2 border-red-200 text-red-500 rounded-lg hover:bg-red-50 text-sm font-semibold transition" onclick="limparCacheLocal()">
+                        <i class="fas fa-trash mr-2"></i> Limpar Cache Local
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        <!-- ============== FIM CONFIGURAÇÕES ============== -->
 
     </div>
 </main>
@@ -537,10 +676,9 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwbpAttmgnMQ2OgW9Gq84ySHbih4FGNMqgp1PL4oNuLiBajvTS0jHUBdMId9FNMmiDTng/exec";
 
 // ============================================================
-// FUNÇÕES DE API — CORRIGIDAS
+// FUNÇÕES DE API
 // ============================================================
 async function apiGet(sheet) {
-    // CORRIGIDO: action=getAll (não "get")
     const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -548,11 +686,9 @@ async function apiGet(sheet) {
     if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
     return json.data || [];
 }
-
 async function apiSave(sheet, data) {
     const resp = await fetch(API_URL, {
         method: 'POST',
-        // ✅ 'text/plain' evita preflight OPTIONS (problema de CORS no Apps Script)
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'save', sheet, data })
     });
@@ -561,9 +697,7 @@ async function apiSave(sheet, data) {
     if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
     return json.data;
 }
-
 async function apiDelete(sheet, id) {
-    // CORRIGIDO: delete via GET (igual ao doGet do Apps Script)
     const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -586,6 +720,7 @@ const DB = {
     despesas: [],
     cultos:   [],
     entradas: [],
+    config:   {},
     saveLocal() {
         try {
             localStorage.setItem('despesas_cache', JSON.stringify(this.despesas));
@@ -598,27 +733,31 @@ const DB = {
             this.despesas = JSON.parse(localStorage.getItem('despesas_cache') || '[]');
             this.cultos   = JSON.parse(localStorage.getItem('cultos_cache')   || '[]');
             this.entradas = JSON.parse(localStorage.getItem('entradas_cache') || '[]');
+            this.config   = JSON.parse(localStorage.getItem('ieq_config')     || '{}');
         } catch(e) {
-            this.despesas = []; this.cultos = []; this.entradas = [];
+            this.despesas = []; this.cultos = []; this.entradas = []; this.config = {};
         }
     }
 };
 
+// ============================================================
+// DESPESAS PADRÃO (dados fixos de maio/2026)
+// ============================================================
 const DESPESAS_PADRAO = [
-    { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',       valor:114.48,  data:'2026-05-10' },
-    { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',           valor:109.84,  data:'2026-05-10' },
-    { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual',   valor:184.41,  data:'2026-05-15' },
-    { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional',   valor:353.82,  data:'2026-05-15' },
-    { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',     valor:150.00,  data:'2026-05-05' },
-    { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',        valor:169.41,  data:'2026-05-15' },
-    { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:40.00,   data:'2026-05-02' },
-    { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-06' },
-    { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:100.00,  data:'2026-05-09' },
-    { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-12' },
-    { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-16' },
-    { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-20' },
-    { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-23' },
-    { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',     valor:1863.46, data:'2026-05-30' },
+    { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',       valor:114.48,  data:'2026-05-10', _fixed:true },
+    { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',           valor:109.84,  data:'2026-05-10', _fixed:true },
+    { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual',   valor:184.41,  data:'2026-05-15', _fixed:true },
+    { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional',   valor:353.82,  data:'2026-05-15', _fixed:true },
+    { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',     valor:150.00,  data:'2026-05-05', _fixed:true },
+    { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',        valor:169.41,  data:'2026-05-15', _fixed:true },
+    { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:40.00,   data:'2026-05-02', _fixed:true },
+    { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-06', _fixed:true },
+    { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:100.00,  data:'2026-05-09', _fixed:true },
+    { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-12', _fixed:true },
+    { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-16', _fixed:true },
+    { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-20', _fixed:true },
+    { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-23', _fixed:true },
+    { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',     valor:1863.46, data:'2026-05-30', _fixed:true },
 ];
 
 // ============================================================
@@ -650,18 +789,18 @@ function parseJsonSafe(val, fallback) {
 }
 
 // ============================================================
-// INICIALIZAÇÃO — ÚNICA VERSÃO CORRIGIDA
+// INICIALIZAÇÃO
 // ============================================================
 async function inicializarSistema() {
     mostrarLoading(true);
     setSyncStatus('syncing');
     DB.loadLocal();
     if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
+    aplicarConfiguracoes();
 
     const timeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Timeout de conexão')), 8000)
     );
-
     try {
         const resultados = await Promise.race([
             Promise.allSettled([
@@ -671,32 +810,24 @@ async function inicializarSistema() {
             ]),
             timeout
         ]);
-
         const [cultosRes, despesasRes, entradasRes] = resultados;
-
-        // CORRIGIDO: verifica .value diretamente (apiGet já retorna array)
-        if (cultosRes.status === 'fulfilled' && cultosRes.value.length > 0) {
+        if (cultosRes.status === 'fulfilled' && cultosRes.value.length > 0)
             DB.cultos = cultosRes.value.map(normalizarCulto);
-        }
         if (despesasRes.status === 'fulfilled' && despesasRes.value.length > 0) {
             const sheetsIds = new Set(despesasRes.value.map(d => String(d.id)));
             const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
             DB.despesas = [...padraoFiltrado, ...despesasRes.value.map(normalizarDespesa)];
         }
-        if (entradasRes.status === 'fulfilled' && entradasRes.value.length > 0) {
+        if (entradasRes.status === 'fulfilled' && entradasRes.value.length > 0)
             DB.entradas = entradasRes.value.map(normalizarEntrada);
-        }
-
         DB.saveLocal();
         setSyncStatus('synced');
         showNotification('✅ Dados sincronizados com Google Sheets', 'success');
-
     } catch (err) {
         console.warn('⚠️ Usando dados locais. Erro:', err.message);
         setSyncStatus('error');
         showNotification('⚠️ Modo offline — usando dados locais', 'warning');
     } finally {
-        // CORRIGIDO: renderDashboard (não renderizarDashboard)
         renderDashboard();
         mostrarLoading(false);
     }
@@ -710,9 +841,7 @@ async function sincronizarTudo() {
     showNotification('🔄 Sincronizando...', 'info');
     try {
         const [cultosSheets, despesasSheets, entradasSheets] = await Promise.all([
-            apiGet('cultos'),
-            apiGet('despesas'),
-            apiGet('entradas')
+            apiGet('cultos'), apiGet('despesas'), apiGet('entradas')
         ]);
         if (cultosSheets.length > 0)   DB.cultos   = cultosSheets.map(normalizarCulto);
         if (entradasSheets.length > 0) DB.entradas = entradasSheets.map(normalizarEntrada);
@@ -764,29 +893,34 @@ function setBtnLoading(btnId, loading, label='Salvar') {
 // NAVEGAÇÃO
 // ============================================================
 const pageTitles = {
-    dashboard:    ['Dashboard',           'Visão geral financeira — Maio 2026'],
-    culto:        ['Relatório de Culto',  'REFC — Registro e sincronização'],
-    entradas:     ['Entradas',            'Registro de arrecadações'],
-    despesas:     ['Despesas',            'Controle de saídas financeiras'],
-    distribuicoes:['Distribuições',       'Taxas e repasses obrigatórios'],
-    relatorios:   ['Relatórios',          'Análises e exportações'],
-    historico:    ['Histórico',           'Dados históricos 2026'],
+    dashboard:      ['Dashboard',           'Visão geral financeira — Maio 2026'],
+    culto:          ['Relatório de Culto',  'REFC — Registro e sincronização'],
+    entradas:       ['Entradas',            'Registro de arrecadações'],
+    despesas:       ['Despesas',            'Controle de saídas financeiras'],
+    distribuicoes:  ['Distribuições',       'Taxas e repasses obrigatórios'],
+    relatorios:     ['Relatórios',          'Análises e exportações'],
+    historico:      ['Histórico',           'Dados históricos 2026'],
+    configuracoes:  ['Configurações',       'Logo, dados da igreja e sistema'],
 };
 function showPage(page, force = false) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(`page-${page}`).classList.add('active');
-    document.getElementById(`nav-${page}`).classList.add('active');
-    document.getElementById('pageTitle').textContent    = pageTitles[page][0];
-    document.getElementById('pageSubtitle').textContent = pageTitles[page][1];
+    const pageEl = document.getElementById(`page-${page}`);
+    const navEl  = document.getElementById(`nav-${page}`);
+    if (!pageEl) return;
+    pageEl.classList.add('active');
+    if (navEl) navEl.classList.add('active');
+    document.getElementById('pageTitle').textContent    = pageTitles[page]?.[0] || page;
+    document.getElementById('pageSubtitle').textContent = pageTitles[page]?.[1] || '';
     if (window.innerWidth < 1024) closeSidebar();
     if (page === 'dashboard')     renderDashboard();
     if (page === 'culto')         renderCultos();
-    if (page === 'despesas')      renderDespesas();
+    if (page === 'despesas')      filtrarDespesas();
     if (page === 'entradas')      renderEntradas();
     if (page === 'historico')     renderHistorico();
     if (page === 'relatorios')    renderRelatorios();
     if (page === 'distribuicoes') calcularDistribuicoes();
+    if (page === 'configuracoes') renderConfiguracoes();
 }
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -812,6 +946,130 @@ function setSyncStatus(status) {
     };
     const cfg = configs[status] || configs.synced;
     el.innerHTML = `<div class="w-2 h-2 ${cfg.color} rounded-full sync-pulse"></div><span class="text-gray-600 text-xs">${cfg.text}</span>`;
+}
+
+// ============================================================
+// CONFIGURAÇÕES — LOGO
+// ============================================================
+let _logoBase64Temp = null; // logo selecionada mas ainda não salva
+
+function handleLogoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+        showNotification('❌ Imagem muito grande. Máximo 2MB.', 'error'); return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        _logoBase64Temp = e.target.result;
+        mostrarPreviewLogo(_logoBase64Temp);
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleLogoDrop(event) {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('image/')) {
+        showNotification('❌ Arquivo inválido. Envie uma imagem.', 'error'); return;
+    }
+    const fakeEvt = { target: { files: [file] } };
+    handleLogoUpload(fakeEvt);
+}
+
+function mostrarPreviewLogo(src) {
+    document.getElementById('logoPreviewIcon').classList.add('hidden');
+    const img = document.getElementById('logoPreviewImg');
+    img.src = src;
+    img.classList.remove('hidden');
+    document.getElementById('logoPreviewLabel').textContent = 'Logo carregada — clique em Salvar';
+    document.getElementById('btnRemoverLogo').style.display = 'inline-flex';
+}
+
+function salvarLogo() {
+    const src = _logoBase64Temp || DB.config.logo || null;
+    if (!src) { showNotification('⚠️ Selecione uma imagem primeiro.', 'warning'); return; }
+    DB.config.logo = src;
+    localStorage.setItem('ieq_config', JSON.stringify(DB.config));
+    _logoBase64Temp = null;
+    aplicarLogoSidebar(src);
+    showNotification('✅ Logo salva com sucesso!', 'success');
+}
+
+function removerLogo() {
+    if (!confirm('Remover a logo da igreja?')) return;
+    DB.config.logo = null;
+    _logoBase64Temp = null;
+    localStorage.setItem('ieq_config', JSON.stringify(DB.config));
+    // Reset preview
+    document.getElementById('logoPreviewImg').classList.add('hidden');
+    document.getElementById('logoPreviewImg').src = '';
+    document.getElementById('logoPreviewIcon').classList.remove('hidden');
+    document.getElementById('logoPreviewLabel').textContent = 'Nenhuma logo configurada';
+    document.getElementById('btnRemoverLogo').style.display = 'none';
+    document.getElementById('logoFileInput').value = '';
+    // Restaura sidebar
+    document.getElementById('sidebarLogoDefault').classList.remove('hidden');
+    document.getElementById('sidebarLogoImg').classList.add('hidden');
+    showNotification('🗑️ Logo removida.', 'info');
+}
+
+function aplicarLogoSidebar(src) {
+    if (src) {
+        document.getElementById('sidebarLogoDefault').classList.add('hidden');
+        const img = document.getElementById('sidebarLogoImg');
+        img.src = src;
+        img.classList.remove('hidden');
+    } else {
+        document.getElementById('sidebarLogoDefault').classList.remove('hidden');
+        document.getElementById('sidebarLogoImg').classList.add('hidden');
+    }
+}
+
+function salvarConfiguracoes() {
+    DB.config.nomeIgreja  = document.getElementById('cfg-nome-igreja').value.trim() || 'IEQ Esplanada';
+    DB.config.endereco    = document.getElementById('cfg-endereco').value.trim();
+    DB.config.pastor      = document.getElementById('cfg-pastor').value.trim();
+    DB.config.tesoureiro  = document.getElementById('cfg-tesoureiro').value.trim();
+    localStorage.setItem('ieq_config', JSON.stringify(DB.config));
+    // Atualiza nome na sidebar
+    document.getElementById('sidebarNomeIgreja').textContent = DB.config.nomeIgreja;
+    showNotification('✅ Configurações salvas!', 'success');
+}
+
+function aplicarConfiguracoes() {
+    const cfg = DB.config;
+    if (cfg.logo) aplicarLogoSidebar(cfg.logo);
+    if (cfg.nomeIgreja) document.getElementById('sidebarNomeIgreja').textContent = cfg.nomeIgreja;
+}
+
+function renderConfiguracoes() {
+    const cfg = DB.config;
+    // Preenche campos
+    if (cfg.nomeIgreja) document.getElementById('cfg-nome-igreja').value = cfg.nomeIgreja;
+    if (cfg.endereco)   document.getElementById('cfg-endereco').value   = cfg.endereco;
+    if (cfg.pastor)     document.getElementById('cfg-pastor').value     = cfg.pastor;
+    if (cfg.tesoureiro) document.getElementById('cfg-tesoureiro').value = cfg.tesoureiro;
+    // Logo preview
+    if (cfg.logo) {
+        mostrarPreviewLogo(cfg.logo);
+    }
+    // Contadores
+    document.getElementById('cfgQtdCultos').textContent   = DB.cultos.length;
+    document.getElementById('cfgQtdDespesas').textContent = DB.despesas.length;
+    document.getElementById('cfgQtdEntradas').textContent = DB.entradas.length;
+}
+
+function limparCacheLocal() {
+    if (!confirm('Limpar todo o cache local? Os dados do Google Sheets serão recarregados na próxima sincronização.')) return;
+    localStorage.removeItem('despesas_cache');
+    localStorage.removeItem('cultos_cache');
+    localStorage.removeItem('entradas_cache');
+    DB.despesas = [...DESPESAS_PADRAO];
+    DB.cultos   = [];
+    DB.entradas = [];
+    showNotification('🗑️ Cache limpo. Sincronizando...', 'info');
+    sincronizarTudo();
 }
 
 // ============================================================
@@ -924,12 +1182,10 @@ function calcTotalCulto() {
     document.getElementById('totalArrecadado').textContent = fmt(total);
     const totalCaixa = dizCaixa + ofCaixa;
     const totalPix   = dizPix   + ofPix;
-    const campoCaixa = document.getElementById('c-caixa');
-    const campoConta = document.getElementById('c-conta');
-    campoCaixa.value = totalCaixa.toFixed(2);
-    campoConta.value = totalPix.toFixed(2);
-    campoCaixa.style.borderColor = totalCaixa > 0 ? '#10b981' : '#86efac';
-    campoConta.style.borderColor = totalPix   > 0 ? '#3b82f6' : '#93c5fd';
+    document.getElementById('c-caixa').value = totalCaixa.toFixed(2);
+    document.getElementById('c-conta').value = totalPix.toFixed(2);
+    document.getElementById('c-caixa').style.borderColor = totalCaixa > 0 ? '#10b981' : '#86efac';
+    document.getElementById('c-conta').style.borderColor = totalPix   > 0 ? '#3b82f6' : '#93c5fd';
     return { totalDiz, totalOf, total, dizCaixa, dizPix, ofCaixa, ofPix };
 }
 function coletarDizimistas() {
@@ -981,37 +1237,30 @@ async function salvarCulto(e) {
         if (total > 0) {
             const entradaData = {
                 descricao: `Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
-                valor:     total,
-                data:      culto.data,
-                origem:    'culto',
-                cultoId:   cultoId,
-                criadoEm:  new Date().toISOString()
+                valor: total, data: culto.data, origem: 'culto',
+                cultoId: cultoId, criadoEm: new Date().toISOString()
             };
             const resultEntrada = await apiSave('entradas', entradaData);
             DB.entradas.unshift({ ...entradaData, id: resultEntrada.id });
         }
         DB.saveLocal();
-        closeModal('modalNovoCulto');
-        resetFormCulto();
+        closeModal('modalNovoCulto'); resetFormCulto();
         setSyncStatus('synced');
-        showNotification(`✅ Culto salvo no Sheets! ${fmt(total)}`, 'success');
+        showNotification(`✅ Culto salvo! ${fmt(total)}`, 'success');
         renderCultos(); renderEntradas(); renderDashboard();
     } catch (err) {
-        console.error('Erro ao salvar culto:', err);
         const culto = { ...cultoData, id: Date.now(), dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
         DB.cultos.unshift(culto);
         if (total > 0) DB.entradas.unshift({ id: Date.now()+1, descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`, valor:total, data:culto.data, origem:'culto', cultoId:culto.id });
         DB.saveLocal();
-        closeModal('modalNovoCulto');
-        resetFormCulto();
+        closeModal('modalNovoCulto'); resetFormCulto();
         setSyncStatus('error');
-        showNotification('⚠️ Salvo localmente (sem conexão com Sheets)', 'warning');
+        showNotification('⚠️ Salvo localmente (sem conexão)', 'warning');
         renderCultos(); renderEntradas();
     } finally {
         setBtnLoading('btnSalvarCulto', false, 'Salvar');
     }
 }
-
 function resetFormCulto() {
     document.getElementById('formCulto').reset();
     document.getElementById('listaDizimistas').innerHTML = '';
@@ -1025,10 +1274,8 @@ function resetFormCulto() {
     document.getElementById('c-data').value    = hoje;
     document.getElementById('c-horario').value = '19:30';
     document.getElementById('c-pastor').value  = 'Danilo de Oliveira Falcão';
-    adicionarDizimista();
-    adicionarOferta();
+    adicionarDizimista(); adicionarOferta();
 }
-
 function renderCultos() {
     const busca = (document.getElementById('buscaCulto')?.value || '').toLowerCase();
     const mes   = document.getElementById('filtroCultoMes')?.value || '';
@@ -1041,13 +1288,11 @@ function renderCultos() {
     const tbody = document.getElementById('tabelaCultos');
     if (lista.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-gray-400"><i class="fas fa-bible text-4xl mb-3 block text-gray-300"></i>Nenhum culto encontrado</td></tr>`;
-        atualizarTotaisCultos([]);
-        return;
+        atualizarTotaisCultos([]); return;
     }
     tbody.innerHTML = lista.map(c => {
         const idx = DB.cultos.indexOf(c);
-        return `
-        <tr class="table-row border-b border-gray-50">
+        return `<tr class="table-row border-b border-gray-50">
             <td class="p-2 text-sm font-medium">${fmtDate(c.data)}</td>
             <td class="p-2"><span class="badge-blue px-2 py-0.5 rounded text-xs font-semibold">${c.tipo}</span></td>
             <td class="p-2 text-sm text-gray-600 hidden md:table-cell">${c.pregador || c.pastor || '-'}</td>
@@ -1055,17 +1300,14 @@ function renderCultos() {
             <td class="p-2 text-sm text-green-700 font-semibold">${fmt(c.totalDizimos||0)}</td>
             <td class="p-2 text-sm text-green-700 font-semibold">${fmt(c.totalOfertas||0)}</td>
             <td class="p-2 text-sm font-bold text-green-800">${fmt(c.totalArrecadado||0)}</td>
-            <td class="p-2">
-                <div class="flex gap-1">
-                    <button onclick="verCulto(${idx})" class="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-xs flex items-center justify-center"><i class="fas fa-eye"></i></button>
-                    <button onclick="excluirCulto(${idx})" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs flex items-center justify-center"><i class="fas fa-trash"></i></button>
-                </div>
-            </td>
+            <td class="p-2"><div class="flex gap-1">
+                <button onclick="verCulto(${idx})" class="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-xs flex items-center justify-center"><i class="fas fa-eye"></i></button>
+                <button onclick="excluirCulto(${idx})" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs flex items-center justify-center"><i class="fas fa-trash"></i></button>
+            </div></td>
         </tr>`;
     }).join('');
     atualizarTotaisCultos(lista);
 }
-
 function atualizarTotaisCultos(lista) {
     const tots = lista.reduce((a,c) => ({
         dizimos: a.dizimos + (c.totalDizimos||0),
@@ -1078,23 +1320,28 @@ function atualizarTotaisCultos(lista) {
     document.getElementById('tot-missoes').textContent      = fmt(tots.missoes);
     document.getElementById('tot-cultos-total').textContent = fmt(tots.total);
 }
-
 function verCulto(idx) {
     const c = DB.cultos[idx];
     if (!c) return;
     const rowsDiz = (c.dizimistas||[]).length > 0
-        ? c.dizimistas.map(d => `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${d.nome||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(d.valor)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center"><span style="background:${d.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${d.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${d.forma}</span></td></tr>`).join('')
+        ? c.dizimistas.map(d=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${d.nome||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(d.valor)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center"><span style="background:${d.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${d.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${d.forma}</span></td></tr>`).join('')
         : `<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhum dizimista registrado</td></tr>`;
     const rowsOf = (c.ofertas||[]).length > 0
-        ? c.ofertas.map(o => `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${o.nome||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(o.valor)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center"><span style="background:${o.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${o.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${o.forma}</span></td></tr>`).join('')
+        ? c.ofertas.map(o=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${o.nome||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(o.valor)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center"><span style="background:${o.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${o.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${o.forma}</span></td></tr>`).join('')
         : `<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhuma oferta registrada</td></tr>`;
-    const caixaLocal    = +c.caixaLocal    || 0;
-    const contaCorrente = +c.contaCorrente || 0;
+
+    // Logo para impressão
+    const logoSrc = DB.config.logo || null;
+    const logoHtml = logoSrc
+        ? `<img src="${logoSrc}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px">`
+        : `<div style="font-size:28px;margin-bottom:6px">⛪</div>`;
+    const nomeIgreja = DB.config.nomeIgreja || 'IEQ ESPLANADA';
+
     document.getElementById('printArea').innerHTML = `
         <div style="font-family:'Segoe UI',sans-serif">
             <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #1e3a5f">
-                <div style="font-size:28px;margin-bottom:6px">⛪</div>
-                <h2 style="color:#1e3a5f;margin:0;font-size:18px">IEQ ESPLANADA</h2>
+                ${logoHtml}
+                <h2 style="color:#1e3a5f;margin:0;font-size:18px">${nomeIgreja}</h2>
                 <h3 style="color:#c8a951;margin:4px 0 0;font-size:14px;letter-spacing:2px">RELATÓRIO DE CULTO — REFC</h3>
             </div>
             <table style="width:100%;border-collapse:collapse;margin-bottom:16px;background:#f8fafc;border-radius:8px;overflow:hidden">
@@ -1130,23 +1377,21 @@ function verCulto(idx) {
             </table>
             <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:16px">
                 <tr><th colspan="2" style="background:#7c3aed;color:white;padding:8px 12px;text-align:left;font-size:13px">📤 DESTINO DA ARRECADAÇÃO</th></tr>
-                <tr><td style="padding:8px 12px;font-size:13px">🟢 Caixa Local (Dinheiro)</td><td style="padding:8px 12px;text-align:right;font-weight:700;color:#065f46">${fmt(caixaLocal)}</td></tr>
-                <tr style="background:#f9fafb"><td style="padding:8px 12px;font-size:13px">🔵 Conta Corrente (PIX)</td><td style="padding:8px 12px;text-align:right;font-weight:700;color:#1d4ed8">${fmt(contaCorrente)}</td></tr>
+                <tr><td style="padding:8px 12px;font-size:13px">🟢 Caixa Local (Dinheiro)</td><td style="padding:8px 12px;text-align:right;font-weight:700;color:#065f46">${fmt(+c.caixaLocal||0)}</td></tr>
+                <tr style="background:#f9fafb"><td style="padding:8px 12px;font-size:13px">🔵 Conta Corrente (PIX)</td><td style="padding:8px 12px;text-align:right;font-weight:700;color:#1d4ed8">${fmt(+c.contaCorrente||0)}</td></tr>
             </table>
             <div style="text-align:center;color:#9ca3af;font-size:11px;margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb">
-                Gerado em ${new Date().toLocaleString('pt-BR')} • IEQ Esplanada — Sistema Financeiro
+                Gerado em ${new Date().toLocaleString('pt-BR')} • ${nomeIgreja} — Sistema Financeiro
             </div>
         </div>`;
     openModal('modalVerCulto');
 }
-
 function imprimirCulto() {
     const conteudo = document.getElementById('printArea').innerHTML;
     const janela = window.open('', '_blank', 'width=800,height=900');
     janela.document.write(`<html><head><title>REFC — IEQ Esplanada</title><style>body{font-family:'Segoe UI',Arial,sans-serif;padding:24px;max-width:720px;margin:0 auto}@media print{button{display:none!important}}</style></head><body>${conteudo}<div style="text-align:center;margin-top:20px"><button onclick="window.print()" style="background:#1e3a5f;color:white;border:none;padding:10px 30px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600">🖨️ Imprimir / Salvar PDF</button></div></body></html>`);
     janela.document.close();
 }
-
 async function excluirCulto(idx) {
     if (!confirm('Excluir este culto? Esta ação não pode ser desfeita.')) return;
     const culto = DB.cultos[idx];
@@ -1154,57 +1399,80 @@ async function excluirCulto(idx) {
     setSyncStatus('syncing');
     try {
         await apiDelete('cultos', culto.id);
-        const vinculadas = DB.entradas.filter(e => String(e.cultoId) === String(culto.id));
-        for (const ent of vinculadas) {
+        for (const ent of DB.entradas.filter(e => String(e.cultoId) === String(culto.id))) {
             try { await apiDelete('entradas', ent.id); } catch(e) {}
         }
         DB.cultos.splice(idx, 1);
         DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(culto.id));
-        DB.saveLocal();
-        setSyncStatus('synced');
+        DB.saveLocal(); setSyncStatus('synced');
         showNotification('🗑️ Culto excluído do Sheets', 'info');
     } catch(err) {
         DB.cultos.splice(idx, 1);
         DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(culto.id));
-        DB.saveLocal();
-        setSyncStatus('error');
+        DB.saveLocal(); setSyncStatus('error');
         showNotification('⚠️ Excluído localmente (erro no Sheets)', 'warning');
     }
     renderCultos(); renderEntradas();
 }
 
 // ============================================================
-// DESPESAS
+// DESPESAS — com filtro de mês/ano CORRIGIDO
 // ============================================================
 const catIcons = { 'ENERGIA':'⚡','AGUA':'💧','CED':'🏛️','CND':'🌐','CONTADOR':'🧮','TAXA REGIONAL':'🏦','COMBUSTIVEL':'⛽','PREBENDA':'👤','PAPELARIA':'📄','DARF':'🧾','MATERIAL':'📦','OUTROS':'➕' };
 
-function renderDespesas(filtro='') {
-    const lista = filtro ? DB.despesas.filter(d => d.categoria === filtro) : DB.despesas;
+function filtrarDespesas() {
+    const mes    = document.getElementById('filtroDespesaMes')?.value || '';
+    const cat    = document.getElementById('filtroCat')?.value || '';
+    let lista = DB.despesas.filter(d => {
+        const matchMes = mes ? (d.data || '').startsWith(mes) : true;
+        const matchCat = cat ? d.categoria === cat : true;
+        return matchMes && matchCat;
+    });
+    renderDespesas(lista);
+}
+
+function limparFiltrosDespesas() {
+    document.getElementById('filtroDespesaMes').value = '';
+    document.getElementById('filtroCat').value = '';
+    renderDespesas(DB.despesas);
+}
+
+// ✅ CORRIGIDO: renderDespesas agora recebe a lista diretamente,
+// o botão de excluir aparece para TODAS as despesas não-fixas (_fixed !== true)
+function renderDespesas(lista) {
+    if (!lista) lista = DB.despesas;
     const tbody = document.getElementById('tabelaDespesas');
-    tbody.innerHTML = lista.map(d => `
-        <tr class="table-row border-b border-gray-50">
-            <td class="py-2 text-sm"><span class="inline-flex items-center gap-1"><span>${catIcons[d.categoria]||'📌'}</span><span class="font-medium text-gray-700">${d.categoria}</span></span></td>
-            <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">${d.descricao}</td>
-            <td class="py-2 text-sm text-gray-500 hidden md:table-cell">${fmtDate(d.data)}</td>
-            <td class="py-2 text-sm font-bold text-red-600 text-right">${fmt(d.valor)}</td>
-            <td class="py-2">
-                ${d.id && !String(d.id).startsWith('fix-') ? `<button onclick="excluirDespesa('${d.id}')" class="text-red-400 hover:text-red-600 text-sm ml-1" title="Excluir"><i class="fas fa-trash"></i></button>` : `<span class="text-xs text-gray-300 ml-1" title="Dado fixo">🔒</span>`}
-            </td>
-        </tr>`).join('');
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm"><i class="fas fa-check-circle text-green-300 text-3xl block mb-2"></i>Nenhuma despesa encontrada para este filtro</td></tr>`;
+    } else {
+        tbody.innerHTML = lista.map(d => `
+            <tr class="table-row border-b border-gray-50">
+                <td class="py-2 text-sm"><span class="inline-flex items-center gap-1"><span>${catIcons[d.categoria]||'📌'}</span><span class="font-medium text-gray-700">${d.categoria}</span></span></td>
+                <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">${d.descricao || ''}</td>
+                <td class="py-2 text-sm text-gray-500 hidden md:table-cell">${fmtDate(d.data)}</td>
+                <td class="py-2 text-sm font-bold text-red-600 text-right">${fmt(d.valor)}</td>
+                <td class="py-2 text-center">
+                    ${d._fixed
+                        ? `<span class="text-xs text-gray-300" title="Registro fixo">🔒</span>`
+                        : `<button onclick="excluirDespesa('${d.id}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center" title="Excluir"><i class="fas fa-trash"></i></button>`
+                    }
+                </td>
+            </tr>`).join('');
+    }
     const total = lista.reduce((s,d) => s+d.valor, 0);
     document.getElementById('totalDespesas').textContent       = fmt(total);
     document.getElementById('totalDespesasFiltro').textContent = fmt(total);
 }
-function filtrarDespesas() { renderDespesas(document.getElementById('filtroCat').value); }
 
 async function salvarDespesa(e) {
     e.preventDefault();
     const despesaData = {
-        categoria:  document.getElementById('d-categoria').value,
-        descricao:  document.getElementById('d-descricao').value || document.getElementById('d-categoria').value,
-        valor:      +document.getElementById('d-valor').value,
-        data:       document.getElementById('d-data').value,
-        criadoEm:   new Date().toISOString()
+        categoria: document.getElementById('d-categoria').value,
+        descricao: document.getElementById('d-descricao').value || document.getElementById('d-categoria').value,
+        valor:     +document.getElementById('d-valor').value,
+        data:      document.getElementById('d-data').value,
+        criadoEm:  new Date().toISOString()
+        // _fixed NÃO incluído — apenas as padrão têm _fixed:true
     };
     setBtnLoading('btnSalvarDespesa', true, 'Registrar');
     try {
@@ -1213,7 +1481,7 @@ async function salvarDespesa(e) {
         DB.saveLocal();
         closeModal('modalNovaDespesa');
         document.getElementById('formDespesa').reset();
-        renderDespesas();
+        filtrarDespesas();
         setSyncStatus('synced');
         showNotification(`✅ Despesa de ${fmt(despesaData.valor)} salva no Sheets!`, 'success');
     } catch(err) {
@@ -1221,7 +1489,7 @@ async function salvarDespesa(e) {
         DB.saveLocal();
         closeModal('modalNovaDespesa');
         document.getElementById('formDespesa').reset();
-        renderDespesas();
+        filtrarDespesas();
         setSyncStatus('error');
         showNotification('⚠️ Despesa salva localmente (sem conexão)', 'warning');
     } finally {
@@ -1229,43 +1497,70 @@ async function salvarDespesa(e) {
     }
 }
 
+// ✅ CORRIGIDO: excluirDespesa agora remove corretamente qualquer despesa não-fixa
 async function excluirDespesa(id) {
     if (!confirm('Excluir esta despesa?')) return;
     const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
-    if (idx === -1) return;
+    if (idx === -1) { showNotification('❌ Despesa não encontrada.', 'error'); return; }
+    const despesa = DB.despesas[idx];
+    if (despesa._fixed) { showNotification('❌ Não é possível excluir registros fixos.', 'error'); return; }
     setSyncStatus('syncing');
     try {
         await apiDelete('despesas', id);
         DB.despesas.splice(idx, 1);
-        DB.saveLocal();
-        setSyncStatus('synced');
+        DB.saveLocal(); setSyncStatus('synced');
         showNotification('🗑️ Despesa excluída do Sheets', 'info');
     } catch(err) {
         DB.despesas.splice(idx, 1);
-        DB.saveLocal();
-        setSyncStatus('error');
+        DB.saveLocal(); setSyncStatus('error');
         showNotification('⚠️ Excluído localmente (erro no Sheets)', 'warning');
     }
-    renderDespesas();
+    filtrarDespesas();
 }
 
 // ============================================================
-// ENTRADAS
+// ENTRADAS — com filtro de mês/ano CORRIGIDO
 // ============================================================
 function renderEntradas() {
+    const mes   = document.getElementById('filtroEntradaMes')?.value || '';
+    const busca = (document.getElementById('buscaEntrada')?.value || '').toLowerCase();
+
+    let lista = DB.entradas.filter(ent => {
+        const matchMes   = mes ? (ent.data || '').startsWith(mes) : true;
+        const matchBusca = !busca || (ent.descricao || '').toLowerCase().includes(busca);
+        return matchMes && matchBusca;
+    });
+
     const tbody = document.getElementById('tabelaEntradas');
-    if (DB.entradas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Registre cultos para ver as entradas automaticamente</td></tr>`;
-        return;
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">
+            ${DB.entradas.length === 0 ? 'Registre cultos para ver as entradas automaticamente' : 'Nenhuma entrada encontrada para o filtro selecionado'}
+        </td></tr>`;
+    } else {
+        tbody.innerHTML = lista.map(ent => `
+            <tr class="table-row border-b border-gray-50">
+                <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
+                <td class="py-2 text-sm text-gray-700">${ent.descricao}</td>
+                <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
+                <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
+                <td class="py-2 text-center"><button onclick="excluirEntrada('${ent.id}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center" title="Excluir"><i class="fas fa-trash"></i></button></td>
+            </tr>`).join('');
     }
-    tbody.innerHTML = DB.entradas.map((ent) => `
-        <tr class="table-row border-b border-gray-50">
-            <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
-            <td class="py-2 text-sm text-gray-700">${ent.descricao}</td>
-            <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
-            <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
-            <td class="py-2"><button onclick="excluirEntrada('${ent.id}')" class="text-red-400 hover:text-red-600 text-sm"><i class="fas fa-trash"></i></button></td>
-        </tr>`).join('');
+
+    const total = lista.reduce((s,e) => s+e.valor, 0);
+    const elTotal = document.getElementById('totalEntradasFiltro');
+    const elKpi   = document.getElementById('kpiEntradasMes');
+    const elQtd   = document.getElementById('kpiQtdEntradas');
+    if (elTotal) elTotal.textContent = fmt(total);
+    if (elKpi)   elKpi.textContent   = fmt(total);
+    if (elQtd)   elQtd.textContent   = lista.length;
+}
+
+function limparFiltroEntradas() {
+    document.getElementById('filtroEntradaMes').value = '';
+    const buscaEl = document.getElementById('buscaEntrada');
+    if (buscaEl) buscaEl.value = '';
+    renderEntradas();
 }
 
 async function salvarEntrada(e) {
@@ -1300,7 +1595,6 @@ async function salvarEntrada(e) {
         setBtnLoading('btnSalvarEntrada', false, 'Registrar');
     }
 }
-
 async function excluirEntrada(id) {
     if (!confirm('Excluir esta entrada?')) return;
     const idx = DB.entradas.findIndex(e => String(e.id) === String(id));
@@ -1309,13 +1603,11 @@ async function excluirEntrada(id) {
     try {
         await apiDelete('entradas', id);
         DB.entradas.splice(idx, 1);
-        DB.saveLocal();
-        setSyncStatus('synced');
+        DB.saveLocal(); setSyncStatus('synced');
         showNotification('🗑️ Entrada excluída do Sheets', 'info');
     } catch(err) {
         DB.entradas.splice(idx, 1);
-        DB.saveLocal();
-        setSyncStatus('error');
+        DB.saveLocal(); setSyncStatus('error');
         showNotification('⚠️ Excluído localmente (erro no Sheets)', 'warning');
     }
     renderEntradas();
@@ -1374,18 +1666,28 @@ function renderRelatorios() {
         options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR'),font:{size:10}}}} }
     });
 }
-
 function gerarRelatorio() {
     const totalDesp = DB.despesas.reduce((s,d) => s+d.valor, 0);
+    const logoHtml  = DB.config.logo ? `<img src="${DB.config.logo}" style="width:50px;height:50px;border-radius:50%;vertical-align:middle;margin-right:10px">` : '⛪';
     const w = window.open('','_blank');
     w.document.write(`<html><head><title>Relatório — Maio 2026</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px}h1{color:#1e3a5f;border-bottom:3px solid #c8a951;padding-bottom:10px}table{width:100%;border-collapse:collapse;margin:15px 0}th{background:#1e3a5f;color:white;padding:10px;text-align:left}td{padding:8px 10px;border-bottom:1px solid #eee}.total{font-weight:bold;background:#f8f8f8}.green{color:#059669}.red{color:#dc2626}</style></head><body>
-        <h1>⛪ IEQ Esplanada — Relatório Financeiro</h1><h2>Maio 2026</h2>
+        <h1>${logoHtml} IEQ Esplanada — Relatório Financeiro</h1><h2>Maio 2026</h2>
         <table><tr><th colspan="2">RESUMO</th></tr><tr><td>Saldo Anterior</td><td class="green">R$ 1.099,81</td></tr><tr><td>Total Entradas</td><td class="green">R$ 3.483,14</td></tr><tr><td>Total Saídas</td><td class="red">${fmt(totalDesp)}</td></tr><tr class="total"><td>Saldo Final</td><td>R$ 1.247,53</td></tr></table>
         <table><tr><th>Categoria</th><th>Descrição</th><th>Valor</th></tr>${DB.despesas.map(d=>`<tr><td>${d.categoria}</td><td>${d.descricao}</td><td class="red">${fmt(d.valor)}</td></tr>`).join('')}<tr class="total"><td colspan="2">TOTAL</td><td class="red">${fmt(totalDesp)}</td></tr></table>
         <p style="font-size:12px;color:#666">Gerado em ${new Date().toLocaleString('pt-BR')}</p><script>window.print();<\/script></body></html>`);
 }
-
-function changeGlobalMonth() { showNotification('Módulo multi-mês em desenvolvimento','info'); }
+function changeGlobalMonth() {
+    const val = document.getElementById('globalMonthSelector').value; // ex: "2026-05"
+    // Sincroniza os filtros de mês de Entradas e Despesas com o seletor global
+    const filtroEnt = document.getElementById('filtroEntradaMes');
+    const filtroDesp = document.getElementById('filtroDespesaMes');
+    if (filtroEnt)  filtroEnt.value  = val;
+    if (filtroDesp) filtroDesp.value = val;
+    const paginaAtiva = document.querySelector('.page.active')?.id?.replace('page-','');
+    if (paginaAtiva === 'entradas')  renderEntradas();
+    if (paginaAtiva === 'despesas')  filtrarDespesas();
+    showNotification(`📅 Filtro global: ${val}`, 'info');
+}
 
 // ============================================================
 // INICIALIZAÇÃO
@@ -1399,7 +1701,7 @@ document.addEventListener('DOMContentLoaded', () => {
     adicionarOferta();
     calcularDistribuicoes();
     inicializarSistema();
-    console.log('✅ IEQ Financeiro v3.1 — Corrigido');
+    console.log('✅ IEQ Financeiro v3.2 — Corrigido');
 });
 </script>
 </body>
