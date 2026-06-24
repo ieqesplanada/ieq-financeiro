@@ -70,8 +70,6 @@
         .input-auto-pix { background: #eff6ff; font-weight: 600; cursor: default; }
         @media (max-width: 640px) { .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } .table-scroll table { min-width: 500px; } }
         @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; left: 0; top: 0; width: 100%; } }
-
-        /* Loading overlay */
         #loadingOverlay { position: fixed; inset: 0; background: rgba(30,58,95,0.85); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #loadingOverlay.hidden { display: none; }
         .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #c8a951; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
@@ -80,17 +78,14 @@
 </head>
 <body class="min-h-screen">
 
-<!-- LOADING OVERLAY -->
 <div id="loadingOverlay">
     <div class="spinner"></div>
     <p class="text-lg font-bold">Carregando dados...</p>
     <p class="text-sm text-blue-200 mt-1">Sincronizando com Google Sheets</p>
 </div>
 
-<!-- OVERLAY SIDEBAR MOBILE -->
 <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- ===== SIDEBAR ===== -->
 <aside class="sidebar w-64 flex flex-col" id="sidebar">
     <div class="p-5 border-b border-blue-800">
         <div class="flex items-center gap-3">
@@ -126,7 +121,6 @@
     </div>
 </aside>
 
-<!-- ===== MAIN CONTENT ===== -->
 <main class="min-h-screen flex flex-col" id="mainContent">
     <header class="bg-white shadow-sm sticky top-0 z-40 px-4 py-3">
         <div class="flex items-center justify-between gap-3">
@@ -160,7 +154,7 @@
 
     <div class="p-3 sm:p-6 flex-1">
 
-        <!-- ==================== DASHBOARD ==================== -->
+        <!-- DASHBOARD -->
         <div class="page active" id="page-dashboard">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <div class="card p-4">
@@ -196,7 +190,6 @@
                     <p class="text-xs text-gray-500 mt-1">Conta: <span class="font-semibold">R$ 1.517,62</span></p>
                 </div>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <div class="card p-4">
                     <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-line text-blue-600"></i> Evolução Financeira 2026</h3>
@@ -207,7 +200,6 @@
                     <canvas id="chartDespesas"></canvas>
                 </div>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                 <div class="card p-4 lg:col-span-2">
                     <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-share-alt text-purple-600"></i> Distribuições do Mês</h3>
@@ -232,7 +224,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="card p-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-gray-800 flex items-center gap-2 text-sm"><i class="fas fa-list text-gray-600"></i> Últimas Movimentações</h3>
@@ -247,7 +238,7 @@
             </div>
         </div>
 
-        <!-- ==================== RELATÓRIO DE CULTO ==================== -->
+        <!-- RELATÓRIO DE CULTO -->
         <div class="page" id="page-culto">
             <div class="card p-4 mb-4">
                 <div class="flex flex-col sm:flex-row gap-3">
@@ -275,7 +266,7 @@
             </div>
         </div>
 
-        <!-- ==================== ENTRADAS ==================== -->
+        <!-- ENTRADAS -->
         <div class="page" id="page-entradas">
             <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <p class="text-gray-500 text-sm">Entradas alimentadas automaticamente pelos relatórios de culto</p>
@@ -297,7 +288,7 @@
             </div>
         </div>
 
-        <!-- ==================== DESPESAS ==================== -->
+        <!-- DESPESAS -->
         <div class="page" id="page-despesas">
             <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <p class="text-gray-500 text-sm">Gerencie todas as saídas financeiras do mês</p>
@@ -328,7 +319,7 @@
             </div>
         </div>
 
-        <!-- ==================== DISTRIBUIÇÕES ==================== -->
+        <!-- DISTRIBUIÇÕES -->
         <div class="page" id="page-distribuicoes">
             <div class="card p-4 mb-4">
                 <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-calculator text-blue-600"></i> Cálculo de Distribuições — Maio 2026</h3>
@@ -353,7 +344,7 @@
             </div>
         </div>
 
-        <!-- ==================== RELATÓRIOS ==================== -->
+        <!-- RELATÓRIOS -->
         <div class="page" id="page-relatorios">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="card p-4">
@@ -375,7 +366,7 @@
             </div>
         </div>
 
-        <!-- ==================== HISTÓRICO ==================== -->
+        <!-- HISTÓRICO -->
         <div class="page" id="page-historico">
             <div class="card p-4 mb-4">
                 <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
@@ -391,8 +382,6 @@
 
     </div>
 </main>
-
-<!-- ==================== MODAIS ==================== -->
 
 <!-- MODAL: NOVO CULTO -->
 <div class="modal-overlay" id="modalNovoCulto">
@@ -543,14 +532,13 @@
 
 <script>
 // ============================================================
-// ✅ CONFIGURAÇÃO DA API — GOOGLE APPS SCRIPT
+// CONFIGURAÇÃO DA API
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxnsmbmEoQRNCdYws0LH-n5YXt_YyRSYjPwG86xHw_mwgY7gzQkgP7qqTxcrGKV2VXx/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyyKiwgt3t2iG89MhV0I9yA87l6PiYSaKXWvZnKzLheQ5dZzslDRBWJdqBZVUqSu1iJ/exec";
 
 // ============================================================
-// FUNÇÕES DE API — COMUNICAÇÃO COM GOOGLE APPS SCRIPT
+// FUNÇÕES DE API — CORRIGIDAS
 // ============================================================
-
 async function apiGet(sheet) {
     const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=get`;
     const resp = await fetch(url);
@@ -584,54 +572,8 @@ async function apiDelete(sheet, id) {
     return json;
 }
 
-
-    // Timeout de segurança: se demorar mais de 8s, usa dados locais
-    const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout de conexão')), 8000)
-    );
-
-    try {
-        // Carrega dados do Google Sheets em paralelo (com timeout)
-        const [cultosSheets, despesasSheets, entradasSheets] = await Promise.race([
-            Promise.allSettled([
-                apiGet('cultos'),
-                apiGet('despesas'),
-                apiGet('entradas')
-            ]),
-            timeout.then(() => { throw new Error('Timeout'); })
-        ]);
-
-        if (cultosSheets.status === 'fulfilled' && cultosSheets.value.length > 0) {
-            DB.cultos = cultosSheets.value.map(normalizarCulto);
-        }
-        if (despesasSheets.status === 'fulfilled' && despesasSheets.value.length > 0) {
-            const sheetsIds = new Set(despesasSheets.value.map(d => String(d.id)));
-            const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
-            DB.despesas = [...padraoFiltrado, ...despesasSheets.value.map(normalizarDespesa)];
-        } else if (despesasSheets.status === 'fulfilled') {
-            DB.despesas = [...DESPESAS_PADRAO];
-        }
-        if (entradasSheets.status === 'fulfilled') {
-            DB.entradas = entradasSheets.value.map(normalizarEntrada);
-        }
-
-        DB.saveLocal();
-        setSyncStatus('synced');
-        showNotification('✅ Dados sincronizados com Google Sheets', 'success');
-
-    } catch (err) {
-        console.warn('Aviso: usando dados locais. Erro:', err.message);
-        setSyncStatus('error');
-        showNotification('⚠️ Modo offline — usando dados locais', 'warning');
-    }
-
-    // SEMPRE renderiza e esconde o loading, independente do resultado
-    renderDashboard();
-    mostrarLoading(false);
-}
-
 // ============================================================
-// BANCO DE DADOS LOCAL (cache + fallback)
+// BANCO DE DADOS LOCAL
 // ============================================================
 const DB = {
     historico: [
@@ -644,16 +586,13 @@ const DB = {
     despesas: [],
     cultos:   [],
     entradas: [],
-
-    // Salva cache local como fallback
     saveLocal() {
         try {
             localStorage.setItem('despesas_cache', JSON.stringify(this.despesas));
             localStorage.setItem('cultos_cache',   JSON.stringify(this.cultos));
             localStorage.setItem('entradas_cache', JSON.stringify(this.entradas));
-        } catch(e) { /* ignora erros de quota */ }
+        } catch(e) {}
     },
-    // Carrega cache local (fallback offline)
     loadLocal() {
         try {
             this.despesas = JSON.parse(localStorage.getItem('despesas_cache') || '[]');
@@ -665,7 +604,6 @@ const DB = {
     }
 };
 
-// Despesas padrão (dados históricos fixos de Maio/2026)
 const DESPESAS_PADRAO = [
     { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',       valor:114.48,  data:'2026-05-10' },
     { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',           valor:109.84,  data:'2026-05-10' },
@@ -684,56 +622,7 @@ const DESPESAS_PADRAO = [
 ];
 
 // ============================================================
-// INICIALIZAÇÃO — CARREGA DO GOOGLE SHEETS
-// ============================================================
-async function inicializarSistema() {
-    mostrarLoading(true);
-    setSyncStatus('syncing');
-    DB.loadLocal();
-    if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
-
-    // Timeout de segurança — 8 segundos
-    const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout de conexão')), 8000)
-    );
-
-    try {
-        const resultados = await Promise.race([
-            Promise.allSettled([
-                apiGet('cultos'),
-                apiGet('despesas'),
-                apiGet('entradas')
-            ]),
-            timeout
-        ]);
-
-        // Processa resultados normalmente
-        const [cultosRes, despesasRes, entradasRes] = resultados;
-        if (cultosRes.status === 'fulfilled' && cultosRes.value?.ok) {
-            DB.cultos = cultosRes.value.data;
-        }
-        if (despesasRes.status === 'fulfilled' && despesasRes.value?.ok) {
-            DB.despesas = despesasRes.value.data;
-        }
-        if (entradasRes.status === 'fulfilled' && entradasRes.value?.ok) {
-            DB.entradas = entradasRes.value.data;
-        }
-
-        DB.saveLocal();
-        setSyncStatus('synced');
-
-    } catch (err) {
-        console.warn('⚠️ Falha ao sincronizar:', err.message);
-        setSyncStatus('error');
-        // Continua com dados locais
-    } finally {
-        mostrarLoading(false);
-        renderizarDashboard();
-    }
-}
-// ============================================================
-// NORMALIZAÇÃO DE DADOS VINDOS DO SHEETS
-// (o Sheets retorna tudo como string — precisamos converter)
+// NORMALIZAÇÃO
 // ============================================================
 function normalizarCulto(c) {
     return {
@@ -753,19 +642,68 @@ function normalizarCulto(c) {
         ofertas:         parseJsonSafe(c.ofertas, []),
     };
 }
-function normalizarDespesa(d) {
-    return { ...d, valor: parseFloat(d.valor) || 0 };
-}
-function normalizarEntrada(e) {
-    return { ...e, valor: parseFloat(e.valor) || 0 };
-}
+function normalizarDespesa(d) { return { ...d, valor: parseFloat(d.valor) || 0 }; }
+function normalizarEntrada(e) { return { ...e, valor: parseFloat(e.valor) || 0 }; }
 function parseJsonSafe(val, fallback) {
     if (Array.isArray(val)) return val;
     try { return JSON.parse(val) || fallback; } catch { return fallback; }
 }
 
 // ============================================================
-// SINCRONIZAÇÃO MANUAL (botão de refresh)
+// INICIALIZAÇÃO — ÚNICA VERSÃO CORRIGIDA
+// ============================================================
+async function inicializarSistema() {
+    mostrarLoading(true);
+    setSyncStatus('syncing');
+    DB.loadLocal();
+    if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
+
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout de conexão')), 8000)
+    );
+
+    try {
+        const resultados = await Promise.race([
+            Promise.allSettled([
+                apiGet('cultos'),
+                apiGet('despesas'),
+                apiGet('entradas')
+            ]),
+            timeout
+        ]);
+
+        const [cultosRes, despesasRes, entradasRes] = resultados;
+
+        // CORRIGIDO: verifica .value diretamente (apiGet já retorna array)
+        if (cultosRes.status === 'fulfilled' && cultosRes.value.length > 0) {
+            DB.cultos = cultosRes.value.map(normalizarCulto);
+        }
+        if (despesasRes.status === 'fulfilled' && despesasRes.value.length > 0) {
+            const sheetsIds = new Set(despesasRes.value.map(d => String(d.id)));
+            const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
+            DB.despesas = [...padraoFiltrado, ...despesasRes.value.map(normalizarDespesa)];
+        }
+        if (entradasRes.status === 'fulfilled' && entradasRes.value.length > 0) {
+            DB.entradas = entradasRes.value.map(normalizarEntrada);
+        }
+
+        DB.saveLocal();
+        setSyncStatus('synced');
+        showNotification('✅ Dados sincronizados com Google Sheets', 'success');
+
+    } catch (err) {
+        console.warn('⚠️ Usando dados locais. Erro:', err.message);
+        setSyncStatus('error');
+        showNotification('⚠️ Modo offline — usando dados locais', 'warning');
+    } finally {
+        // CORRIGIDO: renderDashboard (não renderizarDashboard)
+        renderDashboard();
+        mostrarLoading(false);
+    }
+}
+
+// ============================================================
+// SINCRONIZAÇÃO MANUAL
 // ============================================================
 async function sincronizarTudo() {
     setSyncStatus('syncing');
@@ -778,16 +716,12 @@ async function sincronizarTudo() {
         ]);
         if (cultosSheets.length > 0)   DB.cultos   = cultosSheets.map(normalizarCulto);
         if (entradasSheets.length > 0) DB.entradas = entradasSheets.map(normalizarEntrada);
-
         const sheetsIds = new Set(despesasSheets.map(d => String(d.id)));
         const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
         DB.despesas = [...padraoFiltrado, ...despesasSheets.map(normalizarDespesa)];
-
         DB.saveLocal();
         setSyncStatus('synced');
         showNotification('✅ Sincronizado com sucesso!', 'success');
-
-        // Re-renderiza a página atual
         const paginaAtiva = document.querySelector('.page.active')?.id?.replace('page-','');
         if (paginaAtiva) showPage(paginaAtiva, true);
     } catch (err) {
@@ -799,13 +733,12 @@ async function sincronizarTudo() {
 // ============================================================
 // UTILITÁRIOS
 // ============================================================
-const fmt     = v  => (parseFloat(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-const fmtDate = d  => d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : '-';
+const fmt     = v => (parseFloat(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : '-';
 
 function mostrarLoading(show) {
     document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
 }
-
 function showNotification(msg, type = 'success') {
     const n = document.createElement('div');
     n.className = `notification notif-${type}`;
@@ -818,7 +751,6 @@ function closeModal(id) { document.getElementById(id).classList.remove('active')
 document.querySelectorAll('.modal-overlay').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
 });
-
 function setBtnLoading(btnId, loading, label='Salvar') {
     const btn = document.getElementById(btnId);
     if (!btn) return;
@@ -840,7 +772,6 @@ const pageTitles = {
     relatorios:   ['Relatórios',          'Análises e exportações'],
     historico:    ['Histórico',           'Dados históricos 2026'],
 };
-
 function showPage(page, force = false) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -857,7 +788,6 @@ function showPage(page, force = false) {
     if (page === 'relatorios')    renderRelatorios();
     if (page === 'distribuicoes') calcularDistribuicoes();
 }
-
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
@@ -893,7 +823,6 @@ function renderDashboard() {
     renderChartDespesas();
     document.getElementById('kpi-cultos').textContent = DB.cultos.length;
 }
-
 function renderMovimentacoes() {
     const tbody = document.getElementById('tabelaMovimentacoes');
     const catColors = { 'ENERGIA':'badge-yellow','AGUA':'badge-blue','CED':'badge-blue','CND':'badge-blue','CONTADOR':'badge-blue','COMBUSTIVEL':'badge-yellow','PREBENDA':'badge-blue','TAXA REGIONAL':'badge-green' };
@@ -933,7 +862,7 @@ function renderChartDespesas() {
 }
 
 // ============================================================
-// CULTOS — LINHAS DE FORMULÁRIO
+// CULTOS
 // ============================================================
 function criarLinhaDizimista(nome='', valor='', forma='Caixa') {
     const div = document.createElement('div');
@@ -973,7 +902,6 @@ function removerLinha(btn, tipo) {
     btn.closest(tipo === 'dizimista' ? '.dizimista-row' : '.oferta-row').remove();
     calcTotalCulto();
 }
-
 function calcTotalCulto() {
     let dizCaixa = 0, dizPix = 0;
     document.querySelectorAll('.dizimista-row').forEach(row => {
@@ -982,7 +910,6 @@ function calcTotalCulto() {
     });
     const totalDiz = dizCaixa + dizPix;
     document.getElementById('totalDizimosLabel').textContent = fmt(totalDiz);
-
     let ofCaixa = 0, ofPix = 0;
     document.querySelectorAll('.oferta-row').forEach(row => {
         const val = +row.querySelector('.of-valor').value || 0;
@@ -990,13 +917,11 @@ function calcTotalCulto() {
     });
     const totalOf = ofCaixa + ofPix;
     document.getElementById('totalOfertasLabel').textContent = fmt(totalOf);
-
     const missoes   = +document.getElementById('c-missoes').value   || 0;
     const especiais = +document.getElementById('c-especiais').value || 0;
     const outras    = +document.getElementById('c-outras').value    || 0;
     const total = totalDiz + totalOf + missoes + especiais + outras;
     document.getElementById('totalArrecadado').textContent = fmt(total);
-
     const totalCaixa = dizCaixa + ofCaixa;
     const totalPix   = dizPix   + ofPix;
     const campoCaixa = document.getElementById('c-caixa');
@@ -1007,7 +932,6 @@ function calcTotalCulto() {
     campoConta.style.borderColor = totalPix   > 0 ? '#3b82f6' : '#93c5fd';
     return { totalDiz, totalOf, total, dizCaixa, dizPix, ofCaixa, ofPix };
 }
-
 function coletarDizimistas() {
     return [...document.querySelectorAll('.dizimista-row')].map(row => ({
         nome:  row.querySelector('.diz-nome').value.trim(),
@@ -1023,13 +947,9 @@ function coletarOfertas() {
     })).filter(o => o.valor > 0 || o.nome);
 }
 
-// ============================================================
-// SALVAR CULTO — GOOGLE SHEETS
-// ============================================================
 async function salvarCulto(e) {
     e.preventDefault();
     const { totalDiz, totalOf, total } = calcTotalCulto();
-
     const cultoData = {
         data:            document.getElementById('c-data').value,
         horario:         document.getElementById('c-horario').value,
@@ -1052,17 +972,12 @@ async function salvarCulto(e) {
         contaCorrente:   +document.getElementById('c-conta').value || 0,
         criadoEm:        new Date().toISOString()
     };
-
     setBtnLoading('btnSalvarCulto', true);
-
     try {
-        // 1. Salva culto no Sheets
         const resultCulto = await apiSave('cultos', cultoData);
         const cultoId = resultCulto.id;
         const culto = { ...cultoData, id: cultoId, dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
         DB.cultos.unshift(culto);
-
-        // 2. Salva entrada automática no Sheets
         if (total > 0) {
             const entradaData = {
                 descricao: `Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
@@ -1075,19 +990,14 @@ async function salvarCulto(e) {
             const resultEntrada = await apiSave('entradas', entradaData);
             DB.entradas.unshift({ ...entradaData, id: resultEntrada.id });
         }
-
         DB.saveLocal();
         closeModal('modalNovoCulto');
         resetFormCulto();
         setSyncStatus('synced');
         showNotification(`✅ Culto salvo no Sheets! ${fmt(total)}`, 'success');
-        renderCultos();
-        renderEntradas();
-        renderDashboard();
-
+        renderCultos(); renderEntradas(); renderDashboard();
     } catch (err) {
         console.error('Erro ao salvar culto:', err);
-        // Fallback: salva localmente
         const culto = { ...cultoData, id: Date.now(), dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
         DB.cultos.unshift(culto);
         if (total > 0) DB.entradas.unshift({ id: Date.now()+1, descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`, valor:total, data:culto.data, origem:'culto', cultoId:culto.id });
@@ -1096,8 +1006,7 @@ async function salvarCulto(e) {
         resetFormCulto();
         setSyncStatus('error');
         showNotification('⚠️ Salvo localmente (sem conexão com Sheets)', 'warning');
-        renderCultos();
-        renderEntradas();
+        renderCultos(); renderEntradas();
     } finally {
         setBtnLoading('btnSalvarCulto', false, 'Salvar');
     }
@@ -1120,9 +1029,6 @@ function resetFormCulto() {
     adicionarOferta();
 }
 
-// ============================================================
-// CULTOS — RENDER
-// ============================================================
 function renderCultos() {
     const busca = (document.getElementById('buscaCulto')?.value || '').toLowerCase();
     const mes   = document.getElementById('filtroCultoMes')?.value || '';
@@ -1241,21 +1147,16 @@ function imprimirCulto() {
     janela.document.close();
 }
 
-// ============================================================
-// EXCLUIR CULTO — GOOGLE SHEETS
-// ============================================================
 async function excluirCulto(idx) {
     if (!confirm('Excluir este culto? Esta ação não pode ser desfeita.')) return;
     const culto = DB.cultos[idx];
     if (!culto) return;
-
     setSyncStatus('syncing');
     try {
         await apiDelete('cultos', culto.id);
-        // Exclui entradas vinculadas no Sheets
         const vinculadas = DB.entradas.filter(e => String(e.cultoId) === String(culto.id));
         for (const ent of vinculadas) {
-            try { await apiDelete('entradas', ent.id); } catch(e) { /* ignora */ }
+            try { await apiDelete('entradas', ent.id); } catch(e) {}
         }
         DB.cultos.splice(idx, 1);
         DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(culto.id));
@@ -1263,16 +1164,13 @@ async function excluirCulto(idx) {
         setSyncStatus('synced');
         showNotification('🗑️ Culto excluído do Sheets', 'info');
     } catch(err) {
-        console.error('Erro ao excluir culto:', err);
-        // Fallback: remove local
         DB.cultos.splice(idx, 1);
         DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(culto.id));
         DB.saveLocal();
         setSyncStatus('error');
         showNotification('⚠️ Excluído localmente (erro no Sheets)', 'warning');
     }
-    renderCultos();
-    renderEntradas();
+    renderCultos(); renderEntradas();
 }
 
 // ============================================================
@@ -1297,12 +1195,8 @@ function renderDespesas(filtro='') {
     document.getElementById('totalDespesas').textContent       = fmt(total);
     document.getElementById('totalDespesasFiltro').textContent = fmt(total);
 }
-
 function filtrarDespesas() { renderDespesas(document.getElementById('filtroCat').value); }
 
-// ============================================================
-// SALVAR DESPESA — GOOGLE SHEETS
-// ============================================================
 async function salvarDespesa(e) {
     e.preventDefault();
     const despesaData = {
@@ -1312,9 +1206,7 @@ async function salvarDespesa(e) {
         data:       document.getElementById('d-data').value,
         criadoEm:   new Date().toISOString()
     };
-
     setBtnLoading('btnSalvarDespesa', true, 'Registrar');
-
     try {
         const result = await apiSave('despesas', despesaData);
         DB.despesas.push({ ...despesaData, id: result.id });
@@ -1325,7 +1217,6 @@ async function salvarDespesa(e) {
         setSyncStatus('synced');
         showNotification(`✅ Despesa de ${fmt(despesaData.valor)} salva no Sheets!`, 'success');
     } catch(err) {
-        console.error('Erro ao salvar despesa:', err);
         DB.despesas.push({ ...despesaData, id: Date.now() });
         DB.saveLocal();
         closeModal('modalNovaDespesa');
@@ -1338,14 +1229,10 @@ async function salvarDespesa(e) {
     }
 }
 
-// ============================================================
-// EXCLUIR DESPESA — GOOGLE SHEETS
-// ============================================================
 async function excluirDespesa(id) {
     if (!confirm('Excluir esta despesa?')) return;
     const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
     if (idx === -1) return;
-
     setSyncStatus('syncing');
     try {
         await apiDelete('despesas', id);
@@ -1371,7 +1258,7 @@ function renderEntradas() {
         tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Registre cultos para ver as entradas automaticamente</td></tr>`;
         return;
     }
-    tbody.innerHTML = DB.entradas.map((ent, i) => `
+    tbody.innerHTML = DB.entradas.map((ent) => `
         <tr class="table-row border-b border-gray-50">
             <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
             <td class="py-2 text-sm text-gray-700">${ent.descricao}</td>
@@ -1381,9 +1268,6 @@ function renderEntradas() {
         </tr>`).join('');
 }
 
-// ============================================================
-// SALVAR ENTRADA — GOOGLE SHEETS
-// ============================================================
 async function salvarEntrada(e) {
     e.preventDefault();
     const entradaData = {
@@ -1394,9 +1278,7 @@ async function salvarEntrada(e) {
         obs:       document.getElementById('e-obs').value,
         criadoEm:  new Date().toISOString()
     };
-
     setBtnLoading('btnSalvarEntrada', true, 'Registrar');
-
     try {
         const result = await apiSave('entradas', entradaData);
         DB.entradas.unshift({ ...entradaData, id: result.id });
@@ -1419,14 +1301,10 @@ async function salvarEntrada(e) {
     }
 }
 
-// ============================================================
-// EXCLUIR ENTRADA — GOOGLE SHEETS
-// ============================================================
 async function excluirEntrada(id) {
     if (!confirm('Excluir esta entrada?')) return;
     const idx = DB.entradas.findIndex(e => String(e.id) === String(id));
     if (idx === -1) return;
-
     setSyncStatus('syncing');
     try {
         await apiDelete('entradas', id);
@@ -1520,11 +1398,8 @@ document.addEventListener('DOMContentLoaded', () => {
     adicionarDizimista();
     adicionarOferta();
     calcularDistribuicoes();
-
-    // Carrega dados do Google Sheets
     inicializarSistema();
-
-    console.log('✅ IEQ Financeiro v3.0 — Google Sheets integrado');
+    console.log('✅ IEQ Financeiro v3.1 — Corrigido');
 });
 </script>
 </body>
