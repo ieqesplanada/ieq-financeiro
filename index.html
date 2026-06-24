@@ -23,16 +23,9 @@
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 16px; }
         .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
         .progress-bar { transition: width 0.5s ease; }
-
-        /* SIDEBAR RESPONSIVA */
         .sidebar {
-            position: fixed;
-            left: -280px;
-            top: 0;
-            z-index: 999;
-            width: 260px;
-            height: 100vh;
-            overflow-y: auto;
+            position: fixed; left: -280px; top: 0; z-index: 999;
+            width: 260px; height: 100vh; overflow-y: auto;
         }
         .sidebar.open { left: 0; }
         @media (min-width: 1024px) {
@@ -41,20 +34,9 @@
             #menuToggle { display: none; }
             #sidebarOverlay { display: none !important; }
         }
-        @media (max-width: 1023px) {
-            #mainContent { margin-left: 0 !important; }
-        }
-
-        /* OVERLAY DO MENU MOBILE */
-        #sidebarOverlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 998;
-        }
+        @media (max-width: 1023px) { #mainContent { margin-left: 0 !important; } }
+        #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 998; }
         #sidebarOverlay.active { display: block; }
-
         .input-field { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; width: 100%; transition: border-color 0.2s; outline: none; }
         .input-field:focus { border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
         .btn-primary { background: #1e3a5f; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; }
@@ -70,32 +52,15 @@
         .notif-success { background: #10b981; }
         .notif-error { background: #ef4444; }
         .notif-info { background: #3b82f6; }
-
-        /* LINHAS DE ITENS RESPONSIVAS */
-        .item-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; margin-bottom: 8px; }
-        .item-row-oferta { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; align-items: center; margin-bottom: 8px; }
-
-        /* DIZIMISTAS/OFERTAS MOBILE */
+        .notif-warning { background: #f59e0b; }
         .dizimista-row, .oferta-row {
-            display: grid;
-            grid-template-columns: 1fr 100px 100px 32px;
-            gap: 6px;
-            align-items: center;
-            margin-bottom: 8px;
+            display: grid; grid-template-columns: 1fr 100px 100px 32px;
+            gap: 6px; align-items: center; margin-bottom: 8px;
         }
         @media (max-width: 640px) {
-            .dizimista-row, .oferta-row {
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: auto auto;
-            }
-            .dizimista-row .btn-remove,
-            .oferta-row .btn-remove {
-                grid-column: 2;
-                grid-row: 2;
-                justify-self: end;
-            }
+            .dizimista-row, .oferta-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+            .dizimista-row .btn-remove, .oferta-row .btn-remove { grid-column: 2; grid-row: 2; justify-self: end; }
         }
-
         .btn-remove { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; font-size: 14px; transition: background 0.2s; flex-shrink: 0; }
         .btn-remove:hover { background: #fecaca; }
         .btn-add-row { background: #eff6ff; color: #1d4ed8; border: 1px dashed #93c5fd; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 4px; transition: background 0.2s; }
@@ -103,21 +68,24 @@
         .forma-pag { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 13px; background: white; cursor: pointer; outline: none; width: 100%; }
         .input-auto { background: #f0fdf4; font-weight: 600; cursor: default; }
         .input-auto-pix { background: #eff6ff; font-weight: 600; cursor: default; }
+        @media (max-width: 640px) { .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } .table-scroll table { min-width: 500px; } }
+        @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; left: 0; top: 0; width: 100%; } }
 
-        /* TABELAS MOBILE */
-        @media (max-width: 640px) {
-            .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .table-scroll table { min-width: 500px; }
-        }
-
-        @media print {
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
-        }
+        /* Loading overlay */
+        #loadingOverlay { position: fixed; inset: 0; background: rgba(30,58,95,0.85); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #loadingOverlay.hidden { display: none; }
+        .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #c8a951; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen">
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+    <p class="text-lg font-bold">Carregando dados...</p>
+    <p class="text-sm text-blue-200 mt-1">Sincronizando com Google Sheets</p>
+</div>
 
 <!-- OVERLAY SIDEBAR MOBILE -->
 <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -133,7 +101,6 @@
                 <h1 class="text-white font-bold text-sm leading-tight">IEQ Esplanada</h1>
                 <p class="text-blue-300 text-xs">Sistema Financeiro</p>
             </div>
-            <!-- Botão fechar sidebar no mobile -->
             <button onclick="toggleSidebar()" class="ml-auto text-blue-300 hover:text-white lg:hidden">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -161,11 +128,9 @@
 
 <!-- ===== MAIN CONTENT ===== -->
 <main class="min-h-screen flex flex-col" id="mainContent">
-    <!-- HEADER -->
     <header class="bg-white shadow-sm sticky top-0 z-40 px-4 py-3">
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <!-- Hamburguer sempre visível em mobile -->
                 <button id="menuToggle" onclick="toggleSidebar()" class="text-gray-500 hover:text-gray-700 p-1">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
@@ -179,6 +144,9 @@
                     <div class="w-2 h-2 bg-green-400 rounded-full sync-pulse"></div>
                     <span class="text-gray-600 text-xs">Sincronizado</span>
                 </div>
+                <button onclick="sincronizarTudo()" title="Sincronizar com Google Sheets" class="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition text-sm">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
                 <select class="input-field text-xs sm:text-sm" style="width:auto;min-width:120px;max-width:160px" id="globalMonthSelector" onchange="changeGlobalMonth()">
                     <option value="1-2026">Jan 2026</option>
                     <option value="2-2026">Fev 2026</option>
@@ -190,12 +158,10 @@
         </div>
     </header>
 
-    <!-- CONTEÚDO -->
     <div class="p-3 sm:p-6 flex-1">
 
         <!-- ==================== DASHBOARD ==================== -->
         <div class="page active" id="page-dashboard">
-            <!-- KPIs -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <div class="card p-4">
                     <div class="flex items-center justify-between mb-2">
@@ -231,7 +197,6 @@
                 </div>
             </div>
 
-            <!-- GRÁFICOS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <div class="card p-4">
                     <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-line text-blue-600"></i> Evolução Financeira 2026</h3>
@@ -243,66 +208,23 @@
                 </div>
             </div>
 
-            <!-- DISTRIBUIÇÕES + MÉTRICAS -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                 <div class="card p-4 lg:col-span-2">
                     <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-share-alt text-purple-600"></i> Distribuições do Mês</h3>
                     <div class="space-y-3">
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm text-gray-600 flex-shrink-0">Taxa Regional (4%)</span>
-                            <div class="flex items-center gap-2 flex-1 justify-end">
-                                <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-blue-500 h-2 rounded-full" style="width:23.7%"></div></div>
-                                <span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 139,33</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm text-gray-600 flex-shrink-0">CND (4%)</span>
-                            <div class="flex items-center gap-2 flex-1 justify-end">
-                                <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-purple-500 h-2 rounded-full" style="width:23.7%"></div></div>
-                                <span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 139,33</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm text-gray-600 flex-shrink-0">CED (4%)</span>
-                            <div class="flex items-center gap-2 flex-1 justify-end">
-                                <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-pink-500 h-2 rounded-full" style="width:23.7%"></div></div>
-                                <span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 139,33</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm text-gray-600 flex-shrink-0">Fundo Social (1%)</span>
-                            <div class="flex items-center gap-2 flex-1 justify-end">
-                                <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-green-500 h-2 rounded-full" style="width:5.9%"></div></div>
-                                <span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 34,83</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm text-gray-600 flex-shrink-0">FIRE (3%)</span>
-                            <div class="flex items-center gap-2 flex-1 justify-end">
-                                <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-orange-500 h-2 rounded-full" style="width:17.8%"></div></div>
-                                <span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 104,49</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm text-gray-600 flex-shrink-0">Missões</span>
-                            <div class="flex items-center gap-2 flex-1 justify-end">
-                                <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-teal-500 h-2 rounded-full" style="width:5.1%"></div></div>
-                                <span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 30,00</span>
-                            </div>
-                        </div>
-                        <div class="border-t pt-2 flex justify-between">
-                            <span class="font-bold text-gray-700">Total Distribuído</span>
-                            <span class="font-bold text-gray-800">R$ 587,31</span>
-                        </div>
+                        <div class="flex items-center justify-between gap-2"><span class="text-sm text-gray-600 flex-shrink-0">Taxa Regional (4%)</span><div class="flex items-center gap-2 flex-1 justify-end"><div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-blue-500 h-2 rounded-full" style="width:23.7%"></div></div><span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 139,33</span></div></div>
+                        <div class="flex items-center justify-between gap-2"><span class="text-sm text-gray-600 flex-shrink-0">CND (4%)</span><div class="flex items-center gap-2 flex-1 justify-end"><div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-purple-500 h-2 rounded-full" style="width:23.7%"></div></div><span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 139,33</span></div></div>
+                        <div class="flex items-center justify-between gap-2"><span class="text-sm text-gray-600 flex-shrink-0">CED (4%)</span><div class="flex items-center gap-2 flex-1 justify-end"><div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-pink-500 h-2 rounded-full" style="width:23.7%"></div></div><span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 139,33</span></div></div>
+                        <div class="flex items-center justify-between gap-2"><span class="text-sm text-gray-600 flex-shrink-0">Fundo Social (1%)</span><div class="flex items-center gap-2 flex-1 justify-end"><div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-green-500 h-2 rounded-full" style="width:5.9%"></div></div><span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 34,83</span></div></div>
+                        <div class="flex items-center justify-between gap-2"><span class="text-sm text-gray-600 flex-shrink-0">FIRE (3%)</span><div class="flex items-center gap-2 flex-1 justify-end"><div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-orange-500 h-2 rounded-full" style="width:17.8%"></div></div><span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 104,49</span></div></div>
+                        <div class="flex items-center justify-between gap-2"><span class="text-sm text-gray-600 flex-shrink-0">Missões</span><div class="flex items-center gap-2 flex-1 justify-end"><div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2 flex-shrink-0"><div class="bg-teal-500 h-2 rounded-full" style="width:5.1%"></div></div><span class="text-sm font-semibold text-gray-800 w-20 text-right flex-shrink-0">R$ 30,00</span></div></div>
+                        <div class="border-t pt-2 flex justify-between"><span class="font-bold text-gray-700">Total Distribuído</span><span class="font-bold text-gray-800">R$ 587,31</span></div>
                     </div>
                 </div>
                 <div class="card p-4">
                     <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-users text-teal-600"></i> Métricas de Culto</h3>
                     <div class="space-y-3">
-                        <div class="text-center p-3 bg-blue-50 rounded-xl">
-                            <p class="text-3xl font-bold text-blue-600" id="kpi-presentes">60</p>
-                            <p class="text-sm text-gray-600 mt-1">Presentes na Ceia</p>
-                        </div>
+                        <div class="text-center p-3 bg-blue-50 rounded-xl"><p class="text-3xl font-bold text-blue-600" id="kpi-presentes">60</p><p class="text-sm text-gray-600 mt-1">Presentes na Ceia</p></div>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="text-center p-2 bg-green-50 rounded-lg"><p class="text-xl font-bold text-green-600" id="kpi-cultos">0</p><p class="text-xs text-gray-600">Cultos Reg.</p></div>
                             <div class="text-center p-2 bg-yellow-50 rounded-lg"><p class="text-xl font-bold text-yellow-600">R$ 58</p><p class="text-xs text-gray-600">Média/Pessoa</p></div>
@@ -311,7 +233,6 @@
                 </div>
             </div>
 
-            <!-- ÚLTIMAS MOVIMENTAÇÕES -->
             <div class="card p-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-gray-800 flex items-center gap-2 text-sm"><i class="fas fa-list text-gray-600"></i> Últimas Movimentações</h3>
@@ -319,12 +240,7 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full" style="min-width:400px">
-                        <thead><tr class="text-left text-xs text-gray-500 border-b">
-                            <th class="pb-2 font-semibold">Descrição</th>
-                            <th class="pb-2 font-semibold">Categoria</th>
-                            <th class="pb-2 font-semibold hidden sm:table-cell">Tipo</th>
-                            <th class="pb-2 font-semibold text-right">Valor</th>
-                        </tr></thead>
+                        <thead><tr class="text-left text-xs text-gray-500 border-b"><th class="pb-2 font-semibold">Descrição</th><th class="pb-2 font-semibold">Categoria</th><th class="pb-2 font-semibold hidden sm:table-cell">Tipo</th><th class="pb-2 font-semibold text-right">Valor</th></tr></thead>
                         <tbody id="tabelaMovimentacoes"></tbody>
                     </table>
                 </div>
@@ -335,62 +251,27 @@
         <div class="page" id="page-culto">
             <div class="card p-4 mb-4">
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="flex items-center gap-2 flex-1">
-                        <i class="fas fa-search text-gray-400"></i>
-                        <input type="text" id="buscaCulto" placeholder="Buscar culto..." class="input-field text-sm" oninput="renderCultos()">
-                    </div>
+                    <div class="flex items-center gap-2 flex-1"><i class="fas fa-search text-gray-400"></i><input type="text" id="buscaCulto" placeholder="Buscar culto..." class="input-field text-sm" oninput="renderCultos()"></div>
                     <div class="flex gap-2">
                         <input type="month" id="filtroCultoMes" class="input-field text-sm flex-1" value="2026-05" onchange="renderCultos()">
-                        <button class="btn-primary flex items-center gap-2 text-sm whitespace-nowrap" onclick="openModal('modalNovoCulto')">
-                            <i class="fas fa-plus"></i> <span class="hidden sm:inline">Novo Culto</span><span class="sm:hidden">Novo</span>
-                        </button>
+                        <button class="btn-primary flex items-center gap-2 text-sm whitespace-nowrap" onclick="openModal('modalNovoCulto')"><i class="fas fa-plus"></i> <span class="hidden sm:inline">Novo Culto</span><span class="sm:hidden">Novo</span></button>
                     </div>
                 </div>
             </div>
-
             <div class="card p-4 mb-4">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-gray-800 text-sm">Cultos Registrados</h3>
-                    <span class="text-sm text-gray-500" id="qtdCultosLabel">0 cultos</span>
-                </div>
+                <div class="flex items-center justify-between mb-4"><h3 class="font-bold text-gray-800 text-sm">Cultos Registrados</h3><span class="text-sm text-gray-500" id="qtdCultosLabel">0 cultos</span></div>
                 <div class="overflow-x-auto">
                     <table class="w-full" style="min-width:600px">
-                        <thead>
-                            <tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-                                <th class="p-2 font-semibold">Data</th>
-                                <th class="p-2 font-semibold">Tipo</th>
-                                <th class="p-2 font-semibold hidden md:table-cell">Pregador</th>
-                                <th class="p-2 font-semibold text-center">Pres.</th>
-                                <th class="p-2 font-semibold">Dízimos</th>
-                                <th class="p-2 font-semibold">Ofertas</th>
-                                <th class="p-2 font-semibold">Total</th>
-                                <th class="p-2 font-semibold">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaCultos">
-                            <tr><td colspan="8" class="py-8 text-center text-gray-400"><i class="fas fa-bible text-4xl mb-3 block text-gray-300"></i>Nenhum culto registrado ainda</td></tr>
-                        </tbody>
+                        <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50"><th class="p-2 font-semibold">Data</th><th class="p-2 font-semibold">Tipo</th><th class="p-2 font-semibold hidden md:table-cell">Pregador</th><th class="p-2 font-semibold text-center">Pres.</th><th class="p-2 font-semibold">Dízimos</th><th class="p-2 font-semibold">Ofertas</th><th class="p-2 font-semibold">Total</th><th class="p-2 font-semibold">Ações</th></tr></thead>
+                        <tbody id="tabelaCultos"><tr><td colspan="8" class="py-8 text-center text-gray-400"><i class="fas fa-bible text-4xl mb-3 block text-gray-300"></i>Nenhum culto registrado ainda</td></tr></tbody>
                     </table>
                 </div>
             </div>
-
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="card p-4 text-center border-t-4 border-blue-500">
-                    <p class="text-xl font-bold text-blue-600" id="tot-dizimos">R$ 0,00</p>
-                    <p class="text-xs text-gray-500 mt-1">Total Dízimos</p>
-                </div>
-                <div class="card p-4 text-center border-t-4 border-green-500">
-                    <p class="text-xl font-bold text-green-600" id="tot-ofertas">R$ 0,00</p>
-                    <p class="text-xs text-gray-500 mt-1">Total Ofertas</p>
-                </div>
-                <div class="card p-4 text-center border-t-4 border-yellow-500">
-                    <p class="text-xl font-bold text-yellow-600" id="tot-missoes">R$ 0,00</p>
-                    <p class="text-xs text-gray-500 mt-1">Missões</p>
-                </div>
-                <div class="card p-4 text-center border-t-4 border-purple-500">
-                    <p class="text-xl font-bold text-purple-600" id="tot-cultos-total">R$ 0,00</p>
-                    <p class="text-xs text-gray-500 mt-1">Total Geral</p>
-                </div>
+                <div class="card p-4 text-center border-t-4 border-blue-500"><p class="text-xl font-bold text-blue-600" id="tot-dizimos">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Dízimos</p></div>
+                <div class="card p-4 text-center border-t-4 border-green-500"><p class="text-xl font-bold text-green-600" id="tot-ofertas">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Ofertas</p></div>
+                <div class="card p-4 text-center border-t-4 border-yellow-500"><p class="text-xl font-bold text-yellow-600" id="tot-missoes">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Missões</p></div>
+                <div class="card p-4 text-center border-t-4 border-purple-500"><p class="text-xl font-bold text-purple-600" id="tot-cultos-total">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Geral</p></div>
             </div>
         </div>
 
@@ -398,9 +279,7 @@
         <div class="page" id="page-entradas">
             <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <p class="text-gray-500 text-sm">Entradas alimentadas automaticamente pelos relatórios de culto</p>
-                <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onclick="openModal('modalNovaEntrada')">
-                    <i class="fas fa-plus"></i> Entrada Manual
-                </button>
+                <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onclick="openModal('modalNovaEntrada')"><i class="fas fa-plus"></i> Entrada Manual</button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                 <div class="card p-4 border-l-4 border-green-500"><p class="text-xs text-gray-500">Entradas do Mês</p><p class="text-xl font-bold text-green-600">R$ 3.483,14</p></div>
@@ -408,19 +287,10 @@
                 <div class="card p-4 border-l-4 border-purple-500"><p class="text-xs text-gray-500">Total Disponível</p><p class="text-xl font-bold text-purple-600">R$ 4.582,95</p></div>
             </div>
             <div class="card p-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                    <h3 class="font-bold text-gray-800 text-sm">Registro de Entradas</h3>
-                    <input type="text" placeholder="Buscar..." class="input-field text-sm sm:w-40">
-                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2"><h3 class="font-bold text-gray-800 text-sm">Registro de Entradas</h3><input type="text" placeholder="Buscar..." class="input-field text-sm sm:w-40"></div>
                 <div class="overflow-x-auto">
                     <table class="w-full" style="min-width:450px">
-                        <thead><tr class="text-left text-xs text-gray-500 border-b">
-                            <th class="pb-2 font-semibold">Data</th>
-                            <th class="pb-2 font-semibold">Descrição</th>
-                            <th class="pb-2 font-semibold hidden sm:table-cell">Origem</th>
-                            <th class="pb-2 font-semibold text-right">Valor</th>
-                            <th class="pb-2 font-semibold">Ações</th>
-                        </tr></thead>
+                        <thead><tr class="text-left text-xs text-gray-500 border-b"><th class="pb-2 font-semibold">Data</th><th class="pb-2 font-semibold">Descrição</th><th class="pb-2 font-semibold hidden sm:table-cell">Origem</th><th class="pb-2 font-semibold text-right">Valor</th><th class="pb-2 font-semibold">Ações</th></tr></thead>
                         <tbody id="tabelaEntradas"><tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Registre cultos para ver as entradas automaticamente</td></tr></tbody>
                     </table>
                 </div>
@@ -431,9 +301,7 @@
         <div class="page" id="page-despesas">
             <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <p class="text-gray-500 text-sm">Gerencie todas as saídas financeiras do mês</p>
-                <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onclick="openModal('modalNovaDespesa')">
-                    <i class="fas fa-plus"></i> Nova Despesa
-                </button>
+                <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onclick="openModal('modalNovaDespesa')"><i class="fas fa-plus"></i> Nova Despesa</button>
             </div>
             <div class="card p-4 mb-4">
                 <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
@@ -445,26 +313,16 @@
                     </select>
                     <div class="flex gap-2">
                         <button class="btn-secondary text-sm flex-1 sm:flex-none" onclick="filtrarDespesas()">Filtrar</button>
-                        <span class="text-sm text-gray-500 flex items-center ml-auto sm:ml-2">Total: <strong class="ml-1" id="totalDespesasFiltro">R$ 3.335,42</strong></span>
+                        <span class="text-sm text-gray-500 flex items-center ml-auto sm:ml-2">Total: <strong class="ml-1" id="totalDespesasFiltro">R$ 0,00</strong></span>
                     </div>
                 </div>
             </div>
             <div class="card p-4">
                 <div class="overflow-x-auto">
                     <table class="w-full" style="min-width:450px">
-                        <thead><tr class="text-left text-xs text-gray-500 border-b">
-                            <th class="pb-2 font-semibold">Categoria</th>
-                            <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
-                            <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
-                            <th class="pb-2 font-semibold text-right">Valor</th>
-                            <th class="pb-2 font-semibold">Ações</th>
-                        </tr></thead>
+                        <thead><tr class="text-left text-xs text-gray-500 border-b"><th class="pb-2 font-semibold">Categoria</th><th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th><th class="pb-2 font-semibold hidden md:table-cell">Data</th><th class="pb-2 font-semibold text-right">Valor</th><th class="pb-2 font-semibold">Ações</th></tr></thead>
                         <tbody id="tabelaDespesas"></tbody>
-                        <tfoot><tr class="border-t-2">
-                            <td colspan="3" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
-                            <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 3.335,42</td>
-                            <td></td>
-                        </tr></tfoot>
+                        <tfoot><tr class="border-t-2"><td colspan="3" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td><td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td><td></td></tr></tfoot>
                     </table>
                 </div>
             </div>
@@ -483,10 +341,7 @@
                     <div class="border rounded-xl p-3"><div class="flex justify-between items-center mb-2"><span class="font-semibold text-gray-700 text-sm">FIRE</span><span class="badge-yellow px-2 py-0.5 rounded-full text-xs font-bold">3%</span></div><p class="text-xl font-bold text-orange-600">R$ 104,49</p><p class="text-xs text-gray-500 mt-1">Fundo de Reserva</p></div>
                     <div class="border rounded-xl p-3"><div class="flex justify-between items-center mb-2"><span class="font-semibold text-gray-700 text-sm">Missões</span><span class="badge-blue px-2 py-0.5 rounded-full text-xs font-bold">3° Dom.</span></div><p class="text-xl font-bold text-teal-600">R$ 30,00</p><p class="text-xs text-gray-500 mt-1">Est: R$ 15 | Nac: R$ 15</p></div>
                 </div>
-                <div class="mt-4 p-3 bg-gray-50 rounded-xl flex justify-between items-center">
-                    <span class="font-bold text-gray-700">TOTAL DISTRIBUÍDO</span>
-                    <span class="font-bold text-gray-800 text-xl">R$ 587,31</span>
-                </div>
+                <div class="mt-4 p-3 bg-gray-50 rounded-xl flex justify-between items-center"><span class="font-bold text-gray-700">TOTAL DISTRIBUÍDO</span><span class="font-bold text-gray-800 text-xl">R$ 587,31</span></div>
             </div>
             <div class="card p-4">
                 <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-calculator text-green-600"></i> Calculadora de Distribuição</h3>
@@ -510,10 +365,7 @@
                 <div class="card p-4">
                     <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
                     <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <input type="month" class="input-field text-sm" value="2026-05">
-                        <input type="month" class="input-field text-sm" value="2026-05">
-                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-3"><input type="month" class="input-field text-sm" value="2026-05"><input type="month" class="input-field text-sm" value="2026-05"></div>
                     <button class="btn-secondary w-full text-sm"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
                 </div>
                 <div class="card p-4 md:col-span-2">
@@ -529,15 +381,7 @@
                 <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full" style="min-width:600px">
-                        <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-                            <th class="p-2 font-semibold">Mês</th>
-                            <th class="p-2 font-semibold">Saldo Ant.</th>
-                            <th class="p-2 font-semibold">Entradas</th>
-                            <th class="p-2 font-semibold">Saídas</th>
-                            <th class="p-2 font-semibold">Saldo Final</th>
-                            <th class="p-2 font-semibold">Ceia</th>
-                            <th class="p-2 font-semibold">Status</th>
-                        </tr></thead>
+                        <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50"><th class="p-2 font-semibold">Mês</th><th class="p-2 font-semibold">Saldo Ant.</th><th class="p-2 font-semibold">Entradas</th><th class="p-2 font-semibold">Saídas</th><th class="p-2 font-semibold">Saldo Final</th><th class="p-2 font-semibold">Ceia</th><th class="p-2 font-semibold">Status</th></tr></thead>
                         <tbody id="tabelaHistorico"></tbody>
                     </table>
                 </div>
@@ -554,136 +398,70 @@
 <div class="modal-overlay" id="modalNovoCulto">
     <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
         <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
-            <h3 class="text-white font-bold text-base flex items-center gap-2">
-                <i class="fas fa-bible"></i> Novo Relatório de Culto (REFC)
-            </h3>
+            <h3 class="text-white font-bold text-base flex items-center gap-2"><i class="fas fa-bible"></i> Novo Relatório de Culto (REFC)</h3>
             <button onclick="closeModal('modalNovoCulto')" class="text-white hover:text-blue-200"><i class="fas fa-times text-xl"></i></button>
         </div>
         <div class="p-4 overflow-y-auto flex-1">
             <form id="formCulto" onsubmit="salvarCulto(event)">
-                <!-- INFO BÁSICA -->
                 <div class="bg-gray-50 rounded-xl p-3 mb-3">
-                    <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2">
-                        <i class="fas fa-info-circle text-blue-500"></i> Informações do Culto
-                    </h4>
+                    <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-info-circle text-blue-500"></i> Informações do Culto</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="text-xs text-gray-600 mb-1 block">Data*</label><input type="date" id="c-data" class="input-field text-sm" required></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Horário</label><input type="time" id="c-horario" class="input-field text-sm" value="19:30"></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Pastor</label><input type="text" id="c-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão"></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Pregador</label><input type="text" id="c-pregador" class="input-field text-sm"></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Tipo de Culto</label>
-                            <select id="c-tipo" class="input-field text-sm">
-                                <option>Culto Regular</option>
-                                <option>Culto de Santa Ceia</option>
-                                <option>3° Domingo (Missões)</option>
-                                <option>Culto Especial</option>
-                            </select>
+                            <select id="c-tipo" class="input-field text-sm"><option>Culto Regular</option><option>Culto de Santa Ceia</option><option>3° Domingo (Missões)</option><option>Culto Especial</option></select>
                         </div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Testemunhos de Cura</label><input type="number" id="c-cura" class="input-field text-sm" value="0" min="0"></div>
                     </div>
                 </div>
-
-                <!-- FREQUÊNCIA -->
                 <div class="bg-gray-50 rounded-xl p-3 mb-3">
-                    <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2">
-                        <i class="fas fa-users text-teal-500"></i> Frequência
-                    </h4>
+                    <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-users text-teal-500"></i> Frequência</h4>
                     <div class="grid grid-cols-3 gap-3">
                         <div><label class="text-xs text-gray-600 mb-1 block">Presentes</label><input type="number" id="c-presentes" class="input-field text-sm" value="0" min="0"></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Visitantes</label><input type="number" id="c-visitantes" class="input-field text-sm" value="0" min="0"></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Crianças</label><input type="number" id="c-criancas" class="input-field text-sm" value="0" min="0"></div>
                     </div>
                 </div>
-
-                <!-- DÍZIMOS -->
                 <div class="bg-green-50 rounded-xl p-3 mb-3 border border-green-200">
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wide flex items-center gap-2">
-                            <i class="fas fa-hand-holding-usd text-green-600"></i> Dízimos
-                        </h4>
-                        <span class="text-green-700 font-bold text-xs bg-green-100 px-2 py-1 rounded-full">
-                            Total: <span id="totalDizimosLabel">R$ 0,00</span>
-                        </span>
+                        <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-hand-holding-usd text-green-600"></i> Dízimos</h4>
+                        <span class="text-green-700 font-bold text-xs bg-green-100 px-2 py-1 rounded-full">Total: <span id="totalDizimosLabel">R$ 0,00</span></span>
                     </div>
-                    <div class="hidden sm:grid sm:grid-cols-[1fr_100px_100px_32px] gap-2 mb-1 px-1">
-                        <span class="text-xs font-semibold text-gray-500">Nome</span>
-                        <span class="text-xs font-semibold text-gray-500">Valor (R$)</span>
-                        <span class="text-xs font-semibold text-gray-500">Forma</span>
-                        <span></span>
-                    </div>
+                    <div class="hidden sm:grid sm:grid-cols-[1fr_100px_100px_32px] gap-2 mb-1 px-1"><span class="text-xs font-semibold text-gray-500">Nome</span><span class="text-xs font-semibold text-gray-500">Valor (R$)</span><span class="text-xs font-semibold text-gray-500">Forma</span><span></span></div>
                     <div id="listaDizimistas"></div>
-                    <button type="button" class="btn-add-row mt-2" onclick="adicionarDizimista()">
-                        <i class="fas fa-plus mr-1"></i> Adicionar Dizimista
-                    </button>
+                    <button type="button" class="btn-add-row mt-2" onclick="adicionarDizimista()"><i class="fas fa-plus mr-1"></i> Adicionar Dizimista</button>
                 </div>
-
-                <!-- OFERTAS -->
                 <div class="bg-blue-50 rounded-xl p-3 mb-3 border border-blue-200">
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wide flex items-center gap-2">
-                            <i class="fas fa-donate text-blue-600"></i> Ofertas Gerais
-                        </h4>
-                        <span class="text-blue-700 font-bold text-xs bg-blue-100 px-2 py-1 rounded-full">
-                            Total: <span id="totalOfertasLabel">R$ 0,00</span>
-                        </span>
+                        <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-donate text-blue-600"></i> Ofertas Gerais</h4>
+                        <span class="text-blue-700 font-bold text-xs bg-blue-100 px-2 py-1 rounded-full">Total: <span id="totalOfertasLabel">R$ 0,00</span></span>
                     </div>
-                    <div class="hidden sm:grid sm:grid-cols-[1fr_100px_100px_32px] gap-2 mb-1 px-1">
-                        <span class="text-xs font-semibold text-gray-500">Nome</span>
-                        <span class="text-xs font-semibold text-gray-500">Valor (R$)</span>
-                        <span class="text-xs font-semibold text-gray-500">Forma</span>
-                        <span></span>
-                    </div>
+                    <div class="hidden sm:grid sm:grid-cols-[1fr_100px_100px_32px] gap-2 mb-1 px-1"><span class="text-xs font-semibold text-gray-500">Nome</span><span class="text-xs font-semibold text-gray-500">Valor (R$)</span><span class="text-xs font-semibold text-gray-500">Forma</span><span></span></div>
                     <div id="listaOfertas"></div>
-                    <button type="button" class="btn-add-row mt-2" onclick="adicionarOferta()">
-                        <i class="fas fa-plus mr-1"></i> Adicionar Oferta
-                    </button>
+                    <button type="button" class="btn-add-row mt-2" onclick="adicionarOferta()"><i class="fas fa-plus mr-1"></i> Adicionar Oferta</button>
                 </div>
-
-                <!-- OUTRAS ENTRADAS -->
                 <div class="bg-yellow-50 rounded-xl p-3 mb-3 border border-yellow-200">
-                    <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2">
-                        <i class="fas fa-coins text-yellow-600"></i> Outras Arrecadações
-                    </h4>
+                    <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-coins text-yellow-600"></i> Outras Arrecadações</h4>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="text-xs text-gray-600 mb-1 block">Ofertas Missões (R$)</label><input type="number" id="c-missoes" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Ofertas Especiais (R$)</label><input type="number" id="c-especiais" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
                         <div><label class="text-xs text-gray-600 mb-1 block">Outras Entradas (R$)</label><input type="number" id="c-outras" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
-                        <div class="bg-green-100 rounded-xl p-3 flex flex-col justify-center border border-green-300">
-                            <label class="text-xs font-bold text-green-700 mb-1">💰 TOTAL</label>
-                            <p class="text-lg font-bold text-green-700" id="totalArrecadado">R$ 0,00</p>
-                        </div>
+                        <div class="bg-green-100 rounded-xl p-3 flex flex-col justify-center border border-green-300"><label class="text-xs font-bold text-green-700 mb-1">💰 TOTAL</label><p class="text-lg font-bold text-green-700" id="totalArrecadado">R$ 0,00</p></div>
                     </div>
                 </div>
-
-                <!-- DESTINO -->
                 <div class="bg-purple-50 rounded-xl p-3 mb-4 border border-purple-200">
-                    <h4 class="font-semibold text-gray-700 mb-1 text-xs uppercase tracking-wide flex items-center gap-2">
-                        <i class="fas fa-exchange-alt text-purple-600"></i> Destino da Arrecadação
-                    </h4>
+                    <h4 class="font-semibold text-gray-700 mb-1 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-exchange-alt text-purple-600"></i> Destino da Arrecadação</h4>
                     <p class="text-xs text-gray-400 mb-3"><i class="fas fa-magic text-purple-300 mr-1"></i>Preenchido automaticamente</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs text-gray-600 mb-1 block">Caixa Local — Dinheiro</label>
-                            <div class="relative">
-                                <input type="number" id="c-caixa" class="input-field text-sm input-auto pr-16" value="0" readonly style="color:#065f46;border-color:#86efac;">
-                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-green-600 font-bold bg-green-100 px-1 py-0.5 rounded">AUTO</span>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-xs text-gray-600 mb-1 block">Conta Corrente — PIX</label>
-                            <div class="relative">
-                                <input type="number" id="c-conta" class="input-field text-sm input-auto-pix pr-16" value="0" readonly style="color:#1d4ed8;border-color:#93c5fd;">
-                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-600 font-bold bg-blue-100 px-1 py-0.5 rounded">AUTO</span>
-                            </div>
-                        </div>
+                        <div><label class="text-xs text-gray-600 mb-1 block">Caixa Local — Dinheiro</label><div class="relative"><input type="number" id="c-caixa" class="input-field text-sm input-auto pr-16" value="0" readonly style="color:#065f46;border-color:#86efac;"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-green-600 font-bold bg-green-100 px-1 py-0.5 rounded">AUTO</span></div></div>
+                        <div><label class="text-xs text-gray-600 mb-1 block">Conta Corrente — PIX</label><div class="relative"><input type="number" id="c-conta" class="input-field text-sm input-auto-pix pr-16" value="0" readonly style="color:#1d4ed8;border-color:#93c5fd;"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-600 font-bold bg-blue-100 px-1 py-0.5 rounded">AUTO</span></div></div>
                     </div>
                 </div>
-
                 <div class="flex gap-3">
                     <button type="button" onclick="closeModal('modalNovoCulto')" class="flex-1 py-3 border-2 rounded-xl text-gray-600 hover:bg-gray-50 font-semibold text-sm">Cancelar</button>
-                    <button type="submit" class="flex-1 btn-primary py-3 text-sm">
-                        <i class="fas fa-save mr-2"></i> Salvar
-                    </button>
+                    <button type="submit" class="flex-1 btn-primary py-3 text-sm" id="btnSalvarCulto"><i class="fas fa-save mr-2"></i> Salvar</button>
                 </div>
             </form>
         </div>
@@ -694,19 +472,13 @@
 <div class="modal-overlay" id="modalVerCulto">
     <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
         <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
-            <h3 class="text-white font-bold text-base flex items-center gap-2">
-                <i class="fas fa-file-alt"></i> Detalhes do REFC
-            </h3>
+            <h3 class="text-white font-bold text-base flex items-center gap-2"><i class="fas fa-file-alt"></i> Detalhes do REFC</h3>
             <div class="flex items-center gap-2">
-                <button onclick="imprimirCulto()" class="bg-white text-blue-800 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-50 flex items-center gap-1">
-                    <i class="fas fa-print"></i> Imprimir
-                </button>
+                <button onclick="imprimirCulto()" class="bg-white text-blue-800 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-50 flex items-center gap-1"><i class="fas fa-print"></i> Imprimir</button>
                 <button onclick="closeModal('modalVerCulto')" class="text-white hover:text-blue-200"><i class="fas fa-times text-xl"></i></button>
             </div>
         </div>
-        <div class="overflow-y-auto flex-1 p-4">
-            <div id="printArea"></div>
-        </div>
+        <div class="overflow-y-auto flex-1 p-4"><div id="printArea"></div></div>
     </div>
 </div>
 
@@ -736,7 +508,7 @@
                 </div>
                 <div class="flex gap-3 mt-4">
                     <button type="button" onclick="closeModal('modalNovaDespesa')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
-                    <button type="submit" class="flex-1 btn-primary bg-red-600 hover:bg-red-700 text-sm"><i class="fas fa-save mr-2"></i> Registrar</button>
+                    <button type="submit" class="flex-1 btn-primary bg-red-600 hover:bg-red-700 text-sm" id="btnSalvarDespesa"><i class="fas fa-save mr-2"></i> Registrar</button>
                 </div>
             </form>
         </div>
@@ -762,7 +534,7 @@
                 </div>
                 <div class="flex gap-3 mt-4">
                     <button type="button" onclick="closeModal('modalNovaEntrada')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
-                    <button type="submit" class="flex-1 btn-primary bg-green-600 hover:bg-green-700 text-sm"><i class="fas fa-save mr-2"></i> Registrar</button>
+                    <button type="submit" class="flex-1 btn-primary bg-green-600 hover:bg-green-700 text-sm" id="btnSalvarEntrada"><i class="fas fa-save mr-2"></i> Registrar</button>
                 </div>
             </form>
         </div>
@@ -771,59 +543,255 @@
 
 <script>
 // ============================================================
-// BANCO DE DADOS LOCAL
+// ✅ CONFIGURAÇÃO DA API — GOOGLE APPS SCRIPT
+// ============================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbywJQa3Wccjkczy-8cPdwGKndO5j4_gI2U22YwqBUUyCx0lMQC52Gwl9_N7U409Vb-F/exec';
+
+// ============================================================
+// FUNÇÕES DE COMUNICAÇÃO COM GOOGLE SHEETS
+// ============================================================
+
+/**
+ * Busca todos os registros de uma aba (sheet)
+ */
+async function apiGet(sheet) {
+    const url = `${API_URL}?action=getAll&sheet=${encodeURIComponent(sheet)}`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
+    return json.data || [];
+}
+
+/**
+ * Salva um registro em uma aba (sheet). Retorna o ID gerado.
+ */
+async function apiSave(sheet, data) {
+    const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'save', sheet, data })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
+    return json.data; // { id: ... }
+}
+
+/**
+ * Deleta um registro pelo ID em uma aba (sheet).
+ */
+async function apiDelete(sheet, id) {
+    const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error || 'Erro ao deletar');
+    return true;
+}
+
+// ============================================================
+// BANCO DE DADOS LOCAL (cache + fallback)
 // ============================================================
 const DB = {
     historico: [
-        { mes:1, ano:2026, nome:'Janeiro',   saldoAnt:0,       entradas:2641.82, saidas:2641.82, saldoFinal:0,       transferencia:122.40,   saldoConta:0,       ceia:56 },
-        { mes:2, ano:2026, nome:'Fevereiro', saldoAnt:122.40,  entradas:4022.91, saidas:2963.70, saldoFinal:1181.61, transferencia:1181.61,  saldoConta:0,       ceia:44 },
-        { mes:3, ano:2026, nome:'Março',     saldoAnt:1181.61, entradas:4172.40, saidas:4023.12, saldoFinal:1330.89, transferencia:1330.89,  saldoConta:2470.89, ceia:53 },
-        { mes:4, ano:2026, nome:'Abril',     saldoAnt:1330.89, entradas:4235.18, saidas:4253.26, saldoFinal:1312.81, transferencia:1099.81,  saldoConta:2412.81, ceia:60 },
-        { mes:5, ano:2026, nome:'Maio',      saldoAnt:1099.81, entradas:3483.14, saidas:3335.42, saldoFinal:1247.53, transferencia:1217.53,  saldoConta:1517.62, ceia:60 },
+        { mes:1, ano:2026, nome:'Janeiro',   saldoAnt:0,       entradas:2641.82, saidas:2641.82, saldoFinal:0,       ceia:56 },
+        { mes:2, ano:2026, nome:'Fevereiro', saldoAnt:122.40,  entradas:4022.91, saidas:2963.70, saldoFinal:1181.61, ceia:44 },
+        { mes:3, ano:2026, nome:'Março',     saldoAnt:1181.61, entradas:4172.40, saidas:4023.12, saldoFinal:1330.89, ceia:53 },
+        { mes:4, ano:2026, nome:'Abril',     saldoAnt:1330.89, entradas:4235.18, saidas:4253.26, saldoFinal:1312.81, ceia:60 },
+        { mes:5, ano:2026, nome:'Maio',      saldoAnt:1099.81, entradas:3483.14, saidas:3335.42, saldoFinal:1247.53, ceia:60 },
     ],
-    despesas: JSON.parse(localStorage.getItem('despesas') || 'null') || [
-        { id:1,  categoria:'ENERGIA',       descricao:'Conta de Energia',       valor:114.48,  data:'2026-05-10' },
-        { id:2,  categoria:'AGUA',          descricao:'Conta de Água',           valor:109.84,  data:'2026-05-10' },
-        { id:3,  categoria:'CED',           descricao:'Contribuição Estadual',   valor:184.41,  data:'2026-05-15' },
-        { id:4,  categoria:'CND',           descricao:'Contribuição Nacional',   valor:353.82,  data:'2026-05-15' },
-        { id:5,  categoria:'CONTADOR',      descricao:'Honorários Contador',     valor:150.00,  data:'2026-05-05' },
-        { id:6,  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',        valor:169.41,  data:'2026-05-15' },
-        { id:7,  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:40.00,   data:'2026-05-02' },
-        { id:8,  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-06' },
-        { id:9,  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:100.00,  data:'2026-05-09' },
-        { id:10, categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-12' },
-        { id:11, categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-16' },
-        { id:12, categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-20' },
-        { id:13, categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-23' },
-        { id:14, categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',     valor:1863.46, data:'2026-05-30' },
-    ],
-    cultos:   JSON.parse(localStorage.getItem('cultos')   || '[]'),
-    entradas: JSON.parse(localStorage.getItem('entradas') || '[]'),
-    save() {
-        localStorage.setItem('despesas', JSON.stringify(this.despesas));
-        localStorage.setItem('cultos',   JSON.stringify(this.cultos));
-        localStorage.setItem('entradas', JSON.stringify(this.entradas));
+    despesas: [],
+    cultos:   [],
+    entradas: [],
+
+    // Salva cache local como fallback
+    saveLocal() {
+        try {
+            localStorage.setItem('despesas_cache', JSON.stringify(this.despesas));
+            localStorage.setItem('cultos_cache',   JSON.stringify(this.cultos));
+            localStorage.setItem('entradas_cache', JSON.stringify(this.entradas));
+        } catch(e) { /* ignora erros de quota */ }
+    },
+    // Carrega cache local (fallback offline)
+    loadLocal() {
+        try {
+            this.despesas = JSON.parse(localStorage.getItem('despesas_cache') || '[]');
+            this.cultos   = JSON.parse(localStorage.getItem('cultos_cache')   || '[]');
+            this.entradas = JSON.parse(localStorage.getItem('entradas_cache') || '[]');
+        } catch(e) {
+            this.despesas = []; this.cultos = []; this.entradas = [];
+        }
     }
 };
+
+// Despesas padrão (dados históricos fixos de Maio/2026)
+const DESPESAS_PADRAO = [
+    { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',       valor:114.48,  data:'2026-05-10' },
+    { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',           valor:109.84,  data:'2026-05-10' },
+    { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual',   valor:184.41,  data:'2026-05-15' },
+    { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional',   valor:353.82,  data:'2026-05-15' },
+    { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',     valor:150.00,  data:'2026-05-05' },
+    { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',        valor:169.41,  data:'2026-05-15' },
+    { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:40.00,   data:'2026-05-02' },
+    { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-06' },
+    { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:100.00,  data:'2026-05-09' },
+    { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-12' },
+    { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-16' },
+    { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-20' },
+    { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',             valor:50.00,   data:'2026-05-23' },
+    { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',     valor:1863.46, data:'2026-05-30' },
+];
+
+// ============================================================
+// INICIALIZAÇÃO — CARREGA DO GOOGLE SHEETS
+// ============================================================
+async function inicializarSistema() {
+    mostrarLoading(true);
+    setSyncStatus('syncing');
+
+    // Carrega cache local como fallback imediato
+    DB.loadLocal();
+
+    // Se não há cache, usa despesas padrão
+    if (DB.despesas.length === 0) {
+        DB.despesas = [...DESPESAS_PADRAO];
+    }
+
+    try {
+        // Carrega dados do Google Sheets em paralelo
+        const [cultosSheets, despesasSheets, entradasSheets] = await Promise.allSettled([
+            apiGet('cultos'),
+            apiGet('despesas'),
+            apiGet('entradas')
+        ]);
+
+        // Atualiza apenas se a requisição foi bem-sucedida
+        if (cultosSheets.status === 'fulfilled' && cultosSheets.value.length > 0) {
+            DB.cultos = cultosSheets.value.map(normalizarCulto);
+        }
+        if (despesasSheets.status === 'fulfilled' && despesasSheets.value.length > 0) {
+            // Mescla despesas padrão com as do Sheets (evita duplicatas por ID)
+            const sheetsIds = new Set(despesasSheets.value.map(d => String(d.id)));
+            const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
+            DB.despesas = [...padraoFiltrado, ...despesasSheets.value.map(normalizarDespesa)];
+        } else if (despesasSheets.status === 'fulfilled') {
+            DB.despesas = [...DESPESAS_PADRAO];
+        }
+        if (entradasSheets.status === 'fulfilled') {
+            DB.entradas = entradasSheets.value.map(normalizarEntrada);
+        }
+
+        DB.saveLocal();
+        setSyncStatus('synced');
+        showNotification('✅ Dados sincronizados com Google Sheets', 'success');
+    } catch (err) {
+        console.warn('Aviso: usando dados locais. Erro:', err);
+        setSyncStatus('error');
+        showNotification('⚠️ Modo offline — usando dados locais', 'warning');
+    }
+
+    // Renderiza a tela inicial
+    renderDashboard();
+    mostrarLoading(false);
+}
+
+// ============================================================
+// NORMALIZAÇÃO DE DADOS VINDOS DO SHEETS
+// (o Sheets retorna tudo como string — precisamos converter)
+// ============================================================
+function normalizarCulto(c) {
+    return {
+        ...c,
+        totalDizimos:    parseFloat(c.totalDizimos)    || 0,
+        totalOfertas:    parseFloat(c.totalOfertas)    || 0,
+        totalArrecadado: parseFloat(c.totalArrecadado) || 0,
+        missoes:         parseFloat(c.missoes)         || 0,
+        especiais:       parseFloat(c.especiais)       || 0,
+        outras:          parseFloat(c.outras)          || 0,
+        presentes:       parseInt(c.presentes)         || 0,
+        visitantes:      parseInt(c.visitantes)        || 0,
+        criancas:        parseInt(c.criancas)          || 0,
+        caixaLocal:      parseFloat(c.caixaLocal)      || 0,
+        contaCorrente:   parseFloat(c.contaCorrente)   || 0,
+        dizimistas:      parseJsonSafe(c.dizimistas, []),
+        ofertas:         parseJsonSafe(c.ofertas, []),
+    };
+}
+function normalizarDespesa(d) {
+    return { ...d, valor: parseFloat(d.valor) || 0 };
+}
+function normalizarEntrada(e) {
+    return { ...e, valor: parseFloat(e.valor) || 0 };
+}
+function parseJsonSafe(val, fallback) {
+    if (Array.isArray(val)) return val;
+    try { return JSON.parse(val) || fallback; } catch { return fallback; }
+}
+
+// ============================================================
+// SINCRONIZAÇÃO MANUAL (botão de refresh)
+// ============================================================
+async function sincronizarTudo() {
+    setSyncStatus('syncing');
+    showNotification('🔄 Sincronizando...', 'info');
+    try {
+        const [cultosSheets, despesasSheets, entradasSheets] = await Promise.all([
+            apiGet('cultos'),
+            apiGet('despesas'),
+            apiGet('entradas')
+        ]);
+        if (cultosSheets.length > 0)   DB.cultos   = cultosSheets.map(normalizarCulto);
+        if (entradasSheets.length > 0) DB.entradas = entradasSheets.map(normalizarEntrada);
+
+        const sheetsIds = new Set(despesasSheets.map(d => String(d.id)));
+        const padraoFiltrado = DESPESAS_PADRAO.filter(d => !sheetsIds.has(String(d.id)));
+        DB.despesas = [...padraoFiltrado, ...despesasSheets.map(normalizarDespesa)];
+
+        DB.saveLocal();
+        setSyncStatus('synced');
+        showNotification('✅ Sincronizado com sucesso!', 'success');
+
+        // Re-renderiza a página atual
+        const paginaAtiva = document.querySelector('.page.active')?.id?.replace('page-','');
+        if (paginaAtiva) showPage(paginaAtiva, true);
+    } catch (err) {
+        setSyncStatus('error');
+        showNotification('❌ Erro ao sincronizar: ' + err.message, 'error');
+    }
+}
 
 // ============================================================
 // UTILITÁRIOS
 // ============================================================
-const fmt     = v  => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+const fmt     = v  => (parseFloat(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 const fmtDate = d  => d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : '-';
+
+function mostrarLoading(show) {
+    document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+}
 
 function showNotification(msg, type = 'success') {
     const n = document.createElement('div');
     n.className = `notification notif-${type}`;
-    n.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='error'?'times-circle':'info-circle'} mr-2"></i>${msg}`;
+    n.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='error'?'times-circle':type==='warning'?'exclamation-triangle':'info-circle'} mr-2"></i>${msg}`;
     document.body.appendChild(n);
-    setTimeout(() => n.remove(), 3500);
+    setTimeout(() => n.remove(), 4000);
 }
 function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 document.querySelectorAll('.modal-overlay').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
 });
+
+function setBtnLoading(btnId, loading, label='Salvar') {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.innerHTML = loading
+        ? '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...'
+        : `<i class="fas fa-save mr-2"></i>${label}`;
+}
 
 // ============================================================
 // NAVEGAÇÃO
@@ -838,14 +806,13 @@ const pageTitles = {
     historico:    ['Histórico',           'Dados históricos 2026'],
 };
 
-function showPage(page) {
+function showPage(page, force = false) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(`page-${page}`).classList.add('active');
     document.getElementById(`nav-${page}`).classList.add('active');
     document.getElementById('pageTitle').textContent    = pageTitles[page][0];
     document.getElementById('pageSubtitle').textContent = pageTitles[page][1];
-    // Fechar sidebar no mobile após navegar
     if (window.innerWidth < 1024) closeSidebar();
     if (page === 'dashboard')     renderDashboard();
     if (page === 'culto')         renderCultos();
@@ -857,16 +824,11 @@ function showPage(page) {
 }
 
 function toggleSidebar() {
-    const sidebar  = document.getElementById('sidebar');
-    const overlay  = document.getElementById('sidebarOverlay');
-    const isOpen   = sidebar.classList.contains('open');
-    if (isOpen) {
-        sidebar.classList.remove('open');
-        overlay.classList.remove('active');
-    } else {
-        sidebar.classList.add('open');
-        overlay.classList.add('active');
-    }
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const isOpen  = sidebar.classList.contains('open');
+    sidebar.classList.toggle('open', !isOpen);
+    overlay.classList.toggle('active', !isOpen);
 }
 function closeSidebar() {
     document.getElementById('sidebar').classList.remove('open');
@@ -874,9 +836,28 @@ function closeSidebar() {
 }
 
 // ============================================================
+// STATUS DE SINCRONIZAÇÃO
+// ============================================================
+function setSyncStatus(status) {
+    const el = document.getElementById('syncStatus');
+    const configs = {
+        syncing: { color: 'bg-yellow-400', text: 'Sincronizando...' },
+        synced:  { color: 'bg-green-400',  text: 'Sincronizado' },
+        error:   { color: 'bg-red-400',    text: 'Erro de conexão' },
+    };
+    const cfg = configs[status] || configs.synced;
+    el.innerHTML = `<div class="w-2 h-2 ${cfg.color} rounded-full sync-pulse"></div><span class="text-gray-600 text-xs">${cfg.text}</span>`;
+}
+
+// ============================================================
 // DASHBOARD
 // ============================================================
-function renderDashboard() { renderMovimentacoes(); renderChartEvolucao(); renderChartDespesas(); }
+function renderDashboard() {
+    renderMovimentacoes();
+    renderChartEvolucao();
+    renderChartDespesas();
+    document.getElementById('kpi-cultos').textContent = DB.cultos.length;
+}
 
 function renderMovimentacoes() {
     const tbody = document.getElementById('tabelaMovimentacoes');
@@ -896,7 +877,7 @@ function renderChartEvolucao() {
     if (chartEv) chartEv.destroy();
     chartEv = new Chart(ctx, {
         type:'line',
-        data:{ labels: DB.historico.map(h=>h.nome), datasets:[
+        data:{ labels:DB.historico.map(h=>h.nome), datasets:[
             { label:'Entradas', data:DB.historico.map(h=>h.entradas), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', tension:0.4, fill:true, borderWidth:2 },
             { label:'Saídas',   data:DB.historico.map(h=>h.saidas),   borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.1)',  tension:0.4, fill:true, borderWidth:2 },
             { label:'Saldo',    data:DB.historico.map(h=>h.saldoFinal),borderColor:'#f59e0b', borderDash:[5,5], tension:0.4, fill:false, borderWidth:2 }
@@ -917,7 +898,7 @@ function renderChartDespesas() {
 }
 
 // ============================================================
-// CULTOS — LINHAS
+// CULTOS — LINHAS DE FORMULÁRIO
 // ============================================================
 function criarLinhaDizimista(nome='', valor='', forma='Caixa') {
     const div = document.createElement('div');
@@ -932,7 +913,6 @@ function criarLinhaDizimista(nome='', valor='', forma='Caixa') {
         <button type="button" class="btn-remove" onclick="removerLinha(this,'dizimista')"><i class="fas fa-times"></i></button>`;
     return div;
 }
-
 function criarLinhaOferta(nome='', valor='', forma='Caixa') {
     const div = document.createElement('div');
     div.className = 'oferta-row';
@@ -946,7 +926,6 @@ function criarLinhaOferta(nome='', valor='', forma='Caixa') {
         <button type="button" class="btn-remove" onclick="removerLinha(this,'oferta')"><i class="fas fa-times"></i></button>`;
     return div;
 }
-
 function adicionarDizimista(nome='', valor='', forma='Caixa') {
     document.getElementById('listaDizimistas').appendChild(criarLinhaDizimista(nome, valor, forma));
     calcTotalCulto();
@@ -1009,44 +988,84 @@ function coletarOfertas() {
     })).filter(o => o.valor > 0 || o.nome);
 }
 
-function salvarCulto(e) {
+// ============================================================
+// SALVAR CULTO — GOOGLE SHEETS
+// ============================================================
+async function salvarCulto(e) {
     e.preventDefault();
     const { totalDiz, totalOf, total } = calcTotalCulto();
-    const culto = {
-        id:              Date.now(),
+
+    const cultoData = {
         data:            document.getElementById('c-data').value,
         horario:         document.getElementById('c-horario').value,
         pastor:          document.getElementById('c-pastor').value,
         pregador:        document.getElementById('c-pregador').value,
         tipo:            document.getElementById('c-tipo').value,
-        cura:            document.getElementById('c-cura').value,
-        presentes:       document.getElementById('c-presentes').value,
-        visitantes:      document.getElementById('c-visitantes').value,
-        criancas:        document.getElementById('c-criancas').value,
-        dizimistas:      coletarDizimistas(),
+        cura:            +document.getElementById('c-cura').value || 0,
+        presentes:       +document.getElementById('c-presentes').value || 0,
+        visitantes:      +document.getElementById('c-visitantes').value || 0,
+        criancas:        +document.getElementById('c-criancas').value || 0,
+        dizimistas:      JSON.stringify(coletarDizimistas()),
         totalDizimos:    totalDiz,
-        ofertas:         coletarOfertas(),
+        ofertas:         JSON.stringify(coletarOfertas()),
         totalOfertas:    totalOf,
         missoes:         +document.getElementById('c-missoes').value   || 0,
         especiais:       +document.getElementById('c-especiais').value || 0,
         outras:          +document.getElementById('c-outras').value    || 0,
         totalArrecadado: total,
-        caixaLocal:      document.getElementById('c-caixa').value,
-        contaCorrente:   document.getElementById('c-conta').value,
+        caixaLocal:      +document.getElementById('c-caixa').value || 0,
+        contaCorrente:   +document.getElementById('c-conta').value || 0,
         criadoEm:        new Date().toISOString()
     };
-    DB.cultos.push(culto);
-    if (total > 0) {
-        DB.entradas.push({ id:Date.now(), descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`, valor:total, data:culto.data, origem:'culto', cultoId:culto.id });
+
+    setBtnLoading('btnSalvarCulto', true);
+
+    try {
+        // 1. Salva culto no Sheets
+        const resultCulto = await apiSave('cultos', cultoData);
+        const cultoId = resultCulto.id;
+        const culto = { ...cultoData, id: cultoId, dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
+        DB.cultos.unshift(culto);
+
+        // 2. Salva entrada automática no Sheets
+        if (total > 0) {
+            const entradaData = {
+                descricao: `Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
+                valor:     total,
+                data:      culto.data,
+                origem:    'culto',
+                cultoId:   cultoId,
+                criadoEm:  new Date().toISOString()
+            };
+            const resultEntrada = await apiSave('entradas', entradaData);
+            DB.entradas.unshift({ ...entradaData, id: resultEntrada.id });
+        }
+
+        DB.saveLocal();
+        closeModal('modalNovoCulto');
+        resetFormCulto();
+        setSyncStatus('synced');
+        showNotification(`✅ Culto salvo no Sheets! ${fmt(total)}`, 'success');
+        renderCultos();
+        renderEntradas();
+        renderDashboard();
+
+    } catch (err) {
+        console.error('Erro ao salvar culto:', err);
+        // Fallback: salva localmente
+        const culto = { ...cultoData, id: Date.now(), dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
+        DB.cultos.unshift(culto);
+        if (total > 0) DB.entradas.unshift({ id: Date.now()+1, descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`, valor:total, data:culto.data, origem:'culto', cultoId:culto.id });
+        DB.saveLocal();
+        closeModal('modalNovoCulto');
+        resetFormCulto();
+        setSyncStatus('error');
+        showNotification('⚠️ Salvo localmente (sem conexão com Sheets)', 'warning');
+        renderCultos();
+        renderEntradas();
+    } finally {
+        setBtnLoading('btnSalvarCulto', false, 'Salvar');
     }
-    DB.save();
-    closeModal('modalNovoCulto');
-    resetFormCulto();
-    setSyncStatus('syncing');
-    setTimeout(() => setSyncStatus('synced'), 1500);
-    showNotification(`✅ Culto salvo! ${fmt(total)} sincronizado.`, 'success');
-    renderCultos();
-    renderEntradas();
 }
 
 function resetFormCulto() {
@@ -1074,7 +1093,7 @@ function renderCultos() {
     const mes   = document.getElementById('filtroCultoMes')?.value || '';
     let lista = DB.cultos.filter(c => {
         const matchMes  = mes ? c.data?.startsWith(mes) : true;
-        const matchText = !busca || c.data?.includes(busca) || c.tipo?.toLowerCase().includes(busca) || c.pregador?.toLowerCase().includes(busca) || c.pastor?.toLowerCase().includes(busca);
+        const matchText = !busca || c.data?.includes(busca) || c.tipo?.toLowerCase().includes(busca) || c.pregador?.toLowerCase().includes(busca);
         return matchMes && matchText;
     });
     document.getElementById('qtdCultosLabel').textContent = `${lista.length} culto(s)`;
@@ -1107,7 +1126,7 @@ function renderCultos() {
 }
 
 function atualizarTotaisCultos(lista) {
-    const tots = (lista || DB.cultos).reduce((a, c) => ({
+    const tots = lista.reduce((a,c) => ({
         dizimos: a.dizimos + (c.totalDizimos||0),
         ofertas: a.ofertas + (c.totalOfertas||0) + (c.especiais||0),
         missoes: a.missoes + (c.missoes||0),
@@ -1130,7 +1149,7 @@ function verCulto(idx) {
         : `<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhuma oferta registrada</td></tr>`;
     const caixaLocal    = +c.caixaLocal    || 0;
     const contaCorrente = +c.contaCorrente || 0;
-    const html = `
+    document.getElementById('printArea').innerHTML = `
         <div style="font-family:'Segoe UI',sans-serif">
             <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #1e3a5f">
                 <div style="font-size:28px;margin-bottom:6px">⛪</div>
@@ -1177,7 +1196,6 @@ function verCulto(idx) {
                 Gerado em ${new Date().toLocaleString('pt-BR')} • IEQ Esplanada — Sistema Financeiro
             </div>
         </div>`;
-    document.getElementById('printArea').innerHTML = html;
     openModal('modalVerCulto');
 }
 
@@ -1188,13 +1206,38 @@ function imprimirCulto() {
     janela.document.close();
 }
 
-function excluirCulto(idx) {
+// ============================================================
+// EXCLUIR CULTO — GOOGLE SHEETS
+// ============================================================
+async function excluirCulto(idx) {
     if (!confirm('Excluir este culto? Esta ação não pode ser desfeita.')) return;
-    const cultoId = DB.cultos[idx]?.id;
-    DB.cultos.splice(idx, 1);
-    DB.entradas = DB.entradas.filter(e => e.cultoId !== cultoId);
-    DB.save(); renderCultos(); renderEntradas();
-    showNotification('Culto excluído', 'info');
+    const culto = DB.cultos[idx];
+    if (!culto) return;
+
+    setSyncStatus('syncing');
+    try {
+        await apiDelete('cultos', culto.id);
+        // Exclui entradas vinculadas no Sheets
+        const vinculadas = DB.entradas.filter(e => String(e.cultoId) === String(culto.id));
+        for (const ent of vinculadas) {
+            try { await apiDelete('entradas', ent.id); } catch(e) { /* ignora */ }
+        }
+        DB.cultos.splice(idx, 1);
+        DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(culto.id));
+        DB.saveLocal();
+        setSyncStatus('synced');
+        showNotification('🗑️ Culto excluído do Sheets', 'info');
+    } catch(err) {
+        console.error('Erro ao excluir culto:', err);
+        // Fallback: remove local
+        DB.cultos.splice(idx, 1);
+        DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(culto.id));
+        DB.saveLocal();
+        setSyncStatus('error');
+        showNotification('⚠️ Excluído localmente (erro no Sheets)', 'warning');
+    }
+    renderCultos();
+    renderEntradas();
 }
 
 // ============================================================
@@ -1211,7 +1254,9 @@ function renderDespesas(filtro='') {
             <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">${d.descricao}</td>
             <td class="py-2 text-sm text-gray-500 hidden md:table-cell">${fmtDate(d.data)}</td>
             <td class="py-2 text-sm font-bold text-red-600 text-right">${fmt(d.valor)}</td>
-            <td class="py-2"><button onclick="excluirDespesa(${DB.despesas.indexOf(d)})" class="text-red-400 hover:text-red-600 text-sm ml-1"><i class="fas fa-trash"></i></button></td>
+            <td class="py-2">
+                ${d.id && !String(d.id).startsWith('fix-') ? `<button onclick="excluirDespesa('${d.id}')" class="text-red-400 hover:text-red-600 text-sm ml-1" title="Excluir"><i class="fas fa-trash"></i></button>` : `<span class="text-xs text-gray-300 ml-1" title="Dado fixo">🔒</span>`}
+            </td>
         </tr>`).join('');
     const total = lista.reduce((s,d) => s+d.valor, 0);
     document.getElementById('totalDespesas').textContent       = fmt(total);
@@ -1220,20 +1265,66 @@ function renderDespesas(filtro='') {
 
 function filtrarDespesas() { renderDespesas(document.getElementById('filtroCat').value); }
 
-function salvarDespesa(e) {
+// ============================================================
+// SALVAR DESPESA — GOOGLE SHEETS
+// ============================================================
+async function salvarDespesa(e) {
     e.preventDefault();
-    const d = { id:Date.now(), categoria:document.getElementById('d-categoria').value, descricao:document.getElementById('d-descricao').value||document.getElementById('d-categoria').value, valor:+document.getElementById('d-valor').value, data:document.getElementById('d-data').value };
-    DB.despesas.push(d); DB.save();
-    closeModal('modalNovaDespesa');
-    document.getElementById('formDespesa').reset();
-    renderDespesas();
-    showNotification(`Despesa de ${fmt(d.valor)} registrada!`, 'success');
+    const despesaData = {
+        categoria:  document.getElementById('d-categoria').value,
+        descricao:  document.getElementById('d-descricao').value || document.getElementById('d-categoria').value,
+        valor:      +document.getElementById('d-valor').value,
+        data:       document.getElementById('d-data').value,
+        criadoEm:   new Date().toISOString()
+    };
+
+    setBtnLoading('btnSalvarDespesa', true, 'Registrar');
+
+    try {
+        const result = await apiSave('despesas', despesaData);
+        DB.despesas.push({ ...despesaData, id: result.id });
+        DB.saveLocal();
+        closeModal('modalNovaDespesa');
+        document.getElementById('formDespesa').reset();
+        renderDespesas();
+        setSyncStatus('synced');
+        showNotification(`✅ Despesa de ${fmt(despesaData.valor)} salva no Sheets!`, 'success');
+    } catch(err) {
+        console.error('Erro ao salvar despesa:', err);
+        DB.despesas.push({ ...despesaData, id: Date.now() });
+        DB.saveLocal();
+        closeModal('modalNovaDespesa');
+        document.getElementById('formDespesa').reset();
+        renderDespesas();
+        setSyncStatus('error');
+        showNotification('⚠️ Despesa salva localmente (sem conexão)', 'warning');
+    } finally {
+        setBtnLoading('btnSalvarDespesa', false, 'Registrar');
+    }
 }
 
-function excluirDespesa(i) {
+// ============================================================
+// EXCLUIR DESPESA — GOOGLE SHEETS
+// ============================================================
+async function excluirDespesa(id) {
     if (!confirm('Excluir esta despesa?')) return;
-    DB.despesas.splice(i,1); DB.save(); renderDespesas();
-    showNotification('Despesa excluída','info');
+    const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
+    if (idx === -1) return;
+
+    setSyncStatus('syncing');
+    try {
+        await apiDelete('despesas', id);
+        DB.despesas.splice(idx, 1);
+        DB.saveLocal();
+        setSyncStatus('synced');
+        showNotification('🗑️ Despesa excluída do Sheets', 'info');
+    } catch(err) {
+        DB.despesas.splice(idx, 1);
+        DB.saveLocal();
+        setSyncStatus('error');
+        showNotification('⚠️ Excluído localmente (erro no Sheets)', 'warning');
+    }
+    renderDespesas();
 }
 
 // ============================================================
@@ -1245,29 +1336,76 @@ function renderEntradas() {
         tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Registre cultos para ver as entradas automaticamente</td></tr>`;
         return;
     }
-    tbody.innerHTML = DB.entradas.map((e, i) => `
+    tbody.innerHTML = DB.entradas.map((ent, i) => `
         <tr class="table-row border-b border-gray-50">
-            <td class="py-2 text-sm">${fmtDate(e.data)}</td>
-            <td class="py-2 text-sm text-gray-700">${e.descricao}</td>
-            <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${e.origem==='culto'?'badge-blue':'badge-green'}">${e.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
-            <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(e.valor)}</td>
-            <td class="py-2"><button onclick="excluirEntrada(${i})" class="text-red-400 hover:text-red-600 text-sm"><i class="fas fa-trash"></i></button></td>
+            <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
+            <td class="py-2 text-sm text-gray-700">${ent.descricao}</td>
+            <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
+            <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
+            <td class="py-2"><button onclick="excluirEntrada('${ent.id}')" class="text-red-400 hover:text-red-600 text-sm"><i class="fas fa-trash"></i></button></td>
         </tr>`).join('');
 }
 
-function salvarEntrada(e) {
+// ============================================================
+// SALVAR ENTRADA — GOOGLE SHEETS
+// ============================================================
+async function salvarEntrada(e) {
     e.preventDefault();
-    const entrada = { id:Date.now(), descricao:document.getElementById('e-descricao').value, valor:+document.getElementById('e-valor').value, data:document.getElementById('e-data').value, origem:'manual', obs:document.getElementById('e-obs').value };
-    DB.entradas.push(entrada); DB.save();
-    closeModal('modalNovaEntrada');
-    document.getElementById('formEntrada').reset();
-    renderEntradas();
-    showNotification(`Entrada de ${fmt(entrada.valor)} registrada!`, 'success');
+    const entradaData = {
+        descricao: document.getElementById('e-descricao').value,
+        valor:     +document.getElementById('e-valor').value,
+        data:      document.getElementById('e-data').value,
+        origem:    'manual',
+        obs:       document.getElementById('e-obs').value,
+        criadoEm:  new Date().toISOString()
+    };
+
+    setBtnLoading('btnSalvarEntrada', true, 'Registrar');
+
+    try {
+        const result = await apiSave('entradas', entradaData);
+        DB.entradas.unshift({ ...entradaData, id: result.id });
+        DB.saveLocal();
+        closeModal('modalNovaEntrada');
+        document.getElementById('formEntrada').reset();
+        renderEntradas();
+        setSyncStatus('synced');
+        showNotification(`✅ Entrada de ${fmt(entradaData.valor)} salva no Sheets!`, 'success');
+    } catch(err) {
+        DB.entradas.unshift({ ...entradaData, id: Date.now() });
+        DB.saveLocal();
+        closeModal('modalNovaEntrada');
+        document.getElementById('formEntrada').reset();
+        renderEntradas();
+        setSyncStatus('error');
+        showNotification('⚠️ Entrada salva localmente (sem conexão)', 'warning');
+    } finally {
+        setBtnLoading('btnSalvarEntrada', false, 'Registrar');
+    }
 }
 
-function excluirEntrada(i) {
+// ============================================================
+// EXCLUIR ENTRADA — GOOGLE SHEETS
+// ============================================================
+async function excluirEntrada(id) {
     if (!confirm('Excluir esta entrada?')) return;
-    DB.entradas.splice(i,1); DB.save(); renderEntradas();
+    const idx = DB.entradas.findIndex(e => String(e.id) === String(id));
+    if (idx === -1) return;
+
+    setSyncStatus('syncing');
+    try {
+        await apiDelete('entradas', id);
+        DB.entradas.splice(idx, 1);
+        DB.saveLocal();
+        setSyncStatus('synced');
+        showNotification('🗑️ Entrada excluída do Sheets', 'info');
+    } catch(err) {
+        DB.entradas.splice(idx, 1);
+        DB.saveLocal();
+        setSyncStatus('error');
+        showNotification('⚠️ Excluído localmente (erro no Sheets)', 'warning');
+    }
+    renderEntradas();
 }
 
 // ============================================================
@@ -1329,16 +1467,9 @@ function gerarRelatorio() {
     const w = window.open('','_blank');
     w.document.write(`<html><head><title>Relatório — Maio 2026</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px}h1{color:#1e3a5f;border-bottom:3px solid #c8a951;padding-bottom:10px}table{width:100%;border-collapse:collapse;margin:15px 0}th{background:#1e3a5f;color:white;padding:10px;text-align:left}td{padding:8px 10px;border-bottom:1px solid #eee}.total{font-weight:bold;background:#f8f8f8}.green{color:#059669}.red{color:#dc2626}</style></head><body>
         <h1>⛪ IEQ Esplanada — Relatório Financeiro</h1><h2>Maio 2026</h2>
-        <table><tr><th colspan="2">RESUMO</th></tr><tr><td>Saldo Anterior</td><td class="green">R$ 1.099,81</td></tr><tr><td>Total Entradas</td><td class="green">R$ 3.483,14</td></tr><tr><td>Total Saídas</td><td class="red">R$ 3.335,42</td></tr><tr class="total"><td>Saldo Final</td><td>R$ 1.247,53</td></tr></table>
-        <table><tr><th>Categoria</th><th>Descrição</th><th>Valor</th></tr>${DB.despesas.map(d=>`<tr><td>${d.categoria}</td><td>${d.descricao}</td><td class="red">R$ ${d.valor.toFixed(2).replace('.',',')}</td></tr>`).join('')}<tr class="total"><td colspan="2">TOTAL</td><td class="red">R$ ${totalDesp.toFixed(2).replace('.',',')}</td></tr></table>
+        <table><tr><th colspan="2">RESUMO</th></tr><tr><td>Saldo Anterior</td><td class="green">R$ 1.099,81</td></tr><tr><td>Total Entradas</td><td class="green">R$ 3.483,14</td></tr><tr><td>Total Saídas</td><td class="red">${fmt(totalDesp)}</td></tr><tr class="total"><td>Saldo Final</td><td>R$ 1.247,53</td></tr></table>
+        <table><tr><th>Categoria</th><th>Descrição</th><th>Valor</th></tr>${DB.despesas.map(d=>`<tr><td>${d.categoria}</td><td>${d.descricao}</td><td class="red">${fmt(d.valor)}</td></tr>`).join('')}<tr class="total"><td colspan="2">TOTAL</td><td class="red">${fmt(totalDesp)}</td></tr></table>
         <p style="font-size:12px;color:#666">Gerado em ${new Date().toLocaleString('pt-BR')}</p><script>window.print();<\/script></body></html>`);
-}
-
-function setSyncStatus(status) {
-    const el = document.getElementById('syncStatus');
-    el.innerHTML = status === 'syncing'
-        ? '<div class="w-2 h-2 bg-yellow-400 rounded-full sync-pulse"></div><span class="text-gray-600 text-xs">Sincronizando...</span>'
-        : '<div class="w-2 h-2 bg-green-400 rounded-full sync-pulse"></div><span class="text-gray-600 text-xs">Sincronizado</span>';
 }
 
 function changeGlobalMonth() { showNotification('Módulo multi-mês em desenvolvimento','info'); }
@@ -1347,15 +1478,18 @@ function changeGlobalMonth() { showNotification('Módulo multi-mês em desenvolv
 // INICIALIZAÇÃO
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-    renderDashboard();
     const hoje = new Date().toISOString().split('T')[0];
-    document.getElementById('c-data').value = hoje;
+    document.getElementById('c-data').value    = hoje;
     document.getElementById('c-horario').value = '19:30';
-    document.getElementById('d-data').value = hoje;
-    calcularDistribuicoes();
+    document.getElementById('d-data').value    = hoje;
     adicionarDizimista();
     adicionarOferta();
-    console.log('✅ IEQ Financeiro v2.2 — Responsivo');
+    calcularDistribuicoes();
+
+    // Carrega dados do Google Sheets
+    inicializarSistema();
+
+    console.log('✅ IEQ Financeiro v3.0 — Google Sheets integrado');
 });
 </script>
 </body>
