@@ -172,7 +172,7 @@
       color: #991b1b; border-radius: 8px;
       padding: 10px 14px; font-size: 13px;
       margin-bottom: 16px; display: none;
-      align-items: center; gap-8px;
+      align-items: center; gap: 8px;
     }
     .login-erro.active { display: flex; }
     .show-pass-btn {
@@ -908,7 +908,7 @@
   // ============================================================
   // API
   // ============================================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbySHNsJq6PQ1TUHbTcdDqndaVegEj3MCuzmrW2FWaJZMRhKi4jgVBxPFqARiN9onjUD/exec;
+  const API_URL = "https://script.google.com/macros/s/AKfycbySHNsJq6PQ1TUHbTcdDqndaVegEj3MCuzmrW2FWaJZMRhKi4jgVBxPFqARiN9onjUD/exec";
 
   async function apiGet(sheet) {
     const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
