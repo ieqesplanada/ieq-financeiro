@@ -72,9 +72,6 @@
     .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #c8a951; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* =============================================
-       LOGO SIDEBAR
-       ============================================= */
     #sidebarLogoWrap {
       width: 44px; height: 44px; flex-shrink: 0;
       position: relative; display: flex; align-items: center; justify-content: center;
@@ -91,9 +88,6 @@
       border: 2px solid rgba(255,255,255,0.3);
     }
 
-    /* =============================================
-       LOGO PREVIEW
-       ============================================= */
     .logo-preview-box {
       width: 96px; height: 96px; min-width: 64px; min-height: 64px;
       max-width: 25vw; max-height: 25vw; border-radius: 12px;
@@ -110,9 +104,6 @@
     .logo-upload-area { border: 2px dashed #c8a951; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fffbeb; }
     .logo-upload-area:hover { border-color: #1e3a5f; background: #eff6ff; }
 
-    /* =============================================
-       TELA DE LOGIN
-       ============================================= */
     #loginScreen {
       display: none;
       position: fixed; inset: 0; z-index: 10000;
@@ -183,7 +174,6 @@
     }
     .show-pass-btn:hover { color: #1e3a5f; }
 
-    /* Badge de permissão no header */
     .perm-badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 2px 8px; border-radius: 20px;
@@ -193,7 +183,6 @@
     .perm-tesoureiro  { background: #dbeafe; color: #1e40af; }
     .perm-visualizador{ background: #d1fae5; color: #065f46; }
 
-    /* Botão logout no sidebar */
     .btn-logout {
       width: 100%; display: flex; align-items: center; gap: 10px;
       padding: 10px 16px; border-radius: 8px; border: none;
@@ -203,12 +192,18 @@
     }
     .btn-logout:hover { background: rgba(239,68,68,0.3); color: #fff; }
 
-    /* Bloqueio visual de elementos restritos */
     .restrito { opacity: 0.4; pointer-events: none; position: relative; }
     .restrito::after {
       content: '🔒'; position: absolute;
       top: 50%; left: 50%; transform: translate(-50%,-50%);
       font-size: 20px;
+    }
+
+    /* ============================================================
+       MODAL ALTERAR DESPESA
+       ============================================================ */
+    #modalAlterarDespesa .modal-header {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
     }
 
     @media print {
@@ -220,9 +215,7 @@
 </head>
 <body class="min-h-screen">
 
-<!-- ============================================================
-     TELA DE LOGIN
-     ============================================================ -->
+<!-- TELA DE LOGIN -->
 <div id="loginScreen" class="active">
   <div class="login-card">
     <div class="login-header">
@@ -238,34 +231,28 @@
       <h2 class="text-gray-800 font-bold text-lg mb-1">Entrar</h2>
       <p class="text-gray-500 text-sm mb-5">Informe suas credenciais de acesso</p>
 
-      <!-- Mensagem de erro -->
       <div class="login-erro" id="loginErro">
         <i class="fas fa-exclamation-circle mr-2 flex-shrink-0"></i>
         <span id="loginErroMsg">Usuário ou senha incorretos.</span>
       </div>
 
       <form id="formLogin" onsubmit="efetuarLogin(event)">
-        <!-- Campo usuário -->
         <div class="login-input-wrap">
           <i class="fas fa-user"></i>
           <input type="text" id="loginUser" class="login-input"
-                 placeholder="Usuário" autocomplete="username"
-                 required>
+                 placeholder="Usuário" autocomplete="username" required>
         </div>
 
-        <!-- Campo senha -->
         <div class="login-input-wrap" style="margin-bottom:8px">
           <i class="fas fa-lock"></i>
           <input type="password" id="loginPass" class="login-input"
-                 placeholder="Senha" autocomplete="current-password"
-                 required>
+                 placeholder="Senha" autocomplete="current-password" required>
           <button type="button" class="show-pass-btn" id="togglePass"
                   onclick="toggleSenha()" title="Mostrar/ocultar senha">
             <i class="fas fa-eye" id="togglePassIcon"></i>
           </button>
         </div>
 
-        <!-- Lembrar usuário -->
         <label class="flex items-center gap-2 text-sm text-gray-600 mb-5 cursor-pointer select-none">
           <input type="checkbox" id="lembrarUser" class="rounded">
           Lembrar usuário
@@ -284,9 +271,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     SISTEMA PRINCIPAL (oculto até login)
-     ============================================================ -->
+<!-- SISTEMA PRINCIPAL -->
 <div id="appRoot" style="display:none">
 
 <div id="loadingOverlay">
@@ -327,7 +312,6 @@
     <button onclick="showPage('configuracoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-configuracoes"><i class="fas fa-cog w-4"></i> Configurações</button>
   </nav>
 
-  <!-- Usuário logado + logout -->
   <div class="p-4 border-t border-blue-800">
     <div class="flex items-center gap-3 mb-2">
       <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -504,11 +488,12 @@
           </table>
         </div>
       </div>
+      <!-- CORREÇÃO 1: "Total Geral" não inclui Missões (Missões é separado) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div class="card p-4 text-center border-t-4 border-blue-500"><p class="text-xl font-bold text-blue-600" id="tot-dizimos">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Dízimos</p></div>
         <div class="card p-4 text-center border-t-4 border-green-500"><p class="text-xl font-bold text-green-600" id="tot-ofertas">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Ofertas</p></div>
-        <div class="card p-4 text-center border-t-4 border-yellow-500"><p class="text-xl font-bold text-yellow-600" id="tot-missoes">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Missões</p></div>
-        <div class="card p-4 text-center border-t-4 border-purple-500"><p class="text-xl font-bold text-purple-600" id="tot-cultos-total">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Geral</p></div>
+        <div class="card p-4 text-center border-t-4 border-yellow-500"><p class="text-xl font-bold text-yellow-600" id="tot-missoes">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Missões (acumulado)</p></div>
+        <div class="card p-4 text-center border-t-4 border-purple-500"><p class="text-xl font-bold text-purple-600" id="tot-cultos-total">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Dízimos+Ofertas</p></div>
       </div>
     </div>
 
@@ -575,13 +560,13 @@
       </div>
       <div class="card p-4">
         <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:450px">
+          <table class="w-full" style="min-width:500px">
             <thead><tr class="text-left text-xs text-gray-500 border-b">
               <th class="pb-2 font-semibold">Categoria</th>
               <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
               <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
               <th class="pb-2 font-semibold text-right">Valor</th>
-              <th class="pb-2 font-semibold">Ações</th>
+              <th class="pb-2 font-semibold text-center">Ações</th>
             </tr></thead>
             <tbody id="tabelaDespesas"></tbody>
             <tfoot><tr class="border-t-2">
@@ -705,7 +690,6 @@
           <button class="btn-primary w-full mt-4 text-sm" onclick="salvarConfiguracoes()"><i class="fas fa-save mr-2"></i> Salvar Configurações</button>
         </div>
 
-        <!-- Gerenciar usuários — somente admin -->
         <div class="card p-5" id="cardUsuarios">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-users-cog text-purple-600"></i> Usuários do Sistema</h3>
           <p class="text-xs text-gray-400 mb-4">Gerencie os acessos na aba <strong>usuarios</strong> da planilha Google Sheets.</p>
@@ -723,7 +707,7 @@
             <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-blue-600" id="cfgQtdCultos">0</p><p class="text-xs text-gray-500">Cultos</p></div>
             <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-red-600" id="cfgQtdDespesas">0</p><p class="text-xs text-gray-500">Despesas</p></div>
             <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-green-600" id="cfgQtdEntradas">0</p><p class="text-xs text-gray-500">Entradas</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-yellow-600" id="cfgVersao">v3.6</p><p class="text-xs text-gray-500">Versão</p></div>
+            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-yellow-600" id="cfgVersao">v3.7</p><p class="text-xs text-gray-500">Versão</p></div>
           </div>
           <button class="w-full py-2 border-2 border-red-200 text-red-500 rounded-lg hover:bg-red-50 text-sm font-semibold transition" onclick="limparCacheLocal()">
             <i class="fas fa-trash mr-2"></i> Limpar Cache Local
@@ -735,7 +719,9 @@
   </div>
 </main>
 
-<!-- MODAIS (culto, despesa, entrada) — inalterados -->
+<!-- ============================================================
+     MODAL: NOVO/EDITAR CULTO
+     ============================================================ -->
 <div class="modal-overlay" id="modalNovoCulto">
   <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
     <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
@@ -800,14 +786,27 @@
         <div class="bg-yellow-50 rounded-xl p-3 mb-3 border border-yellow-200">
           <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-coins text-yellow-600"></i> Outras Arrecadações</h4>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-xs text-gray-600 mb-1 block">Ofertas Missões (R$)</label><input type="number" id="c-missoes" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
+            <!-- CORREÇÃO 1: Missões é campo separado, não entra no totalArrecadado -->
+            <div>
+              <label class="text-xs text-gray-600 mb-1 block">Ofertas Missões (R$)</label>
+              <input type="number" id="c-missoes" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()">
+              <p class="text-xs text-teal-600 mt-1 font-medium"><i class="fas fa-info-circle mr-1"></i>Contabilizado separadamente</p>
+            </div>
             <div><label class="text-xs text-gray-600 mb-1 block">Ofertas Especiais (R$)</label><input type="number" id="c-especiais" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
             <div><label class="text-xs text-gray-600 mb-1 block">Outras Entradas (R$)</label><input type="number" id="c-outras" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
             <div class="bg-green-100 rounded-xl p-3 flex flex-col justify-center border border-green-300">
-              <label class="text-xs font-bold text-green-700 mb-1">TOTAL</label>
+              <label class="text-xs font-bold text-green-700 mb-1">TOTAL (sem Missões)</label>
               <p class="text-lg font-bold text-green-700" id="totalArrecadado">R$ 0,00</p>
             </div>
           </div>
+        </div>
+        <!-- CORREÇÃO 4: Campo Observações no Relatório de Culto -->
+        <div class="bg-gray-50 rounded-xl p-3 mb-3 border border-gray-200">
+          <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2">
+            <i class="fas fa-sticky-note text-gray-500"></i> Observações
+          </h4>
+          <textarea id="c-observacoes" class="input-field text-sm resize-none" rows="3"
+                    placeholder="Anotações, destaques do culto, informes especiais..."></textarea>
         </div>
         <div class="bg-purple-50 rounded-xl p-3 mb-4 border border-purple-200">
           <h4 class="font-semibold text-gray-700 mb-1 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-exchange-alt text-purple-600"></i> Destino da Arrecadação</h4>
@@ -832,6 +831,7 @@
   </div>
 </div>
 
+<!-- MODAL: VER CULTO -->
 <div class="modal-overlay" id="modalVerCulto">
   <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
     <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
@@ -845,6 +845,7 @@
   </div>
 </div>
 
+<!-- MODAL: NOVA DESPESA -->
 <div class="modal-overlay" id="modalNovaDespesa">
   <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
     <div class="bg-gradient-to-r from-red-700 to-red-500 p-4 flex justify-between items-center rounded-t-2xl">
@@ -877,6 +878,43 @@
   </div>
 </div>
 
+<!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
+<div class="modal-overlay" id="modalAlterarDespesa">
+  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+    <div class="bg-gradient-to-r from-yellow-600 to-yellow-400 p-4 flex justify-between items-center rounded-t-2xl">
+      <h3 class="text-white font-bold text-base"><i class="fas fa-pen mr-2"></i>Alterar Despesa</h3>
+      <button onclick="closeModal('modalAlterarDespesa')" class="text-white hover:text-yellow-100"><i class="fas fa-times text-xl"></i></button>
+    </div>
+    <div class="p-4">
+      <form id="formAlterarDespesa" onsubmit="confirmarAlteracaoDespesa(event)">
+        <input type="hidden" id="alt-d-id">
+        <div class="space-y-3">
+          <div><label class="text-sm text-gray-600 mb-1 block">Categoria*</label>
+            <select id="alt-d-categoria" class="input-field text-sm" required>
+              <option value="">Selecione...</option>
+              <option>ENERGIA</option><option>AGUA</option><option>CED</option><option>CND</option>
+              <option>CONTADOR</option><option>TAXA REGIONAL</option><option>COMBUSTIVEL</option>
+              <option>PREBENDA</option><option>PAPELARIA</option><option>DARF</option><option>MATERIAL</option><option>OUTROS</option>
+            </select>
+          </div>
+          <div><label class="text-sm text-gray-600 mb-1 block">Descrição</label><input type="text" id="alt-d-descricao" class="input-field text-sm" placeholder="Detalhes da despesa"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-sm text-gray-600 mb-1 block">Valor (R$)*</label><input type="number" id="alt-d-valor" class="input-field text-sm" min="0" step="0.01" required></div>
+            <div><label class="text-sm text-gray-600 mb-1 block">Data</label><input type="date" id="alt-d-data" class="input-field text-sm"></div>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-4">
+          <button type="button" onclick="closeModal('modalAlterarDespesa')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
+          <button type="submit" class="flex-1 text-sm font-semibold py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white" id="btnConfirmarAlterarDespesa">
+            <i class="fas fa-save mr-2"></i> Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NOVA ENTRADA -->
 <div class="modal-overlay" id="modalNovaEntrada">
   <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
     <div class="bg-gradient-to-r from-green-700 to-green-500 p-4 flex justify-between items-center rounded-t-2xl">
@@ -925,6 +963,13 @@
     if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
     return json.data;
   }
+  async function apiUpdate(sheet, id, data) {
+    const resp = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'update',sheet,id,data}) });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error || 'Erro ao atualizar');
+    return json.data;
+  }
   async function apiDelete(sheet, id) {
     const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
     const resp = await fetch(url);
@@ -938,16 +983,10 @@
   // SESSÃO / LOGIN
   // ============================================================
   const SESSION_KEY = 'ieq_session';
-  const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 horas em ms
+  const SESSION_TTL = 8 * 60 * 60 * 1000;
 
-  let SESSAO = null; // { nome, permissao, loginEm }
+  let SESSAO = null;
 
-  /**
-   * Permissões por nível:
-   *   admin       → tudo
-   *   tesoureiro  → lançar, editar, excluir, ver tudo
-   *   visualizador→ apenas leitura
-   */
   const PERMISSOES = {
     podeEditar:  ['admin','tesoureiro'],
     podeExcluir: ['admin','tesoureiro'],
@@ -971,28 +1010,21 @@
       const raw = localStorage.getItem(SESSION_KEY);
       if (!raw) return null;
       const s = JSON.parse(raw);
-      // Expirou?
-      if (Date.now() - s.loginEm > SESSION_TTL) {
-        localStorage.removeItem(SESSION_KEY);
-        return null;
-      }
+      if (Date.now() - s.loginEm > SESSION_TTL) { localStorage.removeItem(SESSION_KEY); return null; }
       return s;
     } catch { return null; }
   }
 
-  function limparSessao() {
-    localStorage.removeItem(SESSION_KEY);
-    SESSAO = null;
-  }
+  function limparSessao() { localStorage.removeItem(SESSION_KEY); SESSAO = null; }
 
   // ============================================================
-  // TELA DE LOGIN
+  // LOGIN
   // ============================================================
   function toggleSenha() {
-    const inp  = document.getElementById('loginPass');
+    const inp = document.getElementById('loginPass');
     const icon = document.getElementById('togglePassIcon');
     const show = inp.type === 'password';
-    inp.type   = show ? 'text' : 'password';
+    inp.type = show ? 'text' : 'password';
     icon.className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
   }
 
@@ -1013,47 +1045,26 @@
   async function efetuarLogin(e) {
     e.preventDefault();
     limparErroLogin();
-
     const login = document.getElementById('loginUser').value.trim();
     const senha = document.getElementById('loginPass').value;
     const lembrar = document.getElementById('lembrarUser').checked;
-    const btn   = document.getElementById('btnLogin');
-
-    if (!login || !senha) {
-      mostrarErroLogin('Preencha usuário e senha.');
-      return;
-    }
-
-    // Salva usuário se "lembrar" marcado
+    const btn = document.getElementById('btnLogin');
+    if (!login || !senha) { mostrarErroLogin('Preencha usuário e senha.'); return; }
     if (lembrar) localStorage.setItem('ieq_lembrar_user', login);
-    else         localStorage.removeItem('ieq_lembrar_user');
-
-    btn.disabled  = true;
+    else localStorage.removeItem('ieq_lembrar_user');
+    btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
-
     try {
-      const url  = `${API_URL}?action=login&login=${encodeURIComponent(login)}&senha=${encodeURIComponent(senha)}`;
+      const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&senha=${encodeURIComponent(senha)}`;
       const resp = await fetch(url);
       const json = await resp.json();
-
-      if (json.ok) {
-        salvarSessao({ nome: json.nome, permissao: json.permissao });
-        entrarNoSistema();
-      } else {
-        mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.');
-        document.getElementById('loginPass').value = '';
-        document.getElementById('loginPass').focus();
-      }
-    } catch (err) {
-      mostrarErroLogin('Erro de conexão. Verifique sua internet.');
-    } finally {
-      btn.disabled  = false;
-      btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar';
-    }
+      if (json.ok) { salvarSessao({ nome: json.nome, permissao: json.permissao }); entrarNoSistema(); }
+      else { mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.'); document.getElementById('loginPass').value = ''; document.getElementById('loginPass').focus(); }
+    } catch (err) { mostrarErroLogin('Erro de conexão. Verifique sua internet.'); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar'; }
   }
 
   function entrarNoSistema() {
-    // Oculta login, exibe app
     document.getElementById('loginScreen').classList.remove('active');
     document.getElementById('appRoot').style.display = 'block';
     aplicarPermissoesUI();
@@ -1063,24 +1074,20 @@
   function logout() {
     if (!confirm('Deseja sair do sistema?')) return;
     limparSessao();
-    // Reseta UI e volta para login
     document.getElementById('appRoot').style.display = 'none';
     document.getElementById('loginScreen').classList.add('active');
     document.getElementById('loginPass').value = '';
-    document.getElementById('loginUser').value =
-      localStorage.getItem('ieq_lembrar_user') || '';
+    document.getElementById('loginUser').value = localStorage.getItem('ieq_lembrar_user') || '';
     limparErroLogin();
-    showNotification('👋 Sessão encerrada.','info');
+    showNotification('👋 Sessão encerrada.', 'info');
   }
 
   // ============================================================
-  // PERMISSÕES — ajusta UI conforme nível
+  // PERMISSÕES
   // ============================================================
   function aplicarPermissoesUI() {
     if (!SESSAO) return;
     const { nome, permissao } = SESSAO;
-
-    // Nome e badge na sidebar
     document.getElementById('sidebarUserNome').textContent = nome;
     const permLabels = { admin:'Admin', tesoureiro:'Tesoureiro', visualizador:'Visualizador' };
     const permClasses = { admin:'perm-admin', tesoureiro:'perm-tesoureiro', visualizador:'perm-visualizador' };
@@ -1089,37 +1096,13 @@
          <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'eye'} text-xs"></i>
          ${permLabels[permissao]||permissao}
        </span>`;
-
-    const podeEditar  = temPermissao('podeEditar');
-    const podeLancar  = temPermissao('podeLancar');
-    const podeConfig  = temPermissao('podeConfig');
-
-    // Botões de nova ação
-    const setVisivel = (id, visivel) => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = visivel ? '' : 'none';
-    };
-    setVisivel('btnNovoCulto',    podeLancar);
-    setVisivel('btnNovaEntrada',  podeLancar);
-    setVisivel('btnNovaDespesa',  podeLancar);
-
-    // Aba Configurações — apenas admin vê "Usuários"
+    const podeLancar = temPermissao('podeLancar');
+    const podeConfig = temPermissao('podeConfig');
+    const setVisivel = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? '' : 'none'; };
+    setVisivel('btnNovoCulto', podeLancar);
+    setVisivel('btnNovaEntrada', podeLancar);
+    setVisivel('btnNovaDespesa', podeLancar);
     setVisivel('cardUsuarios', podeConfig);
-
-    // Nav de configurações — todos podem ver, mas só admin edita
-    // (a aba fica visível para todos)
-  }
-
-  // Bloqueia botões de editar/excluir em tabelas para visualizador
-  // chamado após renderizar cada tabela
-  function aplicarBloqueioTabela() {
-    if (temPermissao('podeEditar')) return; // pode editar, não bloqueia
-    document.querySelectorAll('.btn-acao-edit, .btn-acao-del').forEach(btn => {
-      btn.disabled = true;
-      btn.style.opacity = '0.3';
-      btn.style.cursor  = 'not-allowed';
-      btn.title = 'Sem permissão';
-    });
   }
 
   // ============================================================
@@ -1173,13 +1156,21 @@
   // ============================================================
   function normalizarCulto(c) {
     return { ...c,
-      totalDizimos:parseFloat(c.totalDizimos)||0, totalOfertas:parseFloat(c.totalOfertas)||0,
-      totalArrecadado:parseFloat(c.totalArrecadado)||0, missoes:parseFloat(c.missoes)||0,
-      especiais:parseFloat(c.especiais)||0, outras:parseFloat(c.outras)||0,
-      presentes:parseInt(c.presentes)||0, visitantes:parseInt(c.visitantes)||0,
-      criancas:parseInt(c.criancas)||0, caixaLocal:parseFloat(c.caixaLocal)||0,
+      totalDizimos:parseFloat(c.totalDizimos)||0,
+      totalOfertas:parseFloat(c.totalOfertas)||0,
+      // CORREÇÃO 1: totalArrecadado = dizimos + ofertas (SEM missões)
+      totalArrecadado:parseFloat(c.totalArrecadado)||0,
+      missoes:parseFloat(c.missoes)||0,
+      especiais:parseFloat(c.especiais)||0,
+      outras:parseFloat(c.outras)||0,
+      presentes:parseInt(c.presentes)||0,
+      visitantes:parseInt(c.visitantes)||0,
+      criancas:parseInt(c.criancas)||0,
+      caixaLocal:parseFloat(c.caixaLocal)||0,
       contaCorrente:parseFloat(c.contaCorrente)||0,
-      dizimistas:parseJsonSafe(c.dizimistas,[]), ofertas:parseJsonSafe(c.ofertas,[]),
+      dizimistas:parseJsonSafe(c.dizimistas,[]),
+      ofertas:parseJsonSafe(c.ofertas,[]),
+      observacoes: c.observacoes || '',
     };
   }
   function normalizarDespesa(d){ return {...d, valor:parseFloat(d.valor)||0}; }
@@ -1268,8 +1259,7 @@
   }
 
   function openModal(id) {
-    // Verifica permissão para modais de edição
-    if(['modalNovoCulto','modalNovaDespesa','modalNovaEntrada'].includes(id) && !temPermissao('podeLancar')) {
+    if(['modalNovoCulto','modalNovaDespesa','modalNovaEntrada','modalAlterarDespesa'].includes(id) && !temPermissao('podeLancar')) {
       showNotification('🔒 Sem permissão para esta ação.','error');
       return;
     }
@@ -1292,7 +1282,7 @@
   function showPage(page){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    const pEl=document.getElementById(`page-${page}`), nEl=document.getElementById(`nav-${page}`);
+    const pEl=document.getElementById(`page-${page}`),nEl=document.getElementById(`nav-${page}`);
     if(!pEl)return;
     pEl.classList.add('active'); if(nEl)nEl.classList.add('active');
     updatePageSubtitleForMonth();
@@ -1415,13 +1405,12 @@
     document.getElementById('cfgQtdCultos').textContent=DB.cultos.length;
     document.getElementById('cfgQtdDespesas').textContent=DB.despesas.length;
     document.getElementById('cfgQtdEntradas').textContent=DB.entradas.length;
-    // Esconde card de usuários para não-admin
     const card=document.getElementById('cardUsuarios');
     if(card) card.style.display=temPermissao('podeConfig')?'':'none';
   }
 
   // ============================================================
-  // INICIALIZAÇÃO DO SISTEMA (pós-login)
+  // INICIALIZAÇÃO
   // ============================================================
   async function inicializarSistema(){
     mostrarLoading(true); setSyncStatus('syncing');
@@ -1505,9 +1494,11 @@
     let infoCeia='1º domingo do mês';
     if(encontrado&&dCeia) infoCeia=`Culto de ${fmtDate(dCeia)}`;
     else if(dCeia)        infoCeia=`Sem culto em ${fmtDate(dCeia)}`;
+    // CORREÇÃO 1: missoes acumulado separado
     const totalMissoes=cultos.reduce((a,c)=>a+(parseFloat(c.missoes)||0),0);
-    const totalArrec  =cultos.reduce((a,c)=>a+(parseFloat(c.totalArrecadado)||0),0);
-    const totalPres   =cultos.reduce((a,c)=>a+(parseInt(c.presentes)||0),0);
+    // totalArrecadado = dizimos + ofertas (SEM missoes)
+    const totalArrec=cultos.reduce((a,c)=>a+(parseFloat(c.totalArrecadado)||0),0);
+    const totalPres =cultos.reduce((a,c)=>a+(parseInt(c.presentes)||0),0);
     const media=totalPres>0?totalArrec/totalPres:0;
     document.getElementById('kpi-cultos').textContent        =cultos.length;
     document.getElementById('kpi-presentes').textContent     =pCeia;
@@ -1551,63 +1542,143 @@
     chartDp=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#F59E0B','#3B82F6','#8B5CF6','#EC4899','#6B7280','#10B981','#F97316','#14B8A6','#84CC16','#EF4444'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${fmt(ctx.parsed)}`}}}}});
   }
 
+  // ============================================================
+  // CORREÇÃO 2: DISTRIBUIÇÕES — Missões = soma total do mês, 50% Est + 50% Nac
+  // ============================================================
   function renderDistribuicoesMes(){
-    const base=sum(getEntradasMes(GLOBAL_MONTH),e=>e.valor);
-    const calc=[
-      {nome:'Taxa Regional',pct:0.04,cor:'bg-blue-500'},
-      {nome:'CND',pct:0.04,cor:'bg-purple-500'},
-      {nome:'CED',pct:0.04,cor:'bg-pink-500'},
-      {nome:'Fundo Social',pct:0.01,cor:'bg-green-500'},
-      {nome:'FIRE',pct:0.03,cor:'bg-orange-500'},
+    // Base = entradas do mês (dízimos + ofertas, sem missões)
+    const base = sum(getEntradasMes(GLOBAL_MONTH), e => e.valor);
+
+    // Total de Missões acumulado no mês (soma de todos os cultos)
+    const totalMissoes = getCultosMes(GLOBAL_MONTH).reduce(
+      (acc, c) => acc + (parseFloat(c.missoes) || 0), 0
+    );
+    const missStad = totalMissoes / 2;
+    const missNac  = totalMissoes / 2;
+
+    const calc = [
+      { nome:'Taxa Regional', pct:0.04, cor:'bg-blue-500'   },
+      { nome:'CND',           pct:0.04, cor:'bg-purple-500' },
+      { nome:'CED',           pct:0.04, cor:'bg-pink-500'   },
+      { nome:'Fundo Social',  pct:0.01, cor:'bg-green-500'  },
+      { nome:'FIRE',          pct:0.03, cor:'bg-orange-500' },
     ];
-    const valores=calc.map(x=>({...x,valor:base*x.pct}));
-    const missoes={nome:'Missões',valor:30.00,cor:'bg-teal-500'};
-    const totalDistrib=valores.reduce((s,x)=>s+x.valor,0)+missoes.valor;
-    const container=document.getElementById('dashDistribuicoes'); if(!container)return;
-    container.innerHTML=[
-      ...valores.map(x=>{
-        const p=totalDistrib>0?(x.valor/totalDistrib)*100:0;
-        return `<div class="flex items-center justify-between gap-2">
-          <span class="text-sm text-gray-600 flex-shrink-0">${x.nome} (${Math.round(x.pct*100)}%)</span>
-          <div class="flex items-center gap-2 flex-1 justify-end">
-            <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2"><div class="${x.cor} h-2 rounded-full" style="width:${p.toFixed(1)}%"></div></div>
-            <span class="text-sm font-semibold text-gray-800 w-24 text-right">${fmt(x.valor)}</span>
+    const valores = calc.map(x => ({ ...x, valor: base * x.pct }));
+    const totalDistrib = valores.reduce((s, x) => s + x.valor, 0) + totalMissoes;
+
+    // Dashboard distribuições
+    const container = document.getElementById('dashDistribuicoes');
+    if (container) {
+      container.innerHTML = [
+        ...valores.map(x => {
+          const p = totalDistrib > 0 ? (x.valor / totalDistrib) * 100 : 0;
+          return `<div class="flex items-center justify-between gap-2">
+            <span class="text-sm text-gray-600 flex-shrink-0">${x.nome} (${Math.round(x.pct*100)}%)</span>
+            <div class="flex items-center gap-2 flex-1 justify-end">
+              <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2"><div class="${x.cor} h-2 rounded-full" style="width:${p.toFixed(1)}%"></div></div>
+              <span class="text-sm font-semibold text-gray-800 w-24 text-right">${fmt(x.valor)}</span>
+            </div>
+          </div>`;
+        }),
+        (() => {
+          const p = totalDistrib > 0 ? (totalMissoes / totalDistrib) * 100 : 0;
+          return `<div class="flex items-center justify-between gap-2">
+            <span class="text-sm text-gray-600 flex-shrink-0">Missões (Est. 50% + Nac. 50%)</span>
+            <div class="flex items-center gap-2 flex-1 justify-end">
+              <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2"><div class="bg-teal-500 h-2 rounded-full" style="width:${p.toFixed(1)}%"></div></div>
+              <span class="text-sm font-semibold text-gray-800 w-24 text-right">${fmt(totalMissoes)}</span>
+            </div>
+          </div>`;
+        })(),
+        `<div class="border-t pt-2 flex justify-between">
+          <span class="font-bold text-gray-700">Total Distribuído</span>
+          <span class="font-bold text-gray-800">${fmt(totalDistrib)}</span>
+        </div>`
+      ].join('');
+    }
+
+    // Atualiza título e base
+    const distMesTitulo = document.getElementById('distMesTitulo');
+    if (distMesTitulo) distMesTitulo.textContent = monthLabel(GLOBAL_MONTH);
+    const distBaseLabel = document.getElementById('distBaseLabel');
+    if (distBaseLabel) distBaseLabel.textContent = fmt(base);
+    const calcBaseEl = document.getElementById('calcBase');
+    if (calcBaseEl) calcBaseEl.value = base.toFixed(2);
+
+    // Cards de distribuições — CORREÇÃO 2: Missões com Est 50% / Nac 50%
+    const distCards = document.getElementById('distCards');
+    if (distCards) {
+      distCards.innerHTML = [
+        ...valores.map(x => `
+          <div class="border rounded-xl p-3">
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-semibold text-gray-700 text-sm">${x.nome}</span>
+              <span class="badge-blue px-2 py-0.5 rounded-full text-xs font-bold">${Math.round(x.pct*100)}%</span>
+            </div>
+            <p class="text-xl font-bold text-blue-600">${fmt(x.valor)}</p>
+            <p class="text-xs text-gray-500 mt-1">Base: ${fmt(base)}</p>
+          </div>`),
+        `<div class="border-2 border-teal-300 rounded-xl p-3 bg-teal-50">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold text-teal-700 text-sm">Missões</span>
+            <span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full text-xs font-bold">3° Dom.</span>
           </div>
-        </div>`;
-      }),
-      (()=>{const p=totalDistrib>0?(missoes.valor/totalDistrib)*100:0;return `<div class="flex items-center justify-between gap-2">
-        <span class="text-sm text-gray-600 flex-shrink-0">${missoes.nome}</span>
-        <div class="flex items-center gap-2 flex-1 justify-end">
-          <div class="w-20 sm:w-32 bg-gray-100 rounded-full h-2"><div class="${missoes.cor} h-2 rounded-full" style="width:${p.toFixed(1)}%"></div></div>
-          <span class="text-sm font-semibold text-gray-800 w-24 text-right">${fmt(missoes.valor)}</span>
+          <p class="text-xl font-bold text-teal-600">${fmt(totalMissoes)}</p>
+          <div class="mt-2 grid grid-cols-2 gap-1">
+            <div class="bg-white rounded-lg p-1.5 text-center border border-teal-200">
+              <p class="text-xs text-gray-500 font-medium">Est. 50%</p>
+              <p class="text-sm font-bold text-teal-700">${fmt(missStad)}</p>
+            </div>
+            <div class="bg-white rounded-lg p-1.5 text-center border border-teal-200">
+              <p class="text-xs text-gray-500 font-medium">Nac. 50%</p>
+              <p class="text-sm font-bold text-teal-700">${fmt(missNac)}</p>
+            </div>
+          </div>
+        </div>`
+      ].join('');
+    }
+
+    const distTotal = document.getElementById('distTotalDistribuido');
+    if (distTotal) distTotal.textContent = fmt(totalDistrib);
+    calcularDistribuicoes();
+  }
+
+  function calcularDistribuicoes(){
+    const base = +document.getElementById('calcBase')?.value || 0;
+    // Missões da calculadora usa o total do mês atual
+    const totalMissoes = getCultosMes(GLOBAL_MONTH).reduce(
+      (acc, c) => acc + (parseFloat(c.missoes) || 0), 0
+    );
+    const missStad = totalMissoes / 2;
+    const missNac  = totalMissoes / 2;
+    const calc = {
+      'Taxa Regional (4%)': base * 0.04,
+      'CND (4%)':           base * 0.04,
+      'CED (4%)':           base * 0.04,
+      'Fundo Social (1%)':  base * 0.01,
+      'FIRE (3%)':          base * 0.03,
+    };
+    const div = document.getElementById('resultadoCalculo'); if (!div) return;
+    const total = Object.values(calc).reduce((a, b) => a + b, 0) + totalMissoes;
+    div.innerHTML = [
+      ...Object.entries(calc).map(([k, v]) =>
+        `<div class="bg-gray-50 rounded-lg p-3 text-center">
+          <p class="text-xs text-gray-500 mb-1">${k}</p>
+          <p class="font-bold text-gray-800 text-sm">${fmt(v)}</p>
+        </div>`),
+      `<div class="bg-teal-50 rounded-lg p-3 border border-teal-200">
+        <p class="text-xs text-teal-600 mb-1 font-semibold text-center">Missões (total mês)</p>
+        <p class="font-bold text-teal-700 text-center">${fmt(totalMissoes)}</p>
+        <div class="grid grid-cols-2 gap-1 mt-1">
+          <div class="text-center"><p class="text-xs text-gray-400">Est.</p><p class="text-xs font-bold text-teal-600">${fmt(missStad)}</p></div>
+          <div class="text-center"><p class="text-xs text-gray-400">Nac.</p><p class="text-xs font-bold text-teal-600">${fmt(missNac)}</p></div>
         </div>
-      </div>`; })(),
-      `<div class="border-t pt-2 flex justify-between"><span class="font-bold text-gray-700">Total Distribuído</span><span class="font-bold text-gray-800">${fmt(totalDistrib)}</span></div>`
-    ].join('');
-    document.getElementById('distMesTitulo').textContent=monthLabel(GLOBAL_MONTH);
-    document.getElementById('distBaseLabel').textContent=fmt(base);
-    const el=document.getElementById('calcBase'); if(el)el.value=base.toFixed(2);
-    const distCards=document.getElementById('distCards');
-    distCards.innerHTML=[
-      ...valores.map(x=>`<div class="border rounded-xl p-3">
-        <div class="flex justify-between items-center mb-2">
-          <span class="font-semibold text-gray-700 text-sm">${x.nome}</span>
-          <span class="badge-blue px-2 py-0.5 rounded-full text-xs font-bold">${Math.round(x.pct*100)}%</span>
-        </div>
-        <p class="text-xl font-bold text-blue-600">${fmt(x.valor)}</p>
-        <p class="text-xs text-gray-500 mt-1">Base: ${fmt(base)}</p>
-      </div>`),
-      `<div class="border rounded-xl p-3">
-        <div class="flex justify-between items-center mb-2">
-          <span class="font-semibold text-gray-700 text-sm">Missões</span>
-          <span class="badge-blue px-2 py-0.5 rounded-full text-xs font-bold">3° Dom.</span>
-        </div>
-        <p class="text-xl font-bold text-teal-600">${fmt(missoes.valor)}</p>
-        <p class="text-xs text-gray-500 mt-1">Est: R$ 15 | Nac: R$ 15</p>
+      </div>`,
+      `<div class="bg-blue-50 rounded-lg p-3 text-center col-span-2 md:col-span-4 border border-blue-200">
+        <p class="text-xs text-blue-600 mb-1 font-semibold">TOTAL DISTRIBUÍDO</p>
+        <p class="font-bold text-blue-800">${fmt(total)}</p>
       </div>`
     ].join('');
-    document.getElementById('distTotalDistribuido').textContent=fmt(totalDistrib);
-    calcularDistribuicoes();
   }
 
   // ============================================================
@@ -1641,25 +1712,54 @@
   function adicionarOferta(n='',v='',f='Caixa'){    document.getElementById('listaOfertas').appendChild(criarLinhaOferta(n,v,f));    calcTotalCulto(); }
   function removerLinha(btn,tipo){ btn.closest(tipo==='dizimista'?'.dizimista-row':'.oferta-row').remove(); calcTotalCulto(); }
 
+  // CORREÇÃO 1: calcTotalCulto — totalArrecadado NÃO inclui missões
   function calcTotalCulto(){
     let dC=0,dP=0;
-    document.querySelectorAll('.dizimista-row').forEach(r=>{const v=+r.querySelector('.diz-valor').value||0; r.querySelector('.diz-forma').value==='PIX'?dP+=v:dC+=v;});
-    const tD=dC+dP; document.getElementById('totalDizimosLabel').textContent=fmt(tD);
+    document.querySelectorAll('.dizimista-row').forEach(r=>{
+      const v=+r.querySelector('.diz-valor').value||0;
+      r.querySelector('.diz-forma').value==='PIX'?dP+=v:dC+=v;
+    });
+    const tD=dC+dP;
+    document.getElementById('totalDizimosLabel').textContent=fmt(tD);
+
     let oC=0,oP=0;
-    document.querySelectorAll('.oferta-row').forEach(r=>{const v=+r.querySelector('.of-valor').value||0; r.querySelector('.of-forma').value==='PIX'?oP+=v:oC+=v;});
-    const tO=oC+oP; document.getElementById('totalOfertasLabel').textContent=fmt(tO);
-    const mi=+document.getElementById('c-missoes').value||0,es=+document.getElementById('c-especiais').value||0,ou=+document.getElementById('c-outras').value||0;
-    const total=tD+tO+mi+es+ou;
+    document.querySelectorAll('.oferta-row').forEach(r=>{
+      const v=+r.querySelector('.of-valor').value||0;
+      r.querySelector('.of-forma').value==='PIX'?oP+=v:oC+=v;
+    });
+    const tO=oC+oP;
+    document.getElementById('totalOfertasLabel').textContent=fmt(tO);
+
+    const es=+document.getElementById('c-especiais').value||0;
+    const ou=+document.getElementById('c-outras').value||0;
+    // missoes é lido mas NÃO soma no totalArrecadado
+    // totalArrecadado = dízimos + ofertas + especiais + outras
+    const total = tD + tO + es + ou;
     document.getElementById('totalArrecadado').textContent=fmt(total);
-    const tC=dC+oC,tPix=dP+oP;
+
+    const tC=dC+oC, tPix=dP+oP;
     document.getElementById('c-caixa').value=tC.toFixed(2);
     document.getElementById('c-conta').value=tPix.toFixed(2);
     document.getElementById('c-caixa').style.borderColor=tC>0?'#10b981':'#86efac';
     document.getElementById('c-conta').style.borderColor=tPix>0?'#3b82f6':'#93c5fd';
+
     return{totalDiz:tD,totalOf:tO,total,dizCaixa:dC,dizPix:dP,ofCaixa:oC,ofPix:oP};
   }
-  function coletarDizimistas(){ return[...document.querySelectorAll('.dizimista-row')].map(r=>({nome:r.querySelector('.diz-nome').value.trim(),valor:+r.querySelector('.diz-valor').value||0,forma:r.querySelector('.diz-forma').value})).filter(d=>d.valor>0||d.nome); }
-  function coletarOfertas()   { return[...document.querySelectorAll('.oferta-row')].map(r=>({nome:r.querySelector('.of-nome').value.trim(),valor:+r.querySelector('.of-valor').value||0,forma:r.querySelector('.of-forma').value})).filter(o=>o.valor>0||o.nome); }
+
+  function coletarDizimistas(){
+    return[...document.querySelectorAll('.dizimista-row')].map(r=>({
+      nome:r.querySelector('.diz-nome').value.trim(),
+      valor:+r.querySelector('.diz-valor').value||0,
+      forma:r.querySelector('.diz-forma').value
+    })).filter(d=>d.valor>0||d.nome);
+  }
+  function coletarOfertas(){
+    return[...document.querySelectorAll('.oferta-row')].map(r=>({
+      nome:r.querySelector('.of-nome').value.trim(),
+      valor:+r.querySelector('.of-valor').value||0,
+      forma:r.querySelector('.of-forma').value
+    })).filter(o=>o.valor>0||o.nome);
+  }
 
   function openNovoCulto(){
     if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
@@ -1667,30 +1767,32 @@
     document.getElementById('cultoModalTitulo').textContent='Novo Relatório de Culto (REFC)';
     document.getElementById('modalNovoCulto').classList.add('active');
   }
+
   function openEditarCulto(idx){
     if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão para editar.','error');return;}
     const c=DB.cultos[idx]; if(!c)return;
     resetFormCulto();
     document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
-    document.getElementById('c-id').value       =c.id||'';
-    document.getElementById('c-data').value     =c.data||'';
-    document.getElementById('c-horario').value  =c.horario||'19:30';
-    document.getElementById('c-pastor').value   =c.pastor||'';
-    document.getElementById('c-pregador').value =c.pregador||'';
-    document.getElementById('c-tipo').value     =c.tipo||'Culto Regular';
-    document.getElementById('c-cura').value     =c.cura||0;
-    document.getElementById('c-presentes').value=c.presentes||0;
+    document.getElementById('c-id').value        =c.id||'';
+    document.getElementById('c-data').value      =c.data||'';
+    document.getElementById('c-horario').value   =c.horario||'19:30';
+    document.getElementById('c-pastor').value    =c.pastor||'';
+    document.getElementById('c-pregador').value  =c.pregador||'';
+    document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
+    document.getElementById('c-cura').value      =c.cura||0;
+    document.getElementById('c-presentes').value =c.presentes||0;
     document.getElementById('c-visitantes').value=c.visitantes||0;
-    document.getElementById('c-criancas').value =c.criancas||0;
+    document.getElementById('c-criancas').value  =c.criancas||0;
+    document.getElementById('c-observacoes').value=c.observacoes||''; // CORREÇÃO 4
     document.getElementById('listaDizimistas').innerHTML='';
     (c.dizimistas||[]).forEach(d=>adicionarDizimista(d.nome||'',d.valor||0,d.forma||'Caixa'));
     if(!(c.dizimistas||[]).length) adicionarDizimista();
     document.getElementById('listaOfertas').innerHTML='';
     (c.ofertas||[]).forEach(o=>adicionarOferta(o.nome||'',o.valor||0,o.forma||'Caixa'));
     if(!(c.ofertas||[]).length) adicionarOferta();
-    document.getElementById('c-missoes').value  =parseFloat(c.missoes)||0;
-    document.getElementById('c-especiais').value=parseFloat(c.especiais)||0;
-    document.getElementById('c-outras').value   =parseFloat(c.outras)||0;
+    document.getElementById('c-missoes').value   =parseFloat(c.missoes)||0;
+    document.getElementById('c-especiais').value =parseFloat(c.especiais)||0;
+    document.getElementById('c-outras').value    =parseFloat(c.outras)||0;
     calcTotalCulto();
     document.getElementById('modalNovoCulto').classList.add('active');
   }
@@ -1700,38 +1802,71 @@
     const{totalDiz,totalOf,total}=calcTotalCulto();
     const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
     const cultoIdEx=document.getElementById('c-id').value;
+    const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
+
     const cultoData={
-      data:document.getElementById('c-data').value,horario:document.getElementById('c-horario').value,
-      pastor:document.getElementById('c-pastor').value,pregador:document.getElementById('c-pregador').value,
-      tipo:document.getElementById('c-tipo').value,cura:+document.getElementById('c-cura').value||0,
-      presentes:+document.getElementById('c-presentes').value||0,visitantes:+document.getElementById('c-visitantes').value||0,
+      data:document.getElementById('c-data').value,
+      horario:document.getElementById('c-horario').value,
+      pastor:document.getElementById('c-pastor').value,
+      pregador:document.getElementById('c-pregador').value,
+      tipo:document.getElementById('c-tipo').value,
+      cura:+document.getElementById('c-cura').value||0,
+      presentes:+document.getElementById('c-presentes').value||0,
+      visitantes:+document.getElementById('c-visitantes').value||0,
       criancas:+document.getElementById('c-criancas').value||0,
-      dizimistas:JSON.stringify(coletarDizimistas()),totalDizimos:totalDiz,
-      ofertas:JSON.stringify(coletarOfertas()),totalOfertas:totalOf,
-      missoes:parseFloat(document.getElementById('c-missoes').value)||0,
+      dizimistas:JSON.stringify(coletarDizimistas()),
+      totalDizimos:totalDiz,
+      ofertas:JSON.stringify(coletarOfertas()),
+      totalOfertas:totalOf,
+      // CORREÇÃO 1: missões salva separado, totalArrecadado sem missões
+      missoes: missoes,
       especiais:parseFloat(document.getElementById('c-especiais').value)||0,
       outras:parseFloat(document.getElementById('c-outras').value)||0,
-      totalArrecadado:total,caixaLocal:+document.getElementById('c-caixa').value||0,
+      totalArrecadado:total, // total = diz + of + especiais + outras (SEM missoes)
+      caixaLocal:+document.getElementById('c-caixa').value||0,
       contaCorrente:+document.getElementById('c-conta').value||0,
-      atualizadoEm:nowIso,criadoEm:nowIso
+      observacoes:document.getElementById('c-observacoes').value||'', // CORREÇÃO 4
+      atualizadoEm:nowIso,
+      criadoEm:nowIso
     };
+
     setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
     try {
       if(isEdit) await excluirCultoPorId(cultoIdEx,{silent:true});
       const rc=await apiSave('cultos',cultoData);
       const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
       DB.cultos.unshift(culto);
+      // CORREÇÃO 1: Entrada registra apenas dízimos+ofertas (sem missões)
       if(total>0){
-        const ed={descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,valor:total,data:culto.data,origem:'culto',cultoId:rc.id,criadoEm:nowIso};
+        const ed={
+          descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
+          valor:total, // total sem missões
+          data:culto.data,
+          origem:'culto',
+          cultoId:rc.id,
+          criadoEm:nowIso
+        };
         const re=await apiSave('entradas',ed);
         DB.entradas.unshift({...ed,id:re.id});
       }
-      DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
-      setSyncStatus('synced'); showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! ${fmt(total)}`,'success');
+      // CORREÇÃO 1: Missões são salvas separadamente (só para dashboards)
+      // Não gera entrada separada — apenas o campo missoes no culto alimenta distribuições e dashboard
+      DB.saveLocal();
+      closeModal('modalNovoCulto'); resetFormCulto();
+      setSyncStatus('synced');
+      showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
     } catch(err){
       const lid=Date.now();
+      const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
       DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
-      if(total>0) DB.entradas.unshift({id:lid+1,descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,valor:total,data:cultoData.data,origem:'culto',cultoId:lid});
+      if(total>0) DB.entradas.unshift({
+        id:lid+1,
+        descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
+        valor:total,
+        data:cultoData.data,
+        origem:'culto',
+        cultoId:lid
+      });
       DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
       setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
     } finally{
@@ -1753,6 +1888,7 @@
     document.getElementById('c-missoes').value='0';
     document.getElementById('c-especiais').value='0';
     document.getElementById('c-outras').value='0';
+    document.getElementById('c-observacoes').value=''; // CORREÇÃO 4
     const hoje=new Date().toISOString().split('T')[0];
     document.getElementById('c-data').value=hoje;
     document.getElementById('c-horario').value='19:30';
@@ -1808,12 +1944,13 @@
     atualizarTotaisCultos(lista);
   }
 
+  // CORREÇÃO 1: totais corretos — missões acumulado separado, Total = diz+of (sem missões)
   function atualizarTotaisCultos(lista){
     const t=lista.reduce((a,c)=>({
-      dizimos:a.dizimos+(parseFloat(c.totalDizimos)||0),
-      ofertas:a.ofertas+(parseFloat(c.totalOfertas)||0)+(parseFloat(c.especiais)||0),
-      missoes:a.missoes+(parseFloat(c.missoes)||0),
-      total:a.total+(parseFloat(c.totalArrecadado)||0)
+      dizimos:  a.dizimos  + (parseFloat(c.totalDizimos)||0),
+      ofertas:  a.ofertas  + (parseFloat(c.totalOfertas)||0) + (parseFloat(c.especiais)||0),
+      missoes:  a.missoes  + (parseFloat(c.missoes)||0),       // acumulado separado
+      total:    a.total    + (parseFloat(c.totalArrecadado)||0) // sem missões
     }),{dizimos:0,ofertas:0,missoes:0,total:0});
     document.getElementById('tot-dizimos').textContent     =fmt(t.dizimos);
     document.getElementById('tot-ofertas').textContent     =fmt(t.ofertas);
@@ -1823,34 +1960,86 @@
 
   function verCulto(idx){
     const c=DB.cultos[idx]; if(!c)return;
-    const rowsDiz=(c.dizimistas||[]).length>0?c.dizimistas.map(d=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(d.nome||'—')}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(d.valor)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center"><span style="background:${d.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${d.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(d.forma)}</span></td></tr>`).join(''):`<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhum dizimista registrado</td></tr>`;
-    const rowsOf=(c.ofertas||[]).length>0?c.ofertas.map(o=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(o.nome||'—')}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(o.valor)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center"><span style="background:${o.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${o.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(o.forma)}</span></td></tr>`).join(''):`<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhuma oferta registrada</td></tr>`;
+    const rowsDiz=(c.dizimistas||[]).length>0
+      ?c.dizimistas.map(d=>`<tr>
+          <td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(d.nome||'—')}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(d.valor)}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center">
+            <span style="background:${d.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${d.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(d.forma)}</span>
+          </td></tr>`).join('')
+      :`<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhum dizimista registrado</td></tr>`;
+    const rowsOf=(c.ofertas||[]).length>0
+      ?c.ofertas.map(o=>`<tr>
+          <td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(o.nome||'—')}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;color:#059669;font-weight:600">${fmt(o.valor)}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center">
+            <span style="background:${o.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${o.forma==='PIX'?'#1d4ed8':'#065f46'};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(o.forma)}</span>
+          </td></tr>`).join('')
+      :`<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af">Nenhuma oferta registrada</td></tr>`;
+
     const logoSrc=DB.config.logo||null;
     const logoHtml=logoSrc?`<img src="${logoSrc}" style="width:72px;height:72px;border-radius:12px;object-fit:contain;background:#fff;padding:4px;border:1px solid #e5e7eb;display:block;margin:0 auto 8px">`:`<div style="font-size:32px;margin-bottom:8px">⛪</div>`;
     const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ ESPLANADA');
+
+    // CORREÇÃO 4: Observações exibidas no relatório impresso
+    const obsHtml=c.observacoes
+      ?`<div style="margin-bottom:16px;padding:12px;background:#fefce8;border:1px solid #fde047;border-radius:8px">
+          <p style="font-size:12px;font-weight:700;color:#854d0e;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">📝 Observações</p>
+          <p style="font-size:13px;color:#713f12;white-space:pre-line">${escapeHtml(c.observacoes)}</p>
+        </div>`
+      :'';
+
     document.getElementById('printArea').innerHTML=`
       <div style="font-family:'Segoe UI',sans-serif">
         <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #1e3a5f">
-          ${logoHtml}<h2 style="color:#1e3a5f;margin:0;font-size:18px">${nomeIgreja}</h2>
+          ${logoHtml}
+          <h2 style="color:#1e3a5f;margin:0;font-size:18px">${nomeIgreja}</h2>
           <h3 style="color:#c8a951;margin:4px 0 0;font-size:14px;letter-spacing:2px">RELATÓRIO DE CULTO — REFC</h3>
         </div>
         <table style="width:100%;border-collapse:collapse;margin-bottom:16px;background:#f8fafc">
           <tr><th colspan="4" style="background:#1e3a5f;color:white;padding:8px 12px;text-align:left;font-size:13px">INFORMAÇÕES DO CULTO</th></tr>
-          <tr><td style="padding:8px 12px;font-size:13px;color:#6b7280;width:25%">Data</td><td style="padding:8px 12px;font-size:13px;font-weight:600">${fmtDate(c.data)} • ${escapeHtml(c.horario||'')}</td><td style="padding:8px 12px;font-size:13px;color:#6b7280;width:20%">Tipo</td><td style="padding:8px 12px;font-size:13px;font-weight:600">${escapeHtml(c.tipo||'-')}</td></tr>
-          <tr style="background:#fff"><td style="padding:8px 12px;font-size:13px;color:#6b7280">Pastor</td><td style="padding:8px 12px;font-size:13px;font-weight:600">${escapeHtml(c.pastor||'—')}</td><td style="padding:8px 12px;font-size:13px;color:#6b7280">Pregador</td><td style="padding:8px 12px;font-size:13px;font-weight:600">${escapeHtml(c.pregador||'—')}</td></tr>
-          <tr><td style="padding:8px 12px;font-size:13px;color:#6b7280">Presentes</td><td style="padding:8px 12px;font-size:13px;font-weight:600">${c.presentes||0}</td><td style="padding:8px 12px;font-size:13px;color:#6b7280">Visitantes</td><td style="padding:8px 12px;font-size:13px;font-weight:600">${c.visitantes||0} • Crianças: ${c.criancas||0}</td></tr>
+          <tr>
+            <td style="padding:8px 12px;font-size:13px;color:#6b7280;width:25%">Data</td>
+            <td style="padding:8px 12px;font-size:13px;font-weight:600">${fmtDate(c.data)} • ${escapeHtml(c.horario||'')}</td>
+            <td style="padding:8px 12px;font-size:13px;color:#6b7280;width:20%">Tipo</td>
+            <td style="padding:8px 12px;font-size:13px;font-weight:600">${escapeHtml(c.tipo||'-')}</td>
+          </tr>
+          <tr style="background:#fff">
+            <td style="padding:8px 12px;font-size:13px;color:#6b7280">Pastor</td>
+            <td style="padding:8px 12px;font-size:13px;font-weight:600">${escapeHtml(c.pastor||'—')}</td>
+            <td style="padding:8px 12px;font-size:13px;color:#6b7280">Pregador</td>
+            <td style="padding:8px 12px;font-size:13px;font-weight:600">${escapeHtml(c.pregador||'—')}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 12px;font-size:13px;color:#6b7280">Presentes</td>
+            <td style="padding:8px 12px;font-size:13px;font-weight:600">${c.presentes||0}</td>
+            <td style="padding:8px 12px;font-size:13px;color:#6b7280">Visitantes</td>
+            <td style="padding:8px 12px;font-size:13px;font-weight:600">${c.visitantes||0} • Crianças: ${c.criancas||0}</td>
+          </tr>
         </table>
         <div style="margin-bottom:16px">
-          <div style="background:#1e3a5f;color:white;padding:8px 12px;border-radius:8px 8px 0 0;font-size:13px;font-weight:700;display:flex;justify-content:space-between"><span>DÍZIMOS</span><span>${fmt(c.totalDizimos||0)}</span></div>
+          <div style="background:#1e3a5f;color:white;padding:8px 12px;border-radius:8px 8px 0 0;font-size:13px;font-weight:700;display:flex;justify-content:space-between">
+            <span>DÍZIMOS</span><span>${fmt(c.totalDizimos||0)}</span>
+          </div>
           <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-top:none">
-            <thead><tr style="background:#f9fafb"><th style="padding:8px 10px;text-align:left;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Nome</th><th style="padding:8px 10px;text-align:right;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Valor</th><th style="padding:8px 10px;text-align:center;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Forma</th></tr></thead>
+            <thead><tr style="background:#f9fafb">
+              <th style="padding:8px 10px;text-align:left;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Nome</th>
+              <th style="padding:8px 10px;text-align:right;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Valor</th>
+              <th style="padding:8px 10px;text-align:center;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Forma</th>
+            </tr></thead>
             <tbody>${rowsDiz}</tbody>
           </table>
         </div>
         <div style="margin-bottom:16px">
-          <div style="background:#1e40af;color:white;padding:8px 12px;border-radius:8px 8px 0 0;font-size:13px;font-weight:700;display:flex;justify-content:space-between"><span>OFERTAS</span><span>${fmt(c.totalOfertas||0)}</span></div>
+          <div style="background:#1e40af;color:white;padding:8px 12px;border-radius:8px 8px 0 0;font-size:13px;font-weight:700;display:flex;justify-content:space-between">
+            <span>OFERTAS</span><span>${fmt(c.totalOfertas||0)}</span>
+          </div>
           <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-top:none">
-            <thead><tr style="background:#f9fafb"><th style="padding:8px 10px;text-align:left;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Nome</th><th style="padding:8px 10px;text-align:right;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Valor</th><th style="padding:8px 10px;text-align:center;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Forma</th></tr></thead>
+            <thead><tr style="background:#f9fafb">
+              <th style="padding:8px 10px;text-align:left;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Nome</th>
+              <th style="padding:8px 10px;text-align:right;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Valor</th>
+              <th style="padding:8px 10px;text-align:center;font-size:12px;color:#6b7280;border-bottom:1px solid #eee">Forma</th>
+            </tr></thead>
             <tbody>${rowsOf}</tbody>
           </table>
         </div>
@@ -1858,17 +2047,20 @@
           <tr><th colspan="2" style="background:#1e3a5f;color:white;padding:8px 12px;text-align:left;font-size:13px">RESUMO FINANCEIRO</th></tr>
           <tr><td style="padding:7px 12px;font-size:13px">Dízimos</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.totalDizimos||0)}</td></tr>
           <tr style="background:#f9fafb"><td style="padding:7px 12px;font-size:13px">Ofertas Gerais</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.totalOfertas||0)}</td></tr>
-          <tr><td style="padding:7px 12px;font-size:13px">Ofertas Missões</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(parseFloat(c.missoes)||0)}</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:7px 12px;font-size:13px">Ofertas Especiais</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.especiais||0)}</td></tr>
-          <tr><td style="padding:7px 12px;font-size:13px">Outras Entradas</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.outras||0)}</td></tr>
-          <tr style="background:#1e3a5f"><td style="padding:10px 12px;font-weight:700;color:white;font-size:15px">TOTAL ARRECADADO</td><td style="padding:10px 12px;text-align:right;font-weight:700;color:#c8a951;font-size:16px">${fmt(c.totalArrecadado||0)}</td></tr>
+          <tr><td style="padding:7px 12px;font-size:13px">Ofertas Especiais</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.especiais||0)}</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:7px 12px;font-size:13px">Outras Entradas</td><td style="padding:7px 12px;text-align:right;font-weight:600;color:#059669">${fmt(c.outras||0)}</td></tr>
+          <tr style="background:#1e3a5f"><td style="padding:10px 12px;font-weight:700;color:white;font-size:15px">TOTAL (Dízimos + Ofertas)</td><td style="padding:10px 12px;text-align:right;font-weight:700;color:#c8a951;font-size:16px">${fmt(c.totalArrecadado||0)}</td></tr>
+          <tr style="background:#0f766e"><td style="padding:8px 12px;font-weight:700;color:white;font-size:13px">🌍 Oferta Missões (separado)</td><td style="padding:8px 12px;text-align:right;font-weight:700;color:#99f6e4;font-size:14px">${fmt(parseFloat(c.missoes)||0)}</td></tr>
+          <tr><td colspan="2" style="padding:6px 12px;font-size:11px;color:#6b7280">Missões: Est. ${fmt((parseFloat(c.missoes)||0)/2)} | Nac. ${fmt((parseFloat(c.missoes)||0)/2)}</td></tr>
         </table>
+        ${obsHtml}
         <div style="text-align:center;color:#9ca3af;font-size:11px;margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb">
           Gerado em ${new Date().toLocaleString('pt-BR')} • ${nomeIgreja} — Sistema Financeiro
         </div>
       </div>`;
     openModal('modalVerCulto');
   }
+
   function imprimirCultoDireto(idx){ verCulto(idx); setTimeout(()=>imprimirCulto(),150); }
   function imprimirCulto(){
     const cont=document.getElementById('printArea').innerHTML;
@@ -1890,6 +2082,7 @@
       DB.saveLocal(); setSyncStatus('error'); if(!silent)showNotification('⚠️ Excluído localmente','warning');
     }
   }
+
   async function excluirCulto(idx){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
     if(!confirm('Excluir este culto?'))return;
@@ -1899,41 +2092,124 @@
   }
 
   // ============================================================
-  // DESPESAS
+  // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
   // ============================================================
   const catIcons={'ENERGIA':'⚡','AGUA':'💧','CED':'🏛️','CND':'🌐','CONTADOR':'🧮','TAXA REGIONAL':'🏦','COMBUSTIVEL':'⛽','PREBENDA':'👤','PAPELARIA':'📄','DARF':'🧾','MATERIAL':'📦','OUTROS':'➕'};
 
   function filtrarDespesas(){
     const mes=document.getElementById('filtroDespesaMes')?.value||GLOBAL_MONTH;
     const cat=document.getElementById('filtroCat')?.value||'';
-    renderDespesas(DB.despesas.filter(d=>{const mM=mes?(d.data||'').startsWith(mes):true;const mC=cat?d.categoria===cat:true;return mM&&mC;}));
+    renderDespesas(DB.despesas.filter(d=>{
+      const mM=mes?(d.data||'').startsWith(mes):true;
+      const mC=cat?d.categoria===cat:true;
+      return mM&&mC;
+    }));
   }
-  function limparFiltrosDespesas(){document.getElementById('filtroDespesaMes').value='';document.getElementById('filtroCat').value='';renderDespesas(DB.despesas);}
+  function limparFiltrosDespesas(){
+    document.getElementById('filtroDespesaMes').value='';
+    document.getElementById('filtroCat').value='';
+    renderDespesas(DB.despesas);
+  }
 
   function renderDespesas(lista){
     if(!lista)lista=DB.despesas;
-    const tbody=document.getElementById('tabelaDespesas'),podeEx=temPermissao('podeExcluir');
-    if(!lista.length){tbody.innerHTML=`<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm"><i class="fas fa-check-circle text-green-300 text-3xl block mb-2"></i>Nenhuma despesa encontrada</td></tr>`;}
-    else tbody.innerHTML=lista.map(d=>{
-      const delBtn=(!d._fixed&&podeEx)
-        ?`<button onclick="excluirDespesa('${String(d.id).replaceAll("'","")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>`
-        :d._fixed?`<span class="text-xs text-gray-300" title="Registro fixo">🔒</span>`:`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
-      return `<tr class="table-row border-b border-gray-50">
-        <td class="py-2 text-sm"><span class="inline-flex items-center gap-1"><span>${catIcons[d.categoria]||'📌'}</span><span class="font-medium text-gray-700">${escapeHtml(d.categoria||'')}</span></span></td>
-        <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">${escapeHtml(d.descricao||'')}</td>
-        <td class="py-2 text-sm text-gray-500 hidden md:table-cell">${fmtDate(d.data)}</td>
-        <td class="py-2 text-sm font-bold text-red-600 text-right">${fmt(d.valor)}</td>
-        <td class="py-2 text-center">${delBtn}</td>
-      </tr>`;
-    }).join('');
+    const tbody=document.getElementById('tabelaDespesas');
+    const podeEd=temPermissao('podeEditar');
+    const podeEx=temPermissao('podeExcluir');
+    if(!lista.length){
+      tbody.innerHTML=`<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">
+        <i class="fas fa-check-circle text-green-300 text-3xl block mb-2"></i>Nenhuma despesa encontrada</td></tr>`;
+    } else {
+      tbody.innerHTML=lista.map(d=>{
+        // CORREÇÃO 3: botão Alterar ao lado do Excluir
+        const altBtn = (!d._fixed && podeEd)
+          ? `<button onclick="abrirAlterarDespesa('${String(d.id).replaceAll("'","")}')"
+                class="w-7 h-7 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-xs inline-flex items-center justify-center"
+                title="Alterar"><i class="fas fa-pen"></i></button>`
+          : d._fixed
+            ? `<span class="w-7 h-7 inline-flex items-center justify-center"></span>`
+            : `<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-pen"></i></button>`;
+        const delBtn = (!d._fixed && podeEx)
+          ? `<button onclick="excluirDespesa('${String(d.id).replaceAll("'","")}')"
+                class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"
+                title="Excluir"><i class="fas fa-trash"></i></button>`
+          : d._fixed
+            ? `<span class="text-xs text-gray-300 w-7 h-7 inline-flex items-center justify-center" title="Registro fixo">🔒</span>`
+            : `<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
+        return `<tr class="table-row border-b border-gray-50">
+          <td class="py-2 text-sm"><span class="inline-flex items-center gap-1">
+            <span>${catIcons[d.categoria]||'📌'}</span>
+            <span class="font-medium text-gray-700">${escapeHtml(d.categoria||'')}</span>
+          </span></td>
+          <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">${escapeHtml(d.descricao||'')}</td>
+          <td class="py-2 text-sm text-gray-500 hidden md:table-cell">${fmtDate(d.data)}</td>
+          <td class="py-2 text-sm font-bold text-red-600 text-right">${fmt(d.valor)}</td>
+          <td class="py-2 text-center">
+            <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
     const total=lista.reduce((s,d)=>s+d.valor,0);
     document.getElementById('totalDespesas').textContent=fmt(total);
     document.getElementById('totalDespesasFiltro').textContent=fmt(total);
   }
 
+  // CORREÇÃO 3: abre modal de alteração com dados preenchidos
+  function abrirAlterarDespesa(id){
+    if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão para editar.','error');return;}
+    const d=DB.despesas.find(x=>String(x.id)===String(id));
+    if(!d){showNotification('❌ Despesa não encontrada.','error');return;}
+    if(d._fixed){showNotification('❌ Registro fixo não pode ser alterado.','error');return;}
+    document.getElementById('alt-d-id').value        =String(d.id);
+    document.getElementById('alt-d-categoria').value =d.categoria||'';
+    document.getElementById('alt-d-descricao').value =d.descricao||'';
+    document.getElementById('alt-d-valor').value     =d.valor||'';
+    document.getElementById('alt-d-data').value      =d.data||'';
+    document.getElementById('modalAlterarDespesa').classList.add('active');
+  }
+
+  async function confirmarAlteracaoDespesa(e){
+    e.preventDefault();
+    const id       =document.getElementById('alt-d-id').value;
+    const categoria=document.getElementById('alt-d-categoria').value;
+    const descricao=document.getElementById('alt-d-descricao').value;
+    const valor    =+document.getElementById('alt-d-valor').value;
+    const data     =document.getElementById('alt-d-data').value;
+    if(!categoria||!valor){showNotification('⚠️ Preencha categoria e valor.','warning');return;}
+    const btn=document.getElementById('btnConfirmarAlterarDespesa');
+    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
+    const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
+    if(idx===-1){showNotification('❌ Despesa não encontrada.','error');btn.disabled=false;btn.innerHTML='<i class="fas fa-save mr-2"></i>Salvar Alterações';return;}
+    const novasDespesa={...DB.despesas[idx],categoria,descricao,valor,data,atualizadoEm:new Date().toISOString()};
+    try{
+      // Tenta via API (delete + save ou update se disponível)
+      await apiDelete('despesas',id);
+      const r=await apiSave('despesas',novasDespesa);
+      DB.despesas[idx]={...novasDespesa,id:r.id};
+      DB.saveLocal(); setSyncStatus('synced');
+      showNotification('✅ Despesa alterada!','success');
+    }catch(err){
+      // Modo offline: altera localmente
+      DB.despesas[idx]=novasDespesa;
+      DB.saveLocal(); setSyncStatus('error');
+      showNotification('⚠️ Alteração salva localmente','warning');
+    }finally{
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-save mr-2"></i>Salvar Alterações';
+      closeModal('modalAlterarDespesa');
+      filtrarDespesas(); renderDashboard();
+    }
+  }
+
   async function salvarDespesa(e){
     e.preventDefault();
-    const dd={categoria:document.getElementById('d-categoria').value,descricao:document.getElementById('d-descricao').value||document.getElementById('d-categoria').value,valor:+document.getElementById('d-valor').value,data:document.getElementById('d-data').value,criadoEm:new Date().toISOString()};
+    const dd={
+      categoria:document.getElementById('d-categoria').value,
+      descricao:document.getElementById('d-descricao').value||document.getElementById('d-categoria').value,
+      valor:+document.getElementById('d-valor').value,
+      data:document.getElementById('d-data').value,
+      criadoEm:new Date().toISOString()
+    };
     setBtnLoading('btnSalvarDespesa',true,'Registrar');
     try{
       const r=await apiSave('despesas',dd); DB.despesas.push({...dd,id:r.id}); DB.saveLocal();
@@ -1945,6 +2221,7 @@
       filtrarDespesas(); setSyncStatus('error'); showNotification('⚠️ Despesa salva localmente','warning'); renderDashboard();
     }finally{setBtnLoading('btnSalvarDespesa',false,'Registrar');}
   }
+
   async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
     if(!confirm('Excluir esta despesa?'))return;
@@ -1963,32 +2240,50 @@
   function renderEntradas(){
     const mes=document.getElementById('filtroEntradaMes')?.value||GLOBAL_MONTH;
     const busca=(document.getElementById('buscaEntrada')?.value||'').toLowerCase();
-    const lista=DB.entradas.filter(e=>{const mM=mes?(e.data||'').startsWith(mes):true;const mB=!busca||(e.descricao||'').toLowerCase().includes(busca);return mM&&mB;});
+    const lista=DB.entradas.filter(e=>{
+      const mM=mes?(e.data||'').startsWith(mes):true;
+      const mB=!busca||(e.descricao||'').toLowerCase().includes(busca);
+      return mM&&mB;
+    });
     const tbody=document.getElementById('tabelaEntradas'),podeEx=temPermissao('podeExcluir');
-    if(!lista.length){tbody.innerHTML=`<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">${DB.entradas.length===0?'Registre cultos para ver as entradas automaticamente':'Nenhuma entrada encontrada'}</td></tr>`;}
-    else tbody.innerHTML=lista.map(ent=>{
-      const delBtn=podeEx
-        ?`<button onclick="excluirEntrada('${String(ent.id).replaceAll("'","")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>`
-        :`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
-      return `<tr class="table-row border-b border-gray-50">
-        <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
-        <td class="py-2 text-sm text-gray-700">${escapeHtml(ent.descricao||'')}</td>
-        <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
-        <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
-        <td class="py-2 text-center">${delBtn}</td>
-      </tr>`;
-    }).join('');
+    if(!lista.length){
+      tbody.innerHTML=`<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">${DB.entradas.length===0?'Registre cultos para ver as entradas automaticamente':'Nenhuma entrada encontrada'}</td></tr>`;
+    } else {
+      tbody.innerHTML=lista.map(ent=>{
+        const delBtn=podeEx
+          ?`<button onclick="excluirEntrada('${String(ent.id).replaceAll("'","")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>`
+          :`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
+        return `<tr class="table-row border-b border-gray-50">
+          <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
+          <td class="py-2 text-sm text-gray-700">${escapeHtml(ent.descricao||'')}</td>
+          <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
+          <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
+          <td class="py-2 text-center">${delBtn}</td>
+        </tr>`;
+      }).join('');
+    }
     const total=lista.reduce((s,e)=>s+e.valor,0);
     document.getElementById('totalEntradasFiltro').textContent=fmt(total);
     document.getElementById('kpiEntradasMes').textContent=fmt(total);
     document.getElementById('kpiQtdEntradas').textContent=lista.length;
     document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(getDespesasMes(mes),d=>d.valor));
   }
-  function limparFiltroEntradas(){document.getElementById('filtroEntradaMes').value='';const b=document.getElementById('buscaEntrada');if(b)b.value='';renderEntradas();}
+  function limparFiltroEntradas(){
+    document.getElementById('filtroEntradaMes').value='';
+    const b=document.getElementById('buscaEntrada'); if(b)b.value='';
+    renderEntradas();
+  }
 
   async function salvarEntrada(e){
     e.preventDefault();
-    const ed={descricao:document.getElementById('e-descricao').value,valor:+document.getElementById('e-valor').value,data:document.getElementById('e-data').value,origem:'manual',obs:document.getElementById('e-obs').value,criadoEm:new Date().toISOString()};
+    const ed={
+      descricao:document.getElementById('e-descricao').value,
+      valor:+document.getElementById('e-valor').value,
+      data:document.getElementById('e-data').value,
+      origem:'manual',
+      obs:document.getElementById('e-obs').value,
+      criadoEm:new Date().toISOString()
+    };
     setBtnLoading('btnSalvarEntrada',true,'Registrar');
     try{
       const r=await apiSave('entradas',ed); DB.entradas.unshift({...ed,id:r.id}); DB.saveLocal();
@@ -2000,6 +2295,7 @@
       renderEntradas(); setSyncStatus('error'); showNotification('⚠️ Entrada salva localmente','warning'); renderDashboard();
     }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
   }
+
   async function excluirEntrada(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
     if(!confirm('Excluir esta entrada?'))return;
@@ -2008,17 +2304,6 @@
     try{await apiDelete('entradas',id);DB.entradas.splice(idx,1);DB.saveLocal();setSyncStatus('synced');showNotification('🗑️ Entrada excluída','info');}
     catch(err){DB.entradas.splice(idx,1);DB.saveLocal();setSyncStatus('error');showNotification('⚠️ Excluído localmente','warning');}
     renderEntradas(); renderDashboard();
-  }
-
-  // ============================================================
-  // DISTRIBUIÇÕES
-  // ============================================================
-  function calcularDistribuicoes(){
-    const base=+document.getElementById('calcBase')?.value||0;
-    const calc={'Taxa Regional (4%)':base*0.04,'CND (4%)':base*0.04,'CED (4%)':base*0.04,'Fundo Social (1%)':base*0.01,'FIRE (3%)':base*0.03,'Missões (Est.)':15,'Missões (Nac.)':15};
-    const div=document.getElementById('resultadoCalculo'); if(!div)return;
-    const total=Object.values(calc).reduce((a,b)=>a+b,0);
-    div.innerHTML=Object.entries(calc).map(([k,v])=>`<div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xs text-gray-500 mb-1">${k}</p><p class="font-bold text-gray-800 text-sm">${fmt(v)}</p></div>`).join('')+`<div class="bg-blue-50 rounded-lg p-3 text-center col-span-2 md:col-span-4"><p class="text-xs text-blue-600 mb-1 font-semibold">TOTAL DISTRIBUÍDO</p><p class="font-bold text-blue-800">${fmt(total)}</p></div>`;
   }
 
   // ============================================================
@@ -2048,7 +2333,11 @@
   // ============================================================
   function renderRelatorios(){
     const sel=document.getElementById('relatorioMesSelect');
-    if(sel){const keys=DB.historico.map(h=>`${h.ano}-${String(h.mes).padStart(2,'0')}`).reverse();sel.innerHTML=keys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('');sel.value=GLOBAL_MONTH;}
+    if(sel){
+      const keys=DB.historico.map(h=>`${h.ano}-${String(h.mes).padStart(2,'0')}`).reverse();
+      sel.innerHTML=keys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('');
+      sel.value=GLOBAL_MONTH;
+    }
     document.getElementById('relCultoIni').value=GLOBAL_MONTH;
     document.getElementById('relCultoFim').value=GLOBAL_MONTH;
     const ctx=document.getElementById('chartComparativo'); if(chartComp)chartComp.destroy();
@@ -2088,44 +2377,35 @@
   }
 
   // ============================================================
-  // START — verifica sessão antes de exibir login ou app
+  // START
   // ============================================================
   document.addEventListener('DOMContentLoaded', () => {
     const hoje=new Date().toISOString().split('T')[0];
-    ['c-data','d-data','e-data'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=hoje; });
+    ['c-data','d-data','e-data','alt-d-data'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=hoje; });
     document.getElementById('c-horario').value='19:30';
 
-    // Preenche usuário lembrado
     const userLembrado=localStorage.getItem('ieq_lembrar_user');
     if(userLembrado){
       document.getElementById('loginUser').value=userLembrado;
       document.getElementById('lembrarUser').checked=true;
     }
 
-    // Aplica logo/nome na tela de login antecipadamente (antes do login)
     try {
       const cfg=JSON.parse(localStorage.getItem('ieq_config')||'{}');
       if(cfg.logo)       aplicarLogoLogin(cfg.logo);
       if(cfg.nomeIgreja) document.getElementById('loginNomeIgreja').textContent=cfg.nomeIgreja;
     } catch(e){}
 
-    // Verifica sessão existente
     SESSAO=carregarSessao();
-    if(SESSAO){
-      // Sessão válida → entra direto
-      entrarNoSistema();
-    } else {
-      // Sem sessão → exibe login
-      document.getElementById('loginScreen').classList.add('active');
-    }
+    if(SESSAO){ entrarNoSistema(); }
+    else { document.getElementById('loginScreen').classList.add('active'); }
 
-    // Enter no campo usuário foca senha
     document.getElementById('loginUser').addEventListener('keydown', e=>{
       if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
     });
 
     GLOBAL_MONTH=monthKeyFromDate(new Date());
-    console.log('✅ IEQ Financeiro v3.7 — Login + Permissões implementados');
+    console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
   });
 </script>
 </body>
