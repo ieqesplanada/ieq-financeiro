@@ -649,21 +649,28 @@
     if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
     return json.data || [];
   }
+  
   async function apiSave(sheet, data) {
-    const resp = await fetchComTimeout(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'save',sheet,data}) });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
-    // ✅ #5 normaliza retorno: aceita {data:{id}} ou {data:"id"} ou {id}
-    return normalizarRetornoApi(json);
-  }
-  async function apiUpdate(sheet, id, data) {
-    const resp = await fetchComTimeout(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'update',sheet,id,data}) });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro ao atualizar');
-    return normalizarRetornoApi(json, id);
-  }
+  const url = `${API_URL}?action=save&sheet=${encodeURIComponent(sheet)}`
+            + `&payload=${encodeURIComponent(JSON.stringify(data))}`;
+  const resp = await fetchComTimeout(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const json = await resp.json();
+  if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
+  return normalizarRetornoApi(json);
+}
+
+async function apiUpdate(sheet, id, data) {
+  const payload = { ...data, id }; // ✅ id dentro do payload
+  const url = `${API_URL}?action=update&sheet=${encodeURIComponent(sheet)}`
+            + `&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+  const resp = await fetchComTimeout(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const json = await resp.json();
+  if (!json.ok) throw new Error(json.error || 'Erro ao atualizar');
+  return normalizarRetornoApi(json, id);
+}
+
   async function apiDelete(sheet, id) {
     const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
     const resp = await fetchComTimeout(url);
