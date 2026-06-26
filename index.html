@@ -634,7 +634,10 @@ textarea{resize:vertical;min-height:60px}
 
 <script>
 // ===== CONFIG =====
-const API_BASE = 'https://ieq-financeiro-api.onrender.com'; // ajuste se necessário
+// ⬇️⬇️⬇️ CORRIGIDO: URL do seu Google Apps Script ⬇️⬇️⬇️
+const API_BASE = 'https://script.google.com/macros/s/AKfycbySHNsJq6PQ1TUHbTcdDqndaVegEj3MCuzmrW2FWaJZMRhKi4jgVBxPFqARiN9onjUD/exec';
+// ⬆️⬆️⬆️ CORRIGIDO ⬆️⬆️⬆️
+
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 // ===== STATE =====
@@ -679,21 +682,35 @@ function temPermissao(permissao) {
   return currentUser.permissoes?.includes(permissao) || currentUser.role === 'admin';
 }
 
-// ===== API =====
+// ===== API (CORRIGIDA PARA GOOGLE APPS SCRIPT) =====
 async function apiPost(endpoint, data) {
-  const res = await fetch(API_BASE + endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error(`Erro ${res.status}`);
-  return res.json();
+  try {
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: endpoint, data: data })
+    });
+    if (!res.ok) throw new Error(`Erro ${res.status}`);
+    return res.json();
+  } catch (err) {
+    console.error('apiPost error:', err);
+    throw new Error('Erro de conexão com o servidor. Verifique a URL do Apps Script.');
+  }
 }
 
 async function apiGet(endpoint) {
-  const res = await fetch(API_BASE + endpoint);
-  if (!res.ok) throw new Error(`Erro ${res.status}`);
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}?action=${encodeURIComponent(endpoint)}`, {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    if (!res.ok) throw new Error(`Erro ${res.status}`);
+    return res.json();
+  } catch (err) {
+    console.error('apiGet error:', err);
+    throw new Error('Erro de conexão com o servidor. Verifique a URL do Apps Script.');
+  }
 }
 
 // ===== LOGIN =====
@@ -717,6 +734,7 @@ async function doLogin(e) {
       renderDashboard();
       showNotification(`Bem-vindo, ${currentUser.nome || currentUser.usuario}!`);
     } else {
+      errEl.textContent = result.error || 'Usuário ou senha incorretos';
       errEl.style.display = 'block';
     }
   } catch (err) {
@@ -790,11 +808,9 @@ function goTo(page) {
   const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
   if (navItem) navItem.classList.add('active');
 
-  // Fechar sidebar no mobile
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebarOverlay').classList.remove('active');
 
-  // Renderizar conteúdo da página
   if (page === 'dashboard') renderDashboard();
   if (page === 'cultos') renderCultos();
   if (page === 'despesas') renderDespesas();
@@ -816,7 +832,6 @@ function openModal(id) {
   const modal = document.getElementById(id);
   modal.classList.add('active');
   modal.setAttribute('aria-hidden', 'false');
-  // Foco no primeiro campo
   const firstInput = modal.querySelector('input:not([type="hidden"]), select, textarea');
   if (firstInput) setTimeout(() => firstInput.focus(), 100);
 }
@@ -827,7 +842,6 @@ function closeModal(id) {
   modal.setAttribute('aria-hidden', 'true');
 }
 
-// Fechar modal clicando fora
 document.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-overlay')) {
     e.target.classList.remove('active');
@@ -840,7 +854,6 @@ function renderDashboard() {
   const ms = parseInt(document.getElementById('dashMes').value);
   const h = DB.historico[ms];
 
-  // KPIs
   const kpiGrid = document.getElementById('kpiGrid');
   kpiGrid.innerHTML = `
     <div class="kpi green">
@@ -861,10 +874,8 @@ function renderDashboard() {
     </div>
   `;
 
-  // Chart Evolução — só recria se dados mudaram
   renderChartEvolucao();
 
-  // Últimas movimentações
   const ultimas = [...DB.cultos.map(c => ({data:c.data, tipo:'Culto', desc:c.tipo, valor:c.ofertorio+c.dizimos})),
                    ...DB.despesas.map(d => ({data:d.data, tipo:'Despesa', desc:d.descricao, valor:-d.valor})),
                    ...DB.entradas.map(e => ({data:e.data, tipo:'Entrada', desc:e.descricao, valor:e.valor}))]
@@ -884,7 +895,7 @@ function renderDashboard() {
 function renderChartEvolucao() {
   const ctx = document.getElementById('chartEvolucao');
   const dataHash = JSON.stringify(DB.historico);
-  if (chartEv && _chartEvDataHash === dataHash) return; // dados idênticos, pula
+  if (chartEv && _chartEvDataHash === dataHash) return;
   _chartEvDataHash = dataHash;
 
   if (chartEv) chartEv.destroy();
@@ -1165,7 +1176,6 @@ function renderRelatorios() {
   const ms = parseInt(document.getElementById('relMes').value);
   const despMes = DB.despesas.filter(d => new Date(d.data).getMonth() === ms);
 
-  // Agrupar por categoria
   const cats = {};
   despMes.forEach(d => { cats[d.categoria] = (cats[d.categoria] || 0) + d.valor; });
 
@@ -1277,7 +1287,7 @@ function importarDados(event) {
 }
 
 // ===== INIT =====
-console.log('✅ IEQ Financeiro v3.8 — 6 ajustes de qualidade aplicados');
+console.log('✅ IEQ Financeiro v3.8 — Conectado ao Google Apps Script');
 checkSession();
 </script>
 
