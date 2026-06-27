@@ -112,155 +112,20 @@
     .diz-rank-3 { background: linear-gradient(135deg,#fef9ef,#fde8c8); border-left: 4px solid #f97316; }
     .login-check-msg { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 14px; font-size: 12px; margin-bottom: 12px; display: none; align-items: center; gap: 8px; }
     .login-check-msg.active { display: flex; }
-  @media print {
-  @page { 
-    margin: 1.5cm; 
-    size: A4; 
-  }
-  
-  body {
-    background: white !important;
-    font-size: 12px;
-    color: #1f2937;
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* ESCONDE TUDO EXCETO O MODAL ATIVO */
-  body > *:not(.modal-overlay) {
-    display: none !important;
-  }
-  
-  /* GARANTE QUE APENAS O MODAL ATIVO SEJA IMPRESSO */
-  .modal-overlay:not(.active) {
-    display: none !important;
-  }
-  
-  .modal-overlay.active {
-    display: block !important;
-    position: static !important;
-    background: white !important;
-    padding: 0 !important;
-    inset: auto !important;
-  }
-  
-  /* REMOVE O FUNDO ESCURO E ESTRUTURA DO MODAL */
-  .modal-overlay.active > div {
-    box-shadow: none !important;
-    max-height: none !important;
-    overflow: visible !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  
-  /* ESCONDE O CABEÇALHO DO MODAL (azul com botões) */
-  .modal-overlay.active .bg-gradient-to-r {
-    display: none !important;
-  }
-  
-  /* ESCONDE TODOS OS BOTÕES */
-  .modal-overlay.active button,
-  .btn-primary,
-  .btn-secondary,
-  .btn-danger,
-  .btn-whatsapp,
-  .btn-logout {
-    display: none !important;
-  }
-  
-  /* GARANTE QUE O PRINTAREA OCUPE TUDO */
-  #printArea {
-    display: block !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  
-  /* AJUSTES DE LAYOUT */
-  .card {
-    box-shadow: none !important;
-    border: 1px solid #e5e7eb !important;
-    page-break-inside: avoid;
-  }
-  
-  table {
-    font-size: 11px;
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  th {
-    background: #1e3a5f !important;
-    color: white !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
-  td, th {
-    padding: 6px 10px;
-    border: 1px solid #d1d5db;
-  }
-}
-
-  
-  /* GARANTE QUE SÓ O REFC SEJA IMPRESSO */
-  #printArea {
-    display: block !important;
-    position: static !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  
-  /* Remove overlay e modais ao imprimir */
-  .modal-overlay {
-    position: static !important;
-    background: none !important;
-    padding: 0 !important;
-  }
-  
-  .modal-overlay > div {
-    box-shadow: none !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  
-  /* Oculta botões de ação */
-  .modal-overlay button,
-  .btn-primary,
-  .btn-secondary,
-  .btn-danger,
-  .btn-whatsapp {
-    display: none !important;
-  }
-  
-  /* Garante quebra de página adequada */
-  .card {
-    page-break-inside: avoid;
-  }
-  
-  table {
-    font-size: 11px;
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  th {
-    background: #1e3a5f !important;
-    color: white !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
-  td, th {
-    padding: 6px 10px;
-    border: 1px solid #d1d5db;
-  }
-}
-
+    @media print {
+      @page { margin: 1.5cm; size: A4; }
+      body { background: white !important; font-size: 12px; color: #1f2937; }
+      .sidebar, header, #sidebarOverlay, #menuToggle, #loadingOverlay, .modal-overlay,
+      .notification, #globalMonthSelector, #syncStatus, nav, .btn-primary, .btn-secondary,
+      .btn-danger, .btn-logout, .btn-add-row, .btn-remove, .btn-whatsapp,
+      button:not(.print-keep), .no-print { display: none !important; }
+      #mainContent { margin-left: 0 !important; padding: 0 !important; }
+      .card { box-shadow: none !important; border: 1px solid #e5e7eb !important; page-break-inside: avoid; }
+      .page { display: block !important; }
+      table { font-size: 11px; width: 100%; border-collapse: collapse; }
+      th { background: #1e3a5f !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      td, th { padding: 6px 10px; border: 1px solid #d1d5db; }
+    }
   </style>
 </head>
 
@@ -503,10 +368,9 @@
           </div>
           <div class="flex gap-2">
             <input type="month" id="filtroCultoMes" class="input-field text-sm flex-1" onchange="renderCultos()">
-            <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" id="btnNovoCulto" onclick="openNovoCulto()">
-  <i class="fas fa-plus"></i><span class="hidden sm:inline">Novo Culto</span><span class="sm:hidden">Novo</span>
-</button>
-
+            <button class="btn-primary flex items-center gap-2 text-sm whitespace-nowrap" id="btnNovoCulto" onclick="openNovoCulto()">
+              <i class="fas fa-plus"></i><span class="hidden sm:inline">Novo Culto</span><span class="sm:hidden">Novo</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1070,10 +934,6 @@ async function apiDelete(sheet, id) {
 // ============================================================
 // SESSÃO / LOGIN
 // ============================================================
-
-// ============================================================
-// SESSÃO / LOGIN
-// ============================================================
 const SESSION_KEY = 'ieq_session';
 const SESSION_TTL = 8 * 60 * 60 * 1000;
 let SESSAO = null;
@@ -1084,44 +944,12 @@ const PERMISSOES = {
   podeLancar:  ['admin','tesoureiro'],
   podeConfig:  ['admin'],
 };
-
-function temPermissao(acao) {
-  if (!SESSAO) {
-    console.warn('⚠️ SESSAO não definida ao verificar permissão:', acao);
-    return false;
-  }
-  const permissao = SESSAO.permissao;
-  const permitidas = PERMISSOES[acao] || [];
-  const tem = permitidas.includes(permissao);
-  console.log(`Permissão "${acao}" para "${permissao}":`, tem);
-  return tem;
-}
-
-function salvarSessao(d) {
-  const s = {...d, loginEm: Date.now()};
-  localStorage.setItem(SESSION_KEY, JSON.stringify(s));
-  SESSAO = s;
-  console.log('✅ Sessão salva:', SESSAO);
-}
-
+function temPermissao(a) { return SESSAO && (PERMISSOES[a]||[]).includes(SESSAO.permissao); }
+function salvarSessao(d) { const s={...d,loginEm:Date.now()}; localStorage.setItem(SESSION_KEY,JSON.stringify(s)); SESSAO=s; }
 function carregarSessao() {
-  try {
-    const r = localStorage.getItem(SESSION_KEY);
-    if (!r) return null;
-    const s = JSON.parse(r);
-    if (Date.now() - s.loginEm > SESSION_TTL) {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-    return s;
-  } catch { return null; }
+  try { const r=localStorage.getItem(SESSION_KEY); if(!r)return null; const s=JSON.parse(r); if(Date.now()-s.loginEm>SESSION_TTL){localStorage.removeItem(SESSION_KEY);return null;} return s; } catch{return null;}
 }
-
-function limparSessao() {
-  localStorage.removeItem(SESSION_KEY);
-  SESSAO = null;
-}
-
+function limparSessao() { localStorage.removeItem(SESSION_KEY); SESSAO=null; }
 
 function toggleSenha() {
   const i=document.getElementById('loginPass'),icon=document.getElementById('togglePassIcon'),show=i.type==='password';
@@ -1226,16 +1054,6 @@ function entrarNoSistema() {
   document.getElementById('loginScreen').classList.remove('active');
   document.getElementById('appRoot').style.display='block';
   aplicarPermissoesUI();
-  // [DEBUG TEMPORÁRIO]
-window.debugPermissoes = function() {
-  console.log('=== DEBUG PERMISSÕES ===');
-  console.log('SESSAO:', SESSAO);
-  console.log('temPermissao("podeLancar"):', temPermissao('podeLancar'));
-  console.log('Botão existe?', !!document.getElementById('btnNovoCulto'));
-  console.log('Display atual:', document.getElementById('btnNovoCulto')?.style.display);
-  console.log('PERMISSOES config:', PERMISSOES);
-};
-
   inicializarSistema();
 }
 
@@ -1251,51 +1069,22 @@ function logout() {
 }
 
 function aplicarPermissoesUI() {
-  console.log('🔧 Aplicando permissões UI...');
-  
-  if (!SESSAO) {
-    console.error('❌ SESSAO é null em aplicarPermissoesUI');
-    return;
-  }
-  
-  const {nome, permissao} = SESSAO;
-  console.log(`👤 Usuário: ${nome} | Permissão: ${permissao}`);
-  
-  document.getElementById('sidebarUserNome').textContent = nome;
-  
-  const pL = {admin:'Admin', tesoureiro:'Tesoureiro', visualizador:'Visualizador'};
-  const pC = {admin:'perm-admin', tesoureiro:'perm-tesoureiro', visualizador:'perm-visualizador'};
-  
-  document.getElementById('sidebarUserPerm').innerHTML = `
-    <span class="perm-badge ${pC[permissao]||'perm-visualizador'}">
-      <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'eye'} text-xs"></i>
-      ${pL[permissao]||permissao}
-    </span>
-  `;
-  
-  // Lista de elementos controlados por permissão
-  const controles = [
-    {id: 'btnNovoCulto',    permissao: 'podeLancar'},
-    {id: 'btnNovaEntrada',  permissao: 'podeLancar'},
-    {id: 'btnNovaDespesa',  permissao: 'podeLancar'},
-    {id: 'cardUsuarios',    permissao: 'podeConfig'},
-    {id: 'cardCategorias',  permissao: 'podeConfig'},
-  ];
-  
-  controles.forEach(({id, permissao: perm}) => {
-    const el = document.getElementById(id);
-    if (!el) {
-      console.warn(`⚠️ Elemento ${id} não encontrado no DOM`);
-      return;
-    }
-    
-    const temPerm = temPermissao(perm);
-    el.style.display = temPerm ? '' : 'none';
-    
-    console.log(`${temPerm ? '✅' : '❌'} ${id}: ${temPerm ? 'VISÍVEL' : 'OCULTO'}`);
-  });
+  if(!SESSAO)return;
+  const{nome,permissao}=SESSAO;
+  document.getElementById('sidebarUserNome').textContent=nome;
+  const pL={admin:'Admin',tesoureiro:'Tesoureiro',visualizador:'Visualizador'};
+  const pC={admin:'perm-admin',tesoureiro:'perm-tesoureiro',visualizador:'perm-visualizador'};
+  document.getElementById('sidebarUserPerm').innerHTML=
+    `<span class="perm-badge ${pC[permissao]||'perm-visualizador'}">
+       <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'eye'} text-xs"></i>
+       ${pL[permissao]||permissao}</span>`;
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.style.display=v?'':'none';};
+  sv('btnNovoCulto', temPermissao('podeLancar'));
+  sv('btnNovaEntrada', temPermissao('podeLancar'));
+  sv('btnNovaDespesa', temPermissao('podeLancar'));
+  sv('cardUsuarios', temPermissao('podeConfig'));
+  sv('cardCategorias', temPermissao('podeConfig'));
 }
-
 
 // ============================================================
 // DB LOCAL
@@ -1785,17 +1574,6 @@ function renderCultos(){
   document.getElementById('tot-missoes').textContent    =fmt(sum(todos,c=>c.missoes||0));
   document.getElementById('tot-cultos-total').textContent=fmt(sum(todos,c=>(c.totalDizimos||0)+(c.totalOfertas||0)));
 }
-  function renderCultos(){
-  const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
-  const filtroMes=document.getElementById('filtroCultoMes')?.value||GLOBAL_MONTH;
-  let cultos=[...DB.cultos].filter(c=>(c.data||'').startsWith(filtroMes));
-  
-  // ... resto do código ...
-  
-  // [ADICIONE ESTA LINHA NO FINAL]
-  aplicarPermissoesUI();
-}
-
 
 function openNovoCulto(){
   if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
@@ -2017,185 +1795,63 @@ async function excluirCulto(id){
 
 function verCulto(id){
   const c=DB.cultos.find(x=>String(x.id)===String(id));if(!c)return;
-  _cultoAtualId=c.id;
   const cfg=DB.config||{};
-  
-  // Prepara lista de dízimos
-  const dizimistasHTML=(c.dizimistas||[]).length?
-    (c.dizimistas||[]).map(d=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#f9fafb;border-radius:8px;margin-bottom:8px;border:1px solid #e5e7eb">
-        <div>
-          <span style="font-weight:600;color:#1f2937">${escapeHtml(d.nome||'—')}</span>
-          <span style="margin-left:10px;font-size:11px;color:#6b7280;background:#e5e7eb;padding:3px 10px;border-radius:12px">${d.forma==='pix'?'PIX':'Dinheiro'}</span>
-        </div>
-        <span style="font-weight:700;color:#059669;font-size:15px">${fmt(d.valor)}</span>
-      </div>
-    `).join('')
-    :'<p style="color:#9ca3af;font-size:13px;text-align:center;padding:20px;background:#f9fafb;border-radius:8px">Nenhum dizimista registrado</p>';
-
-  // Prepara lista de ofertas
-  const ofertasHTML=(c.ofertas||[]).length?
-    (c.ofertas||[]).map(o=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#f9fafb;border-radius:8px;margin-bottom:8px;border:1px solid #e5e7eb">
-        <div>
-          <span style="font-weight:600;color:#1f2937">${escapeHtml(o.nome||'Oferta')}</span>
-          <span style="margin-left:10px;font-size:11px;color:#6b7280;background:#e5e7eb;padding:3px 10px;border-radius:12px">${o.forma==='pix'?'PIX':'Dinheiro'}</span>
-        </div>
-        <span style="font-weight:700;color:#2563eb;font-size:15px">${fmt(o.valor)}</span>
-      </div>
-    `).join('')
-    :'<p style="color:#9ca3af;font-size:13px;text-align:center;padding:20px;background:#f9fafb;border-radius:8px">Nenhuma oferta registrada</p>';
-
   const totalGeral=(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0);
   const missoesEst=(c.missoes||0)*0.5;
   const missoesNac=(c.missoes||0)*0.5;
-
   document.getElementById('printArea').innerHTML=`
-  <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;max-width:800px;margin:0 auto;padding:30px;background:white;color:#1f2937">
-    
-    <!-- CABEÇALHO -->
-    <div style="text-align:center;margin-bottom:30px;border-bottom:3px solid #1e3a5f;padding-bottom:20px">
-      <h1 style="margin:0;color:#1e3a5f;font-size:24px;font-weight:800">${escapeHtml(cfg.nomeIgreja||'IEQ Esplanada')}</h1>
-      <p style="margin:5px 0;color:#6b7280;font-size:13px">${escapeHtml(cfg.endereco||'')}</p>
-      <h2 style="margin:15px 0 5px 0;color:#c8a951;font-size:18px;font-weight:700">NOVO RELATÓRIO DE CULTO (REFC)</h2>
+  <div style="font-family:'Segoe UI',sans-serif;padding:16px;max-width:600px;margin:auto">
+    <div style="text-align:center;border-bottom:2px solid #1e3a5f;padding-bottom:16px;margin-bottom:16px">
+      <p style="color:#1e3a5f;font-weight:700;font-size:18px;">${escapeHtml(cfg.nomeIgreja||'IEQ Esplanada')}</p>
+      <p style="color:#555;font-size:13px">${escapeHtml(cfg.endereco||'')}</p>
+      <p style="color:#c8a951;font-weight:700;font-size:15px;margin-top:6px">RELATÓRIO DE CULTO (REFC)</p>
+      <p style="color:#555;font-size:12px">${fmtDate(c.data)} • ${c.horario||''} • ${escapeHtml(c.tipo||'')}</p>
     </div>
-
-    <!-- DATA, HORÁRIO E TIPO -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-bottom:25px">
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">DATA DO CULTO</label>
-        <div style="padding:12px;background:#f3f4f6;border-radius:8px;font-weight:600;color:#1f2937">${fmtDate(c.data)}</div>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">HORÁRIO</label>
-        <div style="padding:12px;background:#f3f4f6;border-radius:8px;font-weight:600;color:#1f2937">${c.horario||'19:30'}</div>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">TIPO DE CULTO</label>
-        <div style="padding:12px;background:#f3f4f6;border-radius:8px;font-weight:600;color:#1f2937">${escapeHtml(c.tipo||'Culto Regular')}</div>
-      </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:13px">
+      <div><b>Pastor:</b> ${escapeHtml(c.pastor||'—')}</div>
+      <div><b>Pregador:</b> ${escapeHtml(c.pregador||'—')}</div>
+      <div><b>Presentes:</b> ${c.presentes||0}</div>
+      <div><b>Visitantes:</b> ${c.visitantes||0}</div>
+      <div><b>Crianças:</b> ${c.criancas||0}</div>
+      <div><b>Curas:</b> ${c.cura||0}</div>
     </div>
-
-    <!-- PASTOR E PREGADOR -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:25px">
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">PASTOR RESPONSÁVEL</label>
-        <div style="padding:12px;background:#f3f4f6;border-radius:8px;font-weight:600;color:#1f2937">${escapeHtml(c.pastor||'—')}</div>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">PREGADOR</label>
-        <div style="padding:12px;background:#f3f4f6;border-radius:8px;font-weight:600;color:#1f2937">${escapeHtml(c.pregador||'—')}</div>
-      </div>
-    </div>
-
-    <!-- PRESENTES, VISITANTES, CRIANÇAS E CURA -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:15px;margin-bottom:30px">
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">PRESENTES</label>
-        <div style="padding:12px;background:#dbeafe;border-radius:8px;font-weight:700;color:#1e40af;text-align:center;font-size:18px">${c.presentes||0}</div>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">VISITANTES</label>
-        <div style="padding:12px;background:#fef3c7;border-radius:8px;font-weight:700;color:#92400e;text-align:center;font-size:18px">${c.visitantes||0}</div>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">CRIANÇAS</label>
-        <div style="padding:12px;background:#ddd6fe;border-radius:8px;font-weight:700;color:#5b21b6;text-align:center;font-size:18px">${c.criancas||0}</div>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">TEST. CURA</label>
-        <div style="padding:12px;background:#d1fae5;border-radius:8px;font-weight:700;color:#065f46;text-align:center;font-size:18px">${c.cura||0}</div>
-      </div>
-    </div>
-
-    <!-- DÍZIMOS -->
-    <div style="background:#ecfdf5;border:2px solid #6ee7b7;border-radius:12px;padding:20px;margin-bottom:25px">
-      <h3 style="margin:0 0 15px 0;color:#065f46;font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center">
-        <span>💰 DÍZIMOS</span>
-        <span style="background:#059669;color:white;padding:6px 14px;border-radius:20px;font-size:13px">Total: ${fmt(c.totalDizimos||0)}</span>
-      </h3>
-      ${dizimistasHTML}
-    </div>
-
-    <!-- OFERTAS GERAIS -->
-    <div style="background:#eff6ff;border:2px solid #93c5fd;border-radius:12px;padding:20px;margin-bottom:25px">
-      <h3 style="margin:0 0 15px 0;color:#1e40af;font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center">
-        <span>🎁 OFERTAS GERAIS</span>
-        <span style="background:#2563eb;color:white;padding:6px 14px;border-radius:20px;font-size:13px">Total: ${fmt(c.totalOfertas||0)}</span>
-      </h3>
-      ${ofertasHTML}
-    </div>
-
-    <!-- OUTRAS ARRECADAÇÕES -->
-    <div style="background:#fef3c7;border:2px solid #fde68a;border-radius:12px;padding:20px;margin-bottom:25px">
-      <h3 style="margin:0 0 15px 0;color:#92400e;font-size:15px;font-weight:700">📊 OUTRAS ARRECADAÇÕES</h3>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px">
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#78350f;margin-bottom:6px">Ofertas Missões</label>
-          <div style="padding:12px;background:white;border-radius:8px;font-weight:700;color:#0f766e;font-size:16px">${fmt(c.missoes||0)}</div>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#78350f;margin-bottom:6px">Ofertas Especiais</label>
-          <div style="padding:12px;background:white;border-radius:8px;font-weight:700;color:#92400e;font-size:16px">${fmt(c.especiais||0)}</div>
-        </div>
-      </div>
-
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#78350f;margin-bottom:6px">Outras Entradas</label>
-        <div style="padding:12px;background:white;border-radius:8px;font-weight:700;color:#92400e;font-size:16px">${fmt(c.outras||0)}</div>
-      </div>
-
+    ${(c.dizimistas||[]).length?`
+    <div style="margin-bottom:12px">
+      <p style="font-weight:700;color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:13px">DÍZIMOS — ${fmt(c.totalDizimos)}</p>
+      ${(c.dizimistas||[]).map(d=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>${escapeHtml(d.nome||'—')} <span style="color:#888">(${d.forma||'dinheiro'})</span></span><b>${fmt(d.valor)}</b></div>`).join('')}
+    </div>`:''}
+    ${(c.ofertas||[]).length?`
+    <div style="margin-bottom:12px">
+      <p style="font-weight:700;color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:13px">OFERTAS — ${fmt(c.totalOfertas)}</p>
+      ${(c.ofertas||[]).map(o=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>${escapeHtml(o.nome||'—')} <span style="color:#888">(${o.forma||'dinheiro'})</span></span><b>${fmt(o.valor)}</b></div>`).join('')}
+    </div>`:''}
+    <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Dízimos:</span><b>${fmt(c.totalDizimos)}</b></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Ofertas:</span><b>${fmt(c.totalOfertas)}</b></div>
+      ${(c.especiais||0)>0?`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Especiais:</span><b>${fmt(c.especiais)}</b></div>`:''}
+      ${(c.outras||0)>0?`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Outras:</span><b>${fmt(c.outras)}</b></div>`:''}
       ${(c.missoes||0)>0?`
-      <div style="margin-top:15px;padding:12px;background:#ccfbf1;border:1px solid #5eead4;border-radius:8px">
-        <p style="margin:0 0 8px 0;font-size:12px;color:#0f766e;font-weight:600">Distribuição Missões (50% cada):</p>
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:#0f766e">
-          <span>→ Estadual: <strong>${fmt(missoesEst)}</strong></span>
-          <span>→ Nacional: <strong>${fmt(missoesNac)}</strong></span>
-        </div>
-      </div>`:''}
-
-      <div style="margin-top:15px;padding:15px;background:#059669;border-radius:8px;display:flex;justify-content:space-between;align-items:center">
-        <span style="color:white;font-weight:700;font-size:14px">TOTAL (sem Missões):</span>
-        <span style="color:#fbbf24;font-weight:800;font-size:20px">${fmt(totalGeral)}</span>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#0f766e"><span>Missões:</span><b>${fmt(c.missoes)}</b></div>
+      <div style="font-size:11px;color:#0f766e;margin-bottom:4px;padding-left:8px">→ Est. 50%: ${fmt(missoesEst)} | Nac. 50%: ${fmt(missoesNac)}</div>`:''}
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #e5e7eb;padding-top:6px;margin-top:6px;font-size:14px"><span><b>TOTAL (sem Missões):</b></span><b style="color:#1e3a5f">${fmt(totalGeral)}</b></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;font-size:13px">
+      <div style="background:#d1fae5;border-radius:8px;padding:10px;text-align:center">
+        <p style="color:#065f46;font-weight:700;font-size:11px">CAIXA LOCAL</p>
+        <p style="color:#065f46;font-weight:800;font-size:16px">${fmt(c.caixaLocal)}</p>
+      </div>
+      <div style="background:#dbeafe;border-radius:8px;padding:10px;text-align:center">
+        <p style="color:#1e40af;font-weight:700;font-size:11px">CONTA CORRENTE (PIX)</p>
+        <p style="color:#1e40af;font-weight:800;font-size:16px">${fmt(c.contaCorrente)}</p>
       </div>
     </div>
-
-    <!-- DESTINO DA ARRECADAÇÃO -->
-    <div style="background:#f3f4f6;border:2px solid #d1d5db;border-radius:12px;padding:20px;margin-bottom:25px">
-      <h3 style="margin:0 0 15px 0;color:#374151;font-size:15px;font-weight:700">💼 DESTINO DA ARRECADAÇÃO</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">Caixa Local (Dinheiro)</label>
-          <div style="padding:14px;background:#d1fae5;border:2px solid #6ee7b7;border-radius:8px;font-weight:700;color:#065f46;text-align:center;font-size:18px">${fmt(c.caixaLocal||0)}</div>
-          <p style="margin:6px 0 0 0;font-size:10px;color:#059669;text-align:center;font-weight:600">CALCULADO AUTOMATICAMENTE</p>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">Conta Corrente (PIX)</label>
-          <div style="padding:14px;background:#dbeafe;border:2px solid #93c5fd;border-radius:8px;font-weight:700;color:#1e40af;text-align:center;font-size:18px">${fmt(c.contaCorrente||0)}</div>
-          <p style="margin:6px 0 0 0;font-size:10px;color:#2563eb;text-align:center;font-weight:600">CALCULADO AUTOMATICAMENTE</p>
-        </div>
-      </div>
+    ${c.observacoes?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;font-size:12px"><b>Obs:</b> ${escapeHtml(c.observacoes)}</div>`:''}
+    <div style="margin-top:24px;text-align:center;font-size:11px;color:#888;border-top:1px solid #e5e7eb;padding-top:12px">
+      Pastor: ${escapeHtml(cfg.pastor||'Danilo de Oliveira Falcão')} | Tesoureiro: ${escapeHtml(cfg.tesoureiro||'Danilo Falcão')}
     </div>
-
-    <!-- OBSERVAÇÕES -->
-    <div style="margin-bottom:30px">
-      <label style="display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px">OBSERVAÇÕES</label>
-      <div style="padding:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;min-height:60px;color:#78350f;font-size:13px;line-height:1.6">${escapeHtml(c.observacoes||'Nenhuma observação registrada.')}</div>
-    </div>
-
-    <!-- RODAPÉ -->
-    <div style="margin-top:40px;padding-top:20px;border-top:2px solid #e5e7eb;text-align:center;font-size:11px;color:#9ca3af">
-      <p style="margin:0 0 4px 0"><strong>Pastor:</strong> ${escapeHtml(cfg.pastor||'Danilo de Oliveira Falcão')}</p>
-      <p style="margin:0"><strong>Tesoureiro:</strong> ${escapeHtml(cfg.tesoureiro||'Danilo Falcão')}</p>
-      <p style="margin:10px 0 0 0;color:#d1d5db;font-size:10px">Sistema Financeiro IEQ — Impresso em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</p>
-    </div>
-
   </div>`;
-  
   openModal('modalVerCulto');
 }
-
 
 let _cultoAtualId=null;
 function whatsAppCultoAtual(){
