@@ -359,19 +359,25 @@
     </div>
 
     <!-- ===== RELATÓRIO DE CULTO ===== -->
-    <div class="page" id="page-culto">
-      <div class="card p-4 mb-4">
-        <div class="flex flex-col sm:flex-row gap-3">
-          <div class="flex items-center gap-2 flex-1">
-            <i class="fas fa-search text-gray-400"></i>
-            <input type="text" id="buscaCulto" placeholder="Buscar culto..." class="input-field text-sm" oninput="renderCultos()">
-          </div>
-          <div class="flex gap-2">
-            <input type="month" id="filtroCultoMes" class="input-field text-sm flex-1" onchange="renderCultos()">
-            <button class="btn-primary flex items-center gap-2 text-sm whitespace-nowrap" id="btnNovoCulto" onclick="openNovoCulto()">
-              <i class="fas fa-plus"></i><span class="hidden sm:inline">Novo Culto</span><span class="sm:hidden">Novo</span>
-            </button>
-          </div>
+    <div class="card p-4">
+  <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
+    <i class="fas fa-church text-blue-600"></i> Relatório de Cultos
+  </h3>
+  <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
+  <div class="grid grid-cols-2 gap-2 mb-3">
+    <input type="month" class="input-field text-sm" id="relCultoIni">
+    <input type="month" class="input-field text-sm" id="relCultoFim">
+  </div>
+  <button class="btn-secondary w-full text-sm mb-2" onclick="exportarCultosExcelFake()">
+    <i class="fas fa-file-excel mr-2"></i> Exportar CSV
+  </button>
+  <button class="btn-primary w-full text-sm mb-2" onclick="imprimirRelatorioCultos()">
+    <i class="fas fa-print mr-2"></i> Imprimir / PDF
+  </button>
+  <button class="btn-whatsapp w-full text-sm" onclick="whatsAppRelatorioCultos()">
+    <i class="fab fa-whatsapp mr-2"></i> Enviar por WhatsApp
+  </button>
+</div>
         </div>
       </div>
       <div class="card p-4 mb-4">
@@ -1442,11 +1448,15 @@ function renderDashboard(){
   const saldoFin  = h?.saldoFinal??(saldoAnt+totalEnt-totalSaid);
 
   // KPIs
-  document.getElementById('kpi-saldo-ant').textContent   = fmt(saldoAnt);
+   const totalEntComSaldo = totalEnt + saldoAnt;
+  const saldoFinal = totalEntComSaldo - totalSaid;
+
+  document.getElementById('kpi-saldo-ant').textContent    = fmt(saldoAnt);
   document.getElementById('kpi-saldo-ant-sub').textContent= h?'Histórico confirmado':'Calculado';
-  document.getElementById('kpi-entradas').textContent     = fmt(totalEnt);
+  document.getElementById('kpi-entradas').textContent     = fmt(totalEntComSaldo);
   document.getElementById('kpi-saidas').textContent       = fmt(totalSaid);
-  document.getElementById('kpi-saldo').textContent        = fmt(saldoFin);
+  document.getElementById('kpi-saldo').textContent        = fmt(saldoFinal);
+
 
   const prevMk=prevMonthKey(mk);
   const hPrev=getHistoricoRow(prevMk);
@@ -1456,7 +1466,8 @@ function renderDashboard(){
   const varSaid=saidPrev>0?((totalSaid-saidPrev)/saidPrev*100):0;
   document.getElementById('kpi-entradas-var').textContent =`${varEnt>=0?'▲':'▼'} ${Math.abs(varEnt).toFixed(1)}% vs mês anterior`;
   document.getElementById('kpi-saidas-var').textContent   =`${varSaid>=0?'▲':'▼'} ${Math.abs(varSaid).toFixed(1)}% vs mês anterior`;
-  document.getElementById('kpi-saldo-sub').textContent    =`Saldo Ant. ${fmt(saldoAnt)} + Ent. ${fmt(totalEnt)} − Saídas ${fmt(totalSaid)}`;
+  document.getElementById('kpi-saldo-sub').textContent    =`Saldo Ant. ${fmt(saldoAnt)} + Ent. ${fmt(totalEnt)} − Saídas ${fmt(totalSaid)} = ${fmt(saldoFinal)}`;
+
 
   // Métricas culto
   const cultosMes=getCultosMes(mk);
@@ -2333,7 +2344,7 @@ function exportarCultosExcelFake(){
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cultos.csv';a.click();
   showNotification('✅ CSV exportado!','success');
-}
+} 
 function exportarCultosExcelFake(){
   const ini=document.getElementById('relCultoIni').value;
   const fim=document.getElementById('relCultoFim').value;
@@ -2345,6 +2356,115 @@ function exportarCultosExcelFake(){
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cultos.csv';a.click();
   showNotification('✅ CSV exportado!','success');
+}
+  function imprimirRelatorioCultos(){
+  const ini=document.getElementById('relCultoIni').value;
+  const fim=document.getElementById('relCultoFim').value;
+  let cultos=[...DB.cultos];
+  if(ini)cultos=cultos.filter(c=>c.data>=ini+'-01');
+  if(fim)cultos=cultos.filter(c=>c.data<=fim+'-31');
+  cultos.sort((a,b)=>a.data.localeCompare(b.data));
+  const cfg=DB.config||{};
+  const totDiz=sum(cultos,c=>c.totalDizimos||0);
+  const totOf =sum(cultos,c=>c.totalOfertas||0);
+  const totMis=sum(cultos,c=>c.missoes||0);
+  const totGer=sum(cultos,c=>(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0));
+
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Relatório de Cultos</title>
+  <style>
+    body{font-family:'Segoe UI',sans-serif;margin:0;padding:20px;color:#1f2937;font-size:12px}
+    .header{text-align:center;border-bottom:3px solid #1e3a5f;padding-bottom:14px;margin-bottom:18px}
+    .titulo{color:#1e3a5f;font-size:20px;font-weight:800}
+    .subtitulo{color:#c8a951;font-size:14px;font-weight:700;margin-top:4px}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px}
+    th{background:#1e3a5f;color:white;padding:7px 10px;text-align:left;font-size:11px}
+    td{padding:6px 10px;border-bottom:1px solid #e5e7eb}
+    tr:nth-child(even) td{background:#f9fafb}
+    .tfoot-row td{font-weight:800;background:#eff6ff;border-top:2px solid #1e3a5f}
+    .footer{text-align:center;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px;margin-top:16px}
+  </style></head><body>
+  <div class="header">
+    <div class="titulo">${escapeHtml(cfg.nomeIgreja||'IEQ Esplanada')}</div>
+    <div class="subtitulo">RELATÓRIO DE CULTOS (REFC)</div>
+    <div style="color:#555;font-size:12px;margin-top:4px">
+      Período: ${ini?ini:'início'} a ${fim?fim:'hoje'}
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Data</th><th>Tipo</th><th>Pregador</th>
+      <th>Pres.</th><th>Dízimos</th><th>Ofertas</th>
+      <th>Missões</th><th>Total</th>
+    </tr></thead>
+    <tbody>
+      ${cultos.map(c=>{
+        const total=(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0);
+        return`<tr>
+          <td>${fmtDate(c.data)}</td>
+          <td>${escapeHtml(c.tipo||'Regular')}</td>
+          <td>${escapeHtml(c.pregador||c.pastor||'—')}</td>
+          <td>${c.presentes||0}</td>
+          <td>${fmt(c.totalDizimos||0)}</td>
+          <td>${fmt(c.totalOfertas||0)}</td>
+          <td>${fmt(c.missoes||0)}</td>
+          <td><b>${fmt(total)}</b></td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+    <tfoot><tr class="tfoot-row">
+      <td colspan="4"><b>TOTAIS (${cultos.length} culto${cultos.length!==1?'s':''})</b></td>
+      <td><b>${fmt(totDiz)}</b></td>
+      <td><b>${fmt(totOf)}</b></td>
+      <td><b>${fmt(totMis)}</b></td>
+      <td><b>${fmt(totGer)}</b></td>
+    </tr></tfoot>
+  </table>
+  <div class="footer">
+    Pastor: ${escapeHtml(cfg.pastor||'Danilo de Oliveira Falcão')} |
+    Tesoureiro: ${escapeHtml(cfg.tesoureiro||'Danilo Falcão')}
+  </div>
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+function whatsAppRelatorioCultos(){
+  const ini=document.getElementById('relCultoIni').value;
+  const fim=document.getElementById('relCultoFim').value;
+  let cultos=[...DB.cultos];
+  if(ini)cultos=cultos.filter(c=>c.data>=ini+'-01');
+  if(fim)cultos=cultos.filter(c=>c.data<=fim+'-31');
+  cultos.sort((a,b)=>a.data.localeCompare(b.data));
+  const cfg=DB.config||{};
+  const totDiz=sum(cultos,c=>c.totalDizimos||0);
+  const totOf =sum(cultos,c=>c.totalOfertas||0);
+  const totMis=sum(cultos,c=>c.missoes||0);
+  const totGer=sum(cultos,c=>(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0));
+
+  let txt=`*⛪ RELATÓRIO DE CULTOS*\n`;
+  txt+=`*${cfg.nomeIgreja||'IEQ Esplanada'}*\n`;
+  txt+=`Período: ${ini||'início'} a ${fim||'hoje'}\n\n`;
+  cultos.forEach(c=>{
+    const total=(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0);
+    txt+=`📅 *${fmtDate(c.data)}* — ${c.tipo||'Regular'}\n`;
+    txt+=`  Pregador: ${c.pregador||c.pastor||'—'} | Pres.: ${c.presentes||0}\n`;
+    txt+=`  Dízimos: ${fmt(c.totalDizimos||0)} | Ofertas: ${fmt(c.totalOfertas||0)}`;
+    if(c.missoes>0)txt+=` | Missões: ${fmt(c.missoes)}`;
+    txt+=`\n  Total: *${fmt(total)}*\n\n`;
+  });
+  txt+=`━━━━━━━━━━━━━━━\n`;
+  txt+=`💰 Total Dízimos: *${fmt(totDiz)}*\n`;
+  txt+=`💚 Total Ofertas: *${fmt(totOf)}*\n`;
+  txt+=`🌍 Total Missões: *${fmt(totMis)}*\n`;
+  txt+=`✅ *TOTAL GERAL: ${fmt(totGer)}*`;
+
+  const num=(cfg.whatsapp||'').replace(/\D/g,'');
+  const url=num
+    ?`https://wa.me/55${num}?text=${encodeURIComponent(txt)}`
+    :`https://wa.me/?text=${encodeURIComponent(txt)}`;
+  window.open(url,'_blank');
 }
 
 function whatsAppRelatorioMensal(){
