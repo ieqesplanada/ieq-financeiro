@@ -1069,6 +1069,9 @@ async function apiDelete(sheet, id) {
 // ============================================================
 // SESSÃO / LOGIN
 // ============================================================
+// ============================================================
+// SESSÃO / LOGIN
+// ============================================================
 const SESSION_KEY = 'ieq_session';
 const SESSION_TTL = 8 * 60 * 60 * 1000;
 let SESSAO = null;
@@ -1079,12 +1082,43 @@ const PERMISSOES = {
   podeLancar:  ['admin','tesoureiro'],
   podeConfig:  ['admin'],
 };
-function temPermissao(a) { return SESSAO && (PERMISSOES[a]||[]).includes(SESSAO.permissao); }
-function salvarSessao(d) { const s={...d,loginEm:Date.now()}; localStorage.setItem(SESSION_KEY,JSON.stringify(s)); SESSAO=s; }
-function carregarSessao() {
-  try { const r=localStorage.getItem(SESSION_KEY); if(!r)return null; const s=JSON.parse(r); if(Date.now()-s.loginEm>SESSION_TTL){localStorage.removeItem(SESSION_KEY);return null;} return s; } catch{return null;}
+
+function temPermissao(acao) {
+  if (!SESSAO) {
+    console.warn('⚠️ SESSAO não definida ao verificar permissão:', acao);
+    return false;
+  }
+  const permissao = SESSAO.permissao;
+  const permitidas = PERMISSOES[acao] || [];
+  const tem = permitidas.includes(permissao);
+  console.log(`Permissão "${acao}" para "${permissao}":`, tem);
+  return tem;
 }
-function limparSessao() { localStorage.removeItem(SESSION_KEY); SESSAO=null; }
+
+function salvarSessao(d) {
+  const s = {...d, loginEm: Date.now()};
+  localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+  SESSAO = s;
+  console.log('✅ Sessão salva:', SESSAO);
+}
+
+function carregarSessao() {
+  try {
+    const r = localStorage.getItem(SESSION_KEY);
+    if (!r) return null;
+    const s = JSON.parse(r);
+    if (Date.now() - s.loginEm > SESSION_TTL) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return s;
+  } catch { return null; }
+}
+
+function limparSessao() {
+  localStorage.removeItem(SESSION_KEY);
+  SESSAO = null;
+}
 
 function toggleSenha() {
   const i=document.getElementById('loginPass'),icon=document.getElementById('togglePassIcon'),show=i.type==='password';
