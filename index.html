@@ -112,20 +112,78 @@
     .diz-rank-3 { background: linear-gradient(135deg,#fef9ef,#fde8c8); border-left: 4px solid #f97316; }
     .login-check-msg { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 14px; font-size: 12px; margin-bottom: 12px; display: none; align-items: center; gap: 8px; }
     .login-check-msg.active { display: flex; }
-    @media print {
-      @page { margin: 1.5cm; size: A4; }
-      body { background: white !important; font-size: 12px; color: #1f2937; }
-      .sidebar, header, #sidebarOverlay, #menuToggle, #loadingOverlay, .modal-overlay,
-      .notification, #globalMonthSelector, #syncStatus, nav, .btn-primary, .btn-secondary,
-      .btn-danger, .btn-logout, .btn-add-row, .btn-remove, .btn-whatsapp,
-      button:not(.print-keep), .no-print { display: none !important; }
-      #mainContent { margin-left: 0 !important; padding: 0 !important; }
-      .card { box-shadow: none !important; border: 1px solid #e5e7eb !important; page-break-inside: avoid; }
-      .page { display: block !important; }
-      table { font-size: 11px; width: 100%; border-collapse: collapse; }
-      th { background: #1e3a5f !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      td, th { padding: 6px 10px; border: 1px solid #d1d5db; }
-    }
+   @media print {
+  @page { margin: 1.5cm; size: A4; }
+  
+  /* ESCONDE TUDO EXCETO A ÁREA DE IMPRESSÃO */
+  body > *:not(#printArea) {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    font-size: 12px;
+    color: #1f2937;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* GARANTE QUE SÓ O REFC SEJA IMPRESSO */
+  #printArea {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Remove overlay e modais ao imprimir */
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+    padding: 0 !important;
+  }
+  
+  .modal-overlay > div {
+    box-shadow: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Oculta botões de ação */
+  .modal-overlay button,
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-whatsapp {
+    display: none !important;
+  }
+  
+  /* Garante quebra de página adequada */
+  .card {
+    page-break-inside: avoid;
+  }
+  
+  table {
+    font-size: 11px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th {
+    background: #1e3a5f !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  td, th {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+  }
+}
+
   </style>
 </head>
 
