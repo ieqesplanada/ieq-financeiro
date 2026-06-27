@@ -107,11 +107,9 @@
     .perm-visualizador { background: #d1fae5; color: #065f46; }
     .btn-logout { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 8px; border: none; background: rgba(239,68,68,0.15); color: #fca5a5; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
     .btn-logout:hover { background: rgba(239,68,68,0.3); color: #fff; }
-    /* Relatório Dizimistas */
     .diz-rank-1 { background: linear-gradient(135deg,#fef3c7,#fde68a); border-left: 4px solid #f59e0b; }
     .diz-rank-2 { background: linear-gradient(135deg,#f1f5f9,#e2e8f0); border-left: 4px solid #94a3b8; }
     .diz-rank-3 { background: linear-gradient(135deg,#fef9ef,#fde8c8); border-left: 4px solid #f97316; }
-    /* Verificação login */
     .login-check-msg { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 14px; font-size: 12px; margin-bottom: 12px; display: none; align-items: center; gap: 8px; }
     .login-check-msg.active { display: flex; }
     @media print {
@@ -130,7 +128,8 @@
     }
   </style>
 </head>
-<body class="min-h-screen">
+
+  <body class="min-h-screen">
 
 <!-- TELA DE LOGIN -->
 <div id="loginScreen" class="active">
@@ -146,18 +145,14 @@
     <div class="login-body">
       <h2 class="text-gray-800 font-bold text-lg mb-1">Entrar</h2>
       <p class="text-gray-500 text-sm mb-4">Informe suas credenciais de acesso</p>
-
-      <!-- Mensagem de verificação pós-login -->
       <div class="login-check-msg" id="loginCheckMsg">
         <i class="fas fa-sync-alt fa-spin mr-1"></i>
         <span id="loginCheckTxt">Sincronizando dados com o servidor...</span>
       </div>
-
       <div class="login-erro" id="loginErro">
         <i class="fas fa-exclamation-circle mr-2 flex-shrink-0"></i>
         <span id="loginErroMsg">Usuário ou senha incorretos.</span>
       </div>
-
       <form id="formLogin" onsubmit="efetuarLogin(event)">
         <div class="login-input-wrap">
           <i class="fas fa-user"></i>
@@ -211,7 +206,6 @@
       </button>
     </div>
   </div>
-
   <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
     <button onclick="showPage('dashboard')" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-dashboard"><i class="fas fa-chart-pie w-4"></i> Dashboard</button>
     <button onclick="showPage('culto')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-culto"><i class="fas fa-bible w-4"></i> Relatório de Culto</button>
@@ -223,7 +217,6 @@
     <button onclick="showPage('historico')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-historico"><i class="fas fa-history w-4"></i> Histórico</button>
     <button onclick="showPage('configuracoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-configuracoes"><i class="fas fa-cog w-4"></i> Configurações</button>
   </nav>
-
   <div class="p-4 border-t border-blue-800">
     <div class="flex items-center gap-3 mb-2">
       <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -268,7 +261,7 @@
 
   <div class="p-3 sm:p-6 flex-1">
 
-    <!-- ===== DASHBOARD ===== -->
+      <!-- ===== DASHBOARD ===== -->
     <div class="page active" id="page-dashboard">
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div class="card p-4">
@@ -491,7 +484,10 @@
     <div class="page" id="page-distribuicoes">
       <div class="card p-4 mb-4">
         <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-calculator text-blue-600"></i> Cálculo de Distribuições — <span id="distMesTitulo">—</span></h3>
-        <div class="bg-blue-50 rounded-xl p-3 mb-4"><p class="text-sm text-blue-700">Base de cálculo: <strong id="distBaseLabel">R$ 0,00</strong></p></div>
+        <div class="bg-blue-50 rounded-xl p-3 mb-4">
+          <p class="text-sm text-blue-700">Base de cálculo (entradas): <strong id="distBaseLabel">R$ 0,00</strong></p>
+          <p class="text-sm text-teal-700 mt-1">Total missões do mês: <strong id="distMissoesLabel">R$ 0,00</strong></p>
+        </div>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="distCards"></div>
         <div class="mt-4 p-3 bg-gray-50 rounded-xl flex justify-between items-center">
           <span class="font-bold text-gray-700">TOTAL DISTRIBUÍDO</span>
@@ -508,9 +504,8 @@
       </div>
     </div>
 
-        <!-- ===== RELATÓRIO DE DIZIMISTAS (NOVO) ===== -->
+    <!-- ===== RELATÓRIO DE DIZIMISTAS ===== -->
     <div class="page" id="page-dizimistas">
-      <!-- Filtros -->
       <div class="card p-4 mb-4">
         <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-wrap">
           <div class="flex items-center gap-2">
@@ -521,61 +516,28 @@
           <input type="text" id="buscaDizimista" placeholder="Buscar dizimista..." class="input-field text-sm sm:w-48" oninput="renderRelatorioDizimistas()">
           <button class="btn-secondary text-sm" onclick="limparFiltroDizimistas()"><i class="fas fa-times mr-1"></i> Todos</button>
           <div class="flex gap-2 sm:ml-auto">
-            <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()">
-              <i class="fab fa-whatsapp"></i> WhatsApp
-            </button>
-            <button class="btn-primary text-sm flex items-center gap-2" onclick="imprimirRelatorioDizimistas()">
-              <i class="fas fa-print"></i> Imprimir/PDF
-            </button>
-            <button class="btn-secondary text-sm flex items-center gap-2" onclick="exportarDizimistasCSV()">
-              <i class="fas fa-file-csv"></i> CSV
-            </button>
+            <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+            <button class="btn-primary text-sm flex items-center gap-2" onclick="imprimirRelatorioDizimistas()"><i class="fas fa-print"></i> Imprimir/PDF</button>
+            <button class="btn-secondary text-sm flex items-center gap-2" onclick="exportarDizimistasCSV()"><i class="fas fa-file-csv"></i> CSV</button>
           </div>
         </div>
       </div>
-
-      <!-- KPIs -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <div class="card p-4 border-t-4 border-blue-500">
-          <p class="text-xs text-gray-500">Total Arrecadado</p>
-          <p class="text-xl font-bold text-blue-600" id="kpiDizTotalArrecadado">R$ 0,00</p>
-        </div>
-        <div class="card p-4 border-t-4 border-green-500">
-          <p class="text-xs text-gray-500">Dizimistas Únicos</p>
-          <p class="text-xl font-bold text-green-600" id="kpiDizUnicos">0</p>
-        </div>
-        <div class="card p-4 border-t-4 border-yellow-500">
-          <p class="text-xs text-gray-500">Média por Dizimista</p>
-          <p class="text-xl font-bold text-yellow-600" id="kpiDizMedia">R$ 0,00</p>
-        </div>
-        <div class="card p-4 border-t-4 border-purple-500">
-          <p class="text-xs text-gray-500">Via PIX</p>
-          <p class="text-xl font-bold text-purple-600" id="kpiDizPix">R$ 0,00</p>
-        </div>
+        <div class="card p-4 border-t-4 border-blue-500"><p class="text-xs text-gray-500">Total Arrecadado</p><p class="text-xl font-bold text-blue-600" id="kpiDizTotalArrecadado">R$ 0,00</p></div>
+        <div class="card p-4 border-t-4 border-green-500"><p class="text-xs text-gray-500">Dizimistas Únicos</p><p class="text-xl font-bold text-green-600" id="kpiDizUnicos">0</p></div>
+        <div class="card p-4 border-t-4 border-yellow-500"><p class="text-xs text-gray-500">Média por Dizimista</p><p class="text-xl font-bold text-yellow-600" id="kpiDizMedia">R$ 0,00</p></div>
+        <div class="card p-4 border-t-4 border-purple-500"><p class="text-xs text-gray-500">Via PIX</p><p class="text-xl font-bold text-purple-600" id="kpiDizPix">R$ 0,00</p></div>
       </div>
-
-      <!-- Ranking + Tabela principal -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <!-- Ranking Top 3 -->
         <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-            <i class="fas fa-trophy text-yellow-500"></i> Top Dizimistas
-          </h3>
-          <div id="dizimistasRanking" class="space-y-2">
-            <p class="text-gray-400 text-sm text-center py-4">Nenhum dado</p>
-          </div>
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-trophy text-yellow-500"></i> Top Dizimistas</h3>
+          <div id="dizimistasRanking" class="space-y-2"><p class="text-gray-400 text-sm text-center py-4">Nenhum dado</p></div>
         </div>
-
-        <!-- Gráfico pizza -->
         <div class="card p-4 lg:col-span-2">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-            <i class="fas fa-chart-pie text-blue-600"></i> Participação por Dizimista
-          </h3>
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-pie text-blue-600"></i> Participação por Dizimista</h3>
           <canvas id="chartDizimistas" style="max-height:220px"></canvas>
         </div>
       </div>
-
-      <!-- Tabela detalhada -->
       <div class="card p-4 mb-4">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-bold text-gray-800 text-sm">Detalhamento por Dizimista</h3>
@@ -598,15 +560,9 @@
           </table>
         </div>
       </div>
-
-      <!-- Histórico por culto -->
       <div class="card p-4">
-        <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-          <i class="fas fa-list-alt text-gray-600"></i> Histórico por Culto
-        </h3>
-        <div id="historicoCultosDiz" class="space-y-3">
-          <p class="text-gray-400 text-sm text-center py-4">Nenhum dado no período</p>
-        </div>
+        <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-list-alt text-gray-600"></i> Histórico por Culto</h3>
+        <div id="historicoCultosDiz" class="space-y-3"><p class="text-gray-400 text-sm text-center py-4">Nenhum dado no período</p></div>
       </div>
     </div>
 
@@ -682,7 +638,6 @@
             <button class="btn-danger text-sm px-4" onclick="removerLogo()" id="btnRemoverLogo" style="display:none"><i class="fas fa-trash mr-1"></i> Remover</button>
           </div>
         </div>
-
         <div class="card p-5">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Informações da Igreja</h3>
           <p class="text-xs text-gray-400 mb-4">Aparecerá nos relatórios e no cabeçalho.</p>
@@ -693,7 +648,6 @@
               <div><label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label><input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão"></div>
               <div><label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label><input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão"></div>
             </div>
-            <!-- WhatsApp da Igreja -->
             <div><label class="text-sm text-gray-600 mb-1 block"><i class="fab fa-whatsapp text-green-500 mr-1"></i> WhatsApp da Igreja (com DDD)</label>
               <input type="tel" id="cfg-whatsapp" class="input-field text-sm" placeholder="Ex: 16999990000" maxlength="15">
               <p class="text-xs text-gray-400 mt-1">Usado para enviar relatórios pelo WhatsApp</p>
@@ -701,7 +655,6 @@
           </div>
           <button class="btn-primary w-full mt-4 text-sm" onclick="salvarConfiguracoes()"><i class="fas fa-save mr-2"></i> Salvar Configurações</button>
         </div>
-
         <div class="card p-5" id="cardCategorias">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-tags text-orange-500"></i> Categorias de Despesas</h3>
           <p class="text-xs text-gray-400 mb-4">Gerencie as categorias usadas nos lançamentos.</p>
@@ -714,7 +667,6 @@
             <i class="fas fa-undo mr-1"></i> Restaurar Categorias Padrão
           </button>
         </div>
-
         <div class="card p-5" id="cardUsuarios">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-users-cog text-purple-600"></i> Usuários do Sistema</h3>
           <p class="text-xs text-gray-400 mb-4">Gerencie os acessos na aba <strong>usuarios</strong> da planilha.</p>
@@ -724,7 +676,6 @@
             <p><span class="font-semibold text-green-600">🟢 visualizador</span> — Apenas visualização</p>
           </div>
         </div>
-
         <div class="card p-5">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-database text-purple-600"></i> Dados do Sistema</h3>
           <p class="text-xs text-gray-400 mb-4">Gerencie o cache local do sistema.</p>
@@ -732,7 +683,7 @@
             <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-blue-600" id="cfgQtdCultos">0</p><p class="text-xs text-gray-500">Cultos</p></div>
             <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-red-600" id="cfgQtdDespesas">0</p><p class="text-xs text-gray-500">Despesas</p></div>
             <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-green-600" id="cfgQtdEntradas">0</p><p class="text-xs text-gray-500">Entradas</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-yellow-600" id="cfgVersao">v4.2</p><p class="text-xs text-gray-500">Versão</p></div>
+            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-yellow-600" id="cfgVersao">v4.3</p><p class="text-xs text-gray-500">Versão</p></div>
           </div>
           <button class="w-full py-2 border-2 border-red-200 text-red-500 rounded-lg hover:bg-red-50 text-sm font-semibold transition" onclick="limparCacheLocal()">
             <i class="fas fa-trash mr-2"></i> Limpar Cache Local
@@ -812,7 +763,7 @@
             <div>
               <label class="text-xs text-gray-600 mb-1 block">Ofertas Missões (R$)</label>
               <input type="number" id="c-missoes" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()">
-              <p class="text-xs text-teal-600 mt-1 font-medium"><i class="fas fa-info-circle mr-1"></i>Contabilizado separadamente</p>
+              <p class="text-xs text-teal-600 mt-1 font-medium"><i class="fas fa-info-circle mr-1"></i>Distribuído 50% Est. / 50% Nac.</p>
             </div>
             <div><label class="text-xs text-gray-600 mb-1 block">Ofertas Especiais (R$)</label><input type="number" id="c-especiais" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
             <div><label class="text-xs text-gray-600 mb-1 block">Outras Entradas (R$)</label><input type="number" id="c-outras" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
@@ -946,7 +897,6 @@
 </div>
 
 </div><!-- fim #appRoot -->
-  
 <script>
 // ============================================================
 // API
@@ -1011,9 +961,6 @@ function limparErroLogin() {
   document.getElementById('loginPass').classList.remove('erro');
 }
 
-// ============================================================
-// LOGIN COM VERIFICAÇÃO DE INTEGRIDADE (MELHORIA 3)
-// ============================================================
 async function efetuarLogin(e) {
   e.preventDefault();
   limparErroLogin();
@@ -1032,7 +979,6 @@ async function efetuarLogin(e) {
     const json=await resp.json();
     if(json.ok){
       salvarSessao({nome:json.nome,permissao:json.permissao});
-      // Mostra msg de sincronização
       const msgEl=document.getElementById('loginCheckMsg');
       const txtEl=document.getElementById('loginCheckTxt');
       msgEl.classList.add('active');
@@ -1050,10 +996,6 @@ async function efetuarLogin(e) {
   finally { btn.disabled=false; btn.innerHTML='<i class="fas fa-sign-in-alt mr-2"></i> Entrar'; }
 }
 
-// ============================================================
-// VERIFICAÇÃO DE INTEGRIDADE AO LOGIN (MELHORIA 3)
-// Remove do cache local registros que foram excluídos no servidor
-// ============================================================
 async function verificarIntegridadeAoLogin() {
   try {
     DB.loadLocal();
@@ -1062,40 +1004,28 @@ async function verificarIntegridadeAoLogin() {
       Promise.all([apiGet('cultos'), apiGet('entradas'), apiGet('despesas')]),
       timeout
     ]);
-
     let removidos = 0;
-
-    // IDs que existem no servidor
     const idsCultosServidor   = new Set((cultosR   ||[]).map(c=>String(c.id)));
     const idsEntradasServidor = new Set((entradasR ||[]).map(e=>String(e.id)));
     const idsDespesasServidor = new Set((despesasR ||[]).map(d=>String(d.id)));
-
-    // Cultos: remove do cache o que não existe mais no servidor
     const cultosFiltrados = DB.cultos.filter(c => {
-      if (!c.id || String(c.id).startsWith('fix-')) return true; // locais sem ID (offline)
+      if (!c.id || String(c.id).startsWith('fix-')) return true;
       if (!idsCultosServidor.has(String(c.id))) { removidos++; return false; }
       return true;
     });
-
-    // Entradas: remove do cache o que não existe mais no servidor
     const entradasFiltradas = DB.entradas.filter(e => {
       if (!e.id || e.origem==='local') return true;
       if (!idsEntradasServidor.has(String(e.id))) { removidos++; return false; }
       return true;
     });
-
-    // Despesas: mantém as fixas; remove as dinâmicas que sumiram do servidor
     const despesasFiltradas = DB.despesas.filter(d => {
-      if (d._fixed) return true; // fixas sempre mantém
+      if (d._fixed) return true;
       if (!d.id)    return true;
       if (!idsDespesasServidor.has(String(d.id))) { removidos++; return false; }
       return true;
     });
-
-    // Atualiza com dados frescos do servidor
     DB.cultos   = cultosR.length   > 0 ? cultosR.map(normalizarCulto)     : cultosFiltrados;
     DB.entradas = entradasR.length > 0 ? entradasR.map(normalizarEntrada) : entradasFiltradas;
-
     if (despesasR.length > 0) {
       const ids = new Set(despesasR.map(d=>String(d.id)));
       DB.despesas = [
@@ -1105,14 +1035,11 @@ async function verificarIntegridadeAoLogin() {
     } else {
       DB.despesas = despesasFiltradas;
     }
-
     DB.saveLocal();
-
     if (removidos > 0) {
       showNotification(`🧹 ${removidos} registro(s) excluídos em outro dispositivo foram removidos do cache.`,'info');
     }
   } catch(err) {
-    // Se offline, apenas carrega o cache local — sem alterar nada
     console.warn('Verificação de integridade offline:', err.message);
   }
 }
@@ -1334,7 +1261,6 @@ function buildGlobalMonthOptions(){
   sel.innerHTML=mu.map(mk=>`<option value="${mk}">${monthLabelShort(mk)}</option>`).join('');
   sel.value=GLOBAL_MONTH;
 }
-
 function mostrarLoading(show,msg='Carregando dados...',sub='Sincronizando com Google Sheets'){
   document.getElementById('loadingOverlay').classList.toggle('hidden',!show);
   if(show){document.getElementById('loadingMsg').textContent=msg;document.getElementById('loadingSubMsg').textContent=sub;}
@@ -1369,14 +1295,14 @@ function showPage(page){
   updatePageSubtitleForMonth();
   if(window.innerWidth<1024)closeSidebar();
   if(page==='dashboard')     renderDashboard();
-    if(page==='culto')        renderCultos();
-  if(page==='entradas')     renderEntradas();
-  if(page==='despesas')     filtrarDespesas();
-  if(page==='distribuicoes')renderDistribuicoesMes();
-  if(page==='dizimistas')   renderRelatorioDizimistas();
-  if(page==='relatorios')   renderRelatorios();
-  if(page==='historico')    renderHistorico();
-  if(page==='configuracoes')renderConfiguracoes();
+  if(page==='culto')         renderCultos();
+  if(page==='entradas')      renderEntradas();
+  if(page==='despesas')      filtrarDespesas();
+  if(page==='distribuicoes') renderDistribuicoesMes();
+  if(page==='dizimistas')    renderRelatorioDizimistas();
+  if(page==='relatorios')    renderRelatorios();
+  if(page==='historico')     renderHistorico();
+  if(page==='configuracoes') renderConfiguracoes();
 }
 
 function changeGlobalMonth(){
@@ -1399,535 +1325,492 @@ function closeSidebar(){
 async function sincronizarTudo(silent=false){
   if(!silent)mostrarLoading(true,'Sincronizando dados...','Buscando dados do servidor...');
   try{
-    const[cultosR,entradasR,despesasR]=await Promise.all([
-      apiGet('cultos'),apiGet('entradas'),apiGet('despesas')
-    ]);
-
-    // Aplica integridade: remove do cache o que não está mais no servidor
-    if(cultosR.length>0){
-      DB.cultos=cultosR.map(normalizarCulto);
-    }
-    if(entradasR.length>0){
-      DB.entradas=entradasR.map(normalizarEntrada);
-    }
+    const[cultosR,entra
+    const[cultosR,entradasR,despesasR]=await Promise.all([apiGet('cultos'),apiGet('entradas'),apiGet('despesas')]);
+    if(cultosR.length>0)   DB.cultos   =cultosR.map(normalizarCulto);
+    if(entradasR.length>0) DB.entradas =entradasR.map(normalizarEntrada);
     if(despesasR.length>0){
       const ids=new Set(despesasR.map(d=>String(d.id)));
       DB.despesas=[
         ...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),
         ...despesasR.map(normalizarDespesa)
       ];
-    } else if(DB.despesas.length===0){
-      DB.despesas=[...DESPESAS_PADRAO];
+    } else {
+      if(DB.despesas.length===0) DB.despesas=[...DESPESAS_PADRAO];
     }
-
     DB.saveLocal();
     buildGlobalMonthOptions();
     const p=document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard';
-    showPage(p);
-    if(!silent)showNotification('✅ Dados sincronizados com sucesso!','success');
-  } catch(e){
-    if(!silent)showNotification(`⚠️ Erro na sincronização: ${e.message}`,'error');
-    DB.loadLocal();
-    if(!DB.despesas.length)DB.despesas=[...DESPESAS_PADRAO];
-    buildGlobalMonthOptions();
-    const p=document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard';
-    showPage(p);
-  }finally {
-    mostrarLoading(false);
+    if(p==='dashboard')     renderDashboard();
+    if(p==='culto')         renderCultos();
+    if(p==='entradas')      renderEntradas();
+    if(p==='despesas')      filtrarDespesas();
+    if(p==='distribuicoes') renderDistribuicoesMes();
+    if(p==='dizimistas')    renderRelatorioDizimistas();
+    if(p==='historico')     renderHistorico();
+    if(p==='configuracoes') renderConfiguracoes();
+    if(!silent)showNotification('✅ Dados sincronizados!','success');
+  }catch(err){
+    console.error('Sync error:',err);
+    if(!silent)showNotification('⚠️ Erro ao sincronizar. Usando dados locais.','warning');
+  }finally{
+    if(!silent)mostrarLoading(false);
   }
 }
 
 // ============================================================
-// INICIALIZAR SISTEMA
+// DASHBOARD — COM CORREÇÕES DE MISSÕES
 // ============================================================
-async function inicializarSistema(){
-  DB.loadLocal();
-  if(!DB.despesas.length)DB.despesas=[...DESPESAS_PADRAO];
-  if(!DB.categorias.length)DB.categorias=[...CATEGORIAS_PADRAO];
-  buildGlobalMonthOptions();
-  renderCategoriaSelects();
-  carregarConfig();
-  showPage('dashboard');
-  await sincronizarTudo(true);
-}
+let chartEvo=null,chartDesp=null;
 
-// ============================================================
-// GRÁFICOS
-// ============================================================
-const CHARTS={};
-function destroyChart(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id];}}
-
-function renderChartEvolucao(){
-  destroyChart('evolucao');
-  const ctx=document.getElementById('chartEvolucao');if(!ctx)return;
-  const meses=DB.historico.map(h=>`${h.nome.substring(0,3)}`);
-  const entradas=DB.historico.map(h=>h.entradas);
-  const saidas=DB.historico.map(h=>h.saidas);
-  CHARTS['evolucao']=new Chart(ctx,{type:'line',data:{labels:meses,datasets:[
-    {label:'Entradas',data:entradas,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',tension:0.4,fill:true},
-    {label:'Saídas',data:saidas,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',tension:0.4,fill:true}
-  ]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}});
-}
-
-function renderChartDespesas(mk){
-  destroyChart('despesas');
-  const ctx=document.getElementById('chartDespesas');if(!ctx)return;
-  const desp=getDespesasMes(mk);
-  const por={};desp.forEach(d=>{por[d.categoria]=(por[d.categoria]||0)+d.valor;});
-  const labs=Object.keys(por),vals=Object.values(por);
-  const cores=['#1e3a5f','#c8a951','#ef4444','#10b981','#3b82f6','#8b5cf6','#f59e0b','#6366f1','#14b8a6','#f97316','#64748b','#ec4899'];
-  if(!labs.length){CHARTS['despesas']=new Chart(ctx,{type:'doughnut',data:{labels:['Sem dados'],datasets:[{data:[1],backgroundColor:['#e5e7eb']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});return;}
-  CHARTS['despesas']=new Chart(ctx,{type:'doughnut',data:{labels:labs,datasets:[{data:vals,backgroundColor:cores}]},options:{responsive:true,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)}`}}}}});
-}
-
-function renderChartComparativo(){
-  destroyChart('comparativo');
-  const ctx=document.getElementById('chartComparativo');if(!ctx)return;
-  const meses=DB.historico.map(h=>h.nome.substring(0,3));
-  CHARTS['comparativo']=new Chart(ctx,{type:'bar',data:{labels:meses,datasets:[
-    {label:'Entradas',data:DB.historico.map(h=>h.entradas),backgroundColor:'rgba(16,185,129,0.7)'},
-    {label:'Saídas',data:DB.historico.map(h=>h.saidas),backgroundColor:'rgba(239,68,68,0.7)'},
-    {label:'Saldo Final',data:DB.historico.map(h=>h.saldoFinal),backgroundColor:'rgba(59,130,246,0.7)'}
-  ]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}});
-}
-
-function renderChartSaldos(){
-  destroyChart('saldos');
-  const ctx=document.getElementById('chartSaldos');if(!ctx)return;
-  CHARTS['saldos']=new Chart(ctx,{type:'line',data:{
-    labels:DB.historico.map(h=>h.nome.substring(0,3)),
-    datasets:[{label:'Saldo Final',data:DB.historico.map(h=>h.saldoFinal),borderColor:'#c8a951',backgroundColor:'rgba(200,169,81,0.1)',tension:0.4,fill:true,pointBackgroundColor:'#1e3a5f',pointRadius:6}]
-  },options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}});
-}
-
-function renderChartDizimistas(dados){
-  destroyChart('dizimistas');
-  const ctx=document.getElementById('chartDizimistas');if(!ctx)return;
-  if(!dados.length){
-    CHARTS['dizimistas']=new Chart(ctx,{type:'doughnut',data:{labels:['Sem dados'],datasets:[{data:[1],backgroundColor:['#e5e7eb']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});return;
-  }
-  const top=dados.slice(0,8);
-  const cores=['#1e3a5f','#c8a951','#ef4444','#10b981','#3b82f6','#8b5cf6','#f59e0b','#f97316'];
-  CHARTS['dizimistas']=new Chart(ctx,{type:'doughnut',data:{
-    labels:top.map(d=>d.nome),
-    datasets:[{data:top.map(d=>d.total),backgroundColor:cores}]
-  },options:{responsive:true,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)}`}}}}});
-}
-
-// ============================================================
-// DASHBOARD
-// ============================================================
 function renderDashboard(){
   const mk=GLOBAL_MONTH;
   const h=getHistoricoRow(mk);
-  const prev=getHistoricoRow(prevMonthKey(mk));
   const entMes=sum(getEntradasMes(mk),e=>e.valor);
-  const saiMes=sum(getDespesasMes(mk),d=>d.valor);
-  const saldoAnt=h?.saldoAnt??(prev?.saldoFinal??0);
-  const saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
-  const totalEnt=h?.entradas??entMes;
-  const totalSai=h?.saidas??saiMes;
+  const despMes=sum(getDespesasMes(mk),d=>d.valor);
 
-  document.getElementById('kpi-saldo-ant').textContent=fmt(saldoAnt);
-  document.getElementById('kpi-saldo-ant-sub').textContent=`Mês anterior: ${monthLabelShort(prevMonthKey(mk))}`;
-  document.getElementById('kpi-entradas').textContent=fmt(totalEnt);
-  document.getElementById('kpi-saidas').textContent=fmt(totalSai);
-  document.getElementById('kpi-saldo').textContent=fmt(saldoFinal);
-  document.getElementById('kpi-saldo-sub').textContent=`Saldo: ${fmt(saldoAnt)}+${fmt(totalEnt)}-${fmt(totalSai)}`;
+  const totalEnt  = h?.entradas ?? entMes;
+  const totalSaid = h?.saidas   ?? despMes;
+  const saldoAnt  = h?.saldoAnt ?? 0;
+  const saldoFin  = h?.saldoFinal??(saldoAnt+totalEnt-totalSaid);
 
+  // KPIs
+  document.getElementById('kpi-saldo-ant').textContent   = fmt(saldoAnt);
+  document.getElementById('kpi-saldo-ant-sub').textContent= h?'Histórico confirmado':'Calculado';
+  document.getElementById('kpi-entradas').textContent     = fmt(totalEnt);
+  document.getElementById('kpi-saidas').textContent       = fmt(totalSaid);
+  document.getElementById('kpi-saldo').textContent        = fmt(saldoFin);
+
+  const prevMk=prevMonthKey(mk);
+  const hPrev=getHistoricoRow(prevMk);
+  const entPrev=hPrev?.entradas??sum(getEntradasMes(prevMk),e=>e.valor);
+  const saidPrev=hPrev?.saidas??sum(getDespesasMes(prevMk),d=>d.valor);
+  const varEnt=entPrev>0?((totalEnt-entPrev)/entPrev*100):0;
+  const varSaid=saidPrev>0?((totalSaid-saidPrev)/saidPrev*100):0;
+  document.getElementById('kpi-entradas-var').textContent =`${varEnt>=0?'▲':'▼'} ${Math.abs(varEnt).toFixed(1)}% vs mês anterior`;
+  document.getElementById('kpi-saidas-var').textContent   =`${varSaid>=0?'▲':'▼'} ${Math.abs(varSaid).toFixed(1)}% vs mês anterior`;
+  document.getElementById('kpi-saldo-sub').textContent    =`Saldo Ant. ${fmt(saldoAnt)} + Ent. ${fmt(totalEnt)} − Saídas ${fmt(totalSaid)}`;
+
+  // Métricas culto
   const cultosMes=getCultosMes(mk);
   const missoesMes=sum(cultosMes,c=>c.missoes||0);
-  document.getElementById('kpi-missoes-mes').textContent=fmt(missoesMes);
-  document.getElementById('kpi-cultos').textContent=cultosMes.length;
+  const ceia=h?.ceia??cultosMes.find(c=>c.tipo==='Culto de Santa Ceia')?.presentes??0;
+  const mediaPes=(ceia>0&&totalEnt>0)?totalEnt/ceia:0;
+  document.getElementById('kpi-presentes').textContent   =ceia||'—';
+  document.getElementById('kpi-presentes-info').textContent=h?'Histórico confirmado':'1º domingo do mês';
+  document.getElementById('kpi-cultos').textContent      =cultosMes.length;
+  document.getElementById('kpi-media-pessoa').textContent=fmt(mediaPes);
+  document.getElementById('kpi-missoes-mes').textContent =fmt(missoesMes);
 
-  const ceiaRow=DB.historico.find(h=>h.mes===parseInt(mk.split('-')[1])&&h.ano===parseInt(mk.split('-')[0]));
-  const ceiaPres=ceiaRow?.ceia??cultosMes.filter(c=>(c.tipo||'').includes('Ceia')).reduce((a,c)=>a+(c.presentes||0),0);
-  document.getElementById('kpi-presentes').textContent=ceiaPres||'—';
-  document.getElementById('kpi-presentes-info').textContent=cultosMes.length?'1° domingo (Ceia)':'Sem dados';
+  // ── DISTRIBUIÇÕES DASHBOARD (CORRIGIDO) ──
+  const cultosMesParaDist=getCultosMes(mk);
+  const totalMissoes=sum(cultosMesParaDist,c=>c.missoes||0);
+  const missoesEst=totalMissoes*0.5;
+  const missoesNac=totalMissoes*0.5;
 
-  const totalPes=sum(cultosMes,c=>c.presentes||0);
-  const totalArr=sum(cultosMes,c=>c.totalArrecadado||0);
-  document.getElementById('kpi-media-pessoa').textContent=totalPes>0?fmt(totalArr/totalPes):fmt(0);
-
-  // distribuições
-  const distConfig=[
-    {label:'CED',pct:4.4,cor:'bg-blue-100 text-blue-700'},{label:'CND',pct:8.5,cor:'bg-purple-100 text-purple-700'},
-    {label:'Taxa Regional',pct:4,cor:'bg-yellow-100 text-yellow-700'},{label:'Prebenda',pct:44.7,cor:'bg-green-100 text-green-700'},
+  const distConfigDashboard=[
+    {label:'CED',               valor:totalEnt*0.044, cor:'bg-blue-100 text-blue-700',    info:'4,4%'},
+    {label:'CND',               valor:totalEnt*0.085, cor:'bg-purple-100 text-purple-700', info:'8,5%'},
+    {label:'Taxa Regional',     valor:totalEnt*0.04,  cor:'bg-yellow-100 text-yellow-700', info:'4%'},
+    {label:'Missões — Est. 50%',valor:missoesEst,     cor:'bg-teal-100 text-teal-700',    info:'50% das missões'},
+    {label:'Missões — Nac. 50%',valor:missoesNac,     cor:'bg-cyan-100 text-cyan-700',    info:'50% das missões'},
   ];
-  const base=totalEnt;
-  document.getElementById('dashDistribuicoes').innerHTML=distConfig.map(d=>{
-    const val=base*(d.pct/100);
-    return`<div class="flex items-center justify-between p-3 ${d.cor} rounded-xl">
-      <div class="flex items-center gap-2"><span class="font-bold text-sm">${d.label}</span><span class="text-xs">${d.pct}%</span></div>
-      <span class="font-bold text-sm">${fmt(val)}</span>
-    </div>`;
-  }).join('');
 
-  // movimentações
+  document.getElementById('dashDistribuicoes').innerHTML=distConfigDashboard.map(d=>`
+    <div class="flex items-center justify-between p-3 ${d.cor} rounded-xl">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-sm">${d.label}</span>
+        <span class="text-xs opacity-70">${d.info}</span>
+      </div>
+      <span class="font-bold text-sm">${fmt(d.valor)}</span>
+    </div>`).join('');
+
+  // Últimas movimentações
   const movs=[
-    ...getEntradasMes(mk).map(e=>({data:e.data,desc:e.descricao||'Entrada',tipo:'Entrada',val:e.valor,cls:'text-green-600'})),
-    ...getDespesasMes(mk).map(d=>({data:d.data,desc:d.descricao||d.categoria,tipo:'Despesa',val:d.valor,cls:'text-red-600'}))
-  ].sort((a,b)=>b.data?.localeCompare(a.data||'')||0).slice(0,8);
+    ...getEntradasMes(mk).map(e=>({data:e.data,desc:e.descricao||'Entrada',tipo:'entrada',valor:e.valor})),
+    ...getDespesasMes(mk).map(d=>({data:d.data,desc:d.descricao||d.categoria,tipo:'saida',valor:d.valor})),
+  ].sort((a,b)=>b.data?.localeCompare(a.data||'')).slice(0,8);
 
-  const tbody=document.getElementById('tabelaMovimentacoes');
-  tbody.innerHTML=movs.length?movs.map(m=>`
-    <tr class="table-row border-b border-gray-50">
-      <td class="py-2 text-xs text-gray-500">${fmtDate(m.data)}</td>
-      <td class="py-2 text-sm text-gray-700">${escapeHtml(m.desc)}</td>
-      <td class="py-2"><span class="badge-${m.tipo==='Entrada'?'green':'red'} px-2 py-0.5 rounded-full text-xs">${m.tipo}</span></td>
-      <td class="py-2 text-right font-bold ${m.cls} text-sm">${fmt(m.val)}</td>
+  document.getElementById('tabelaMovimentacoes').innerHTML=movs.length?movs.map(m=>`
+    <tr class="table-row border-b text-sm">
+      <td class="py-2 text-gray-600">${fmtDate(m.data)}</td>
+      <td class="py-2 text-gray-800">${escapeHtml(m.desc)}</td>
+      <td class="py-2"><span class="badge-${m.tipo==='entrada'?'green':'red'} px-2 py-0.5 rounded-full text-xs font-semibold">${m.tipo==='entrada'?'Entrada':'Saída'}</span></td>
+      <td class="py-2 text-right font-bold ${m.tipo==='entrada'?'text-green-600':'text-red-600'}">${fmt(m.valor)}</td>
     </tr>`).join(''):
-    `<tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm">Nenhuma movimentação no período</td></tr>`;
+    '<tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm">Sem movimentações no mês</td></tr>';
 
-  renderChartEvolucao();
-  renderChartDespesas(mk);
+  // Gráfico Evolução
+  const mesesHist=DB.historico.slice(-6);
+  const labEvo=mesesHist.map(h=>h.nome?.substring(0,3)||'');
+  const datEnt=mesesHist.map(h=>h.entradas||0);
+  const datSai=mesesHist.map(h=>h.saidas||0);
+  if(chartEvo)chartEvo.destroy();
+  const ctxEvo=document.getElementById('chartEvolucao').getContext('2d');
+  chartEvo=new Chart(ctxEvo,{type:'bar',data:{labels:labEvo,datasets:[
+    {label:'Entradas',data:datEnt,backgroundColor:'rgba(16,185,129,0.7)',borderRadius:6},
+    {label:'Saídas',  data:datSai,backgroundColor:'rgba(239,68,68,0.7)', borderRadius:6},
+  ]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}});
+
+  // Gráfico Despesas por Categoria
+  const catMap={};
+  getDespesasMes(mk).forEach(d=>{catMap[d.categoria]=(catMap[d.categoria]||0)+d.valor;});
+  const catLabels=Object.keys(catMap);
+  const catData=Object.values(catMap);
+  const catColors=['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1'];
+  if(chartDesp)chartDesp.destroy();
+  const ctxDesp=document.getElementById('chartDespesas').getContext('2d');
+  chartDesp=new Chart(ctxDesp,{type:'doughnut',data:{labels:catLabels,datasets:[{data:catData,backgroundColor:catColors,borderWidth:2}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}}});
 }
-
 // ============================================================
 // CULTOS
 // ============================================================
+function renderCultos(){
+  const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
+  const filtroMes=document.getElementById('filtroCultoMes')?.value||GLOBAL_MONTH;
+  let cultos=[...DB.cultos].filter(c=>(c.data||'').startsWith(filtroMes));
+  if(busca)cultos=cultos.filter(c=>
+    (c.data||'').includes(busca)||(c.tipo||'').toLowerCase().includes(busca)||
+    (c.pregador||'').toLowerCase().includes(busca)||(c.pastor||'').toLowerCase().includes(busca)
+  );
+  cultos.sort((a,b)=>b.data?.localeCompare(a.data));
+  document.getElementById('qtdCultosLabel').textContent=`${cultos.length} culto${cultos.length!==1?'s':''}`;
+
+  const tbody=document.getElementById('tabelaCultos');
+  if(!cultos.length){tbody.innerHTML='<tr><td colspan="8" class="py-8 text-center text-gray-400"><i class="fas fa-bible text-4xl mb-3 block text-gray-300"></i>Nenhum culto encontrado</td></tr>';
+  }else{
+    tbody.innerHTML=cultos.map(c=>{
+      const total=c.totalArrecadado||((c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0));
+      const canEdit=temPermissao('podeEditar');
+      return`<tr class="table-row border-b text-sm">
+        <td class="p-2 font-medium text-gray-800">${fmtDate(c.data)}</td>
+        <td class="p-2"><span class="badge-blue px-2 py-0.5 rounded-full text-xs font-semibold">${escapeHtml(c.tipo||'Regular')}</span></td>
+        <td class="p-2 hidden md:table-cell text-gray-600">${escapeHtml(c.pregador||c.pastor||'—')}</td>
+        <td class="p-2 text-center text-gray-700">${c.presentes||0}</td>
+        <td class="p-2 text-green-700 font-semibold">${fmt(c.totalDizimos)}</td>
+        <td class="p-2 text-blue-700 font-semibold">${fmt(c.totalOfertas)}</td>
+        <td class="p-2 text-purple-700 font-bold">${fmt(total)}</td>
+        <td class="p-2">
+          <div class="flex gap-1">
+            <button onclick="verCulto('${c.id}')" class="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-xs flex items-center justify-center" title="Ver REFC"><i class="fas fa-eye"></i></button>
+            ${canEdit?`<button onclick="editarCulto('${c.id}')" class="w-7 h-7 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 text-xs flex items-center justify-center" title="Editar"><i class="fas fa-pen"></i></button>`:''}
+            ${canEdit?`<button onclick="excluirCulto('${c.id}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs flex items-center justify-center" title="Excluir"><i class="fas fa-trash"></i></button>`:''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  const todos=getCultosMes(GLOBAL_MONTH);
+  document.getElementById('tot-dizimos').textContent    =fmt(sum(todos,c=>c.totalDizimos||0));
+  document.getElementById('tot-ofertas').textContent    =fmt(sum(todos,c=>c.totalOfertas||0));
+  document.getElementById('tot-missoes').textContent    =fmt(sum(todos,c=>c.missoes||0));
+  document.getElementById('tot-cultos-total').textContent=fmt(sum(todos,c=>(c.totalDizimos||0)+(c.totalOfertas||0)));
+}
+
 function openNovoCulto(){
   if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
   document.getElementById('cultoModalTitulo').textContent='Novo Relatório de Culto (REFC)';
   document.getElementById('formCulto').reset();
   document.getElementById('c-id').value='';
   document.getElementById('c-data').value=new Date().toISOString().split('T')[0];
-  document.getElementById('c-pastor').value=DB.config.pastor||'Danilo de Oliveira Falcão';
-  document.getElementById('c-pregador').value=DB.config.pastor||'Danilo de Oliveira Falcão';
+  document.getElementById('c-horario').value='19:30';
+  const cfg=DB.config||{};
+  document.getElementById('c-pastor').value=cfg.pastor||'Danilo de Oliveira Falcão';
+  document.getElementById('c-pregador').value='';
   document.getElementById('listaDizimistas').innerHTML='';
   document.getElementById('listaOfertas').innerHTML='';
+  document.getElementById('totalDizimosLabel').textContent='R$ 0,00';
+  document.getElementById('totalOfertasLabel').textContent='R$ 0,00';
+  document.getElementById('totalArrecadado').textContent='R$ 0,00';
+  document.getElementById('c-caixa').value='0';
+  document.getElementById('c-conta').value='0';
+  adicionarDizimista();adicionarOferta();
+  openModal('modalNovoCulto');
+}
+
+function editarCulto(id){
+  if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão.','error');return;}
+  const c=DB.cultos.find(x=>String(x.id)===String(id));if(!c)return;
+  document.getElementById('cultoModalTitulo').textContent='Editar REFC';
+  document.getElementById('c-id').value=c.id;
+  document.getElementById('c-data').value=c.data||'';
+  document.getElementById('c-horario').value=c.horario||'19:30';
+  document.getElementById('c-pastor').value=c.pastor||'';
+  document.getElementById('c-pregador').value=c.pregador||'';
+  document.getElementById('c-tipo').value=c.tipo||'Culto Regular';
+  document.getElementById('c-cura').value=c.cura||0;
+  document.getElementById('c-presentes').value=c.presentes||0;
+  document.getElementById('c-visitantes').value=c.visitantes||0;
+  document.getElementById('c-criancas').value=c.criancas||0;
+  document.getElementById('c-missoes').value=c.missoes||0;
+  document.getElementById('c-especiais').value=c.especiais||0;
+  document.getElementById('c-outras').value=c.outras||0;
+  document.getElementById('c-observacoes').value=c.observacoes||'';
+
+  const dizs=c.dizimistas||[];
+  const offs=c.ofertas||[];
+  document.getElementById('listaDizimistas').innerHTML='';
+  document.getElementById('listaOfertas').innerHTML='';
+  if(dizs.length)dizs.forEach(d=>adicionarDizimista(d.nome,d.valor,d.forma));
+  else adicionarDizimista();
+  if(offs.length)offs.forEach(o=>adicionarOferta(o.nome,o.valor,o.forma));
+  else adicionarOferta();
   calcTotalCulto();
   openModal('modalNovoCulto');
 }
 
-function adicionarDizimista(d={}){
-  const div=document.createElement('div');div.className='dizimista-row';
+function adicionarDizimista(nome='',valor='',forma='dinheiro'){
+  const div=document.createElement('div');
+  div.className='dizimista-row';
   div.innerHTML=`
-    <input type="text" class="input-field text-sm diz-nome" placeholder="Nome do dizimista" value="${escapeHtml(d.nome||'')}" oninput="calcTotalCulto()">
-    <input type="number" class="input-field text-sm diz-valor" placeholder="0,00" min="0" step="0.01" value="${d.valor||''}" oninput="calcTotalCulto()">
-    <select class="forma-pag diz-forma"><option value="Dinheiro" ${d.forma==='Dinheiro'?'selected':''}>Dinheiro</option><option value="PIX" ${d.forma==='PIX'?'selected':''}>PIX</option></select>
-    <button type="button" class="btn-remove" onclick="this.closest('.dizimista-row').remove();calcTotalCulto()"><i class="fas fa-times"></i></button>`;
+    <input type="text" class="input-field text-sm diz-nome" placeholder="Nome do dizimista" value="${escapeHtml(nome)}">
+    <input type="number" class="input-field text-sm diz-valor" placeholder="0,00" min="0" step="0.01" value="${valor}" oninput="calcTotalCulto()">
+    <select class="forma-pag diz-forma">
+      <option value="dinheiro" ${forma==='dinheiro'?'selected':''}>💵 Dinheiro</option>
+      <option value="pix"      ${forma==='pix'?'selected':''}>📲 PIX</option>
+      <option value="cheque"   ${forma==='cheque'?'selected':''}>📝 Cheque</option>
+    </select>
+    <button type="button" class="btn-remove" onclick="this.parentElement.remove();calcTotalCulto()">×</button>`;
   document.getElementById('listaDizimistas').appendChild(div);
+  calcTotalCulto();
 }
 
-function adicionarOferta(o={}){
-  const div=document.createElement('div');div.className='oferta-row';
+function adicionarOferta(nome='',valor='',forma='dinheiro'){
+  const div=document.createElement('div');
+  div.className='oferta-row';
   div.innerHTML=`
-    <input type="text" class="input-field text-sm of-nome" placeholder="Descrição (opcional)" value="${escapeHtml(o.nome||'')}" oninput="calcTotalCulto()">
-    <input type="number" class="input-field text-sm of-valor" placeholder="0,00" min="0" step="0.01" value="${o.valor||''}" oninput="calcTotalCulto()">
-    <select class="forma-pag of-forma"><option value="Dinheiro" ${o.forma==='Dinheiro'?'selected':''}>Dinheiro</option><option value="PIX" ${o.forma==='PIX'?'selected':''}>PIX</option></select>
-    <button type="button" class="btn-remove" onclick="this.closest('.oferta-row').remove();calcTotalCulto()"><i class="fas fa-times"></i></button>`;
+    <input type="text" class="input-field text-sm of-nome" placeholder="Nome (opcional)" value="${escapeHtml(nome)}">
+    <input type="number" class="input-field text-sm of-valor" placeholder="0,00" min="0" step="0.01" value="${valor}" oninput="calcTotalCulto()">
+    <select class="forma-pag of-forma">
+      <option value="dinheiro" ${forma==='dinheiro'?'selected':''}>💵 Dinheiro</option>
+      <option value="pix"      ${forma==='pix'?'selected':''}>📲 PIX</option>
+      <option value="cheque"   ${forma==='cheque'?'selected':''}>📝 Cheque</option>
+    </select>
+    <button type="button" class="btn-remove" onclick="this.parentElement.remove();calcTotalCulto()">×</button>`;
   document.getElementById('listaOfertas').appendChild(div);
-}
-
-function getDizimistasForm(){
-  return [...document.querySelectorAll('.dizimista-row')].map(r=>({
-    nome:r.querySelector('.diz-nome')?.value||'',
-    valor:parseFloat(r.querySelector('.diz-valor')?.value)||0,
-    forma:r.querySelector('.diz-forma')?.value||'Dinheiro'
-  })).filter(d=>d.valor>0);
-}
-function getOfertasForm(){
-  return [...document.querySelectorAll('.oferta-row')].map(r=>({
-    nome:r.querySelector('.of-nome')?.value||'Geral',
-    valor:parseFloat(r.querySelector('.of-valor')?.value)||0,
-    forma:r.querySelector('.of-forma')?.value||'Dinheiro'
-  })).filter(o=>o.valor>0);
+  calcTotalCulto();
 }
 
 function calcTotalCulto(){
-  const dizs=getDizimistasForm(), ofs=getOfertasForm();
-  const totDiz=sum(dizs,d=>d.valor), totOf=sum(ofs,o=>o.valor);
+  const dizRows=document.querySelectorAll('#listaDizimistas .dizimista-row');
+  const ofRows =document.querySelectorAll('#listaOfertas .oferta-row');
+  let totalDiz=0,totalOf=0,caixa=0,conta=0;
+  dizRows.forEach(r=>{
+    const v=parseFloat(r.querySelector('.diz-valor')?.value)||0;
+    const f=r.querySelector('.diz-forma')?.value||'dinheiro';
+    totalDiz+=v;
+    if(f==='pix')conta+=v; else caixa+=v;
+  });
+  ofRows.forEach(r=>{
+    const v=parseFloat(r.querySelector('.of-valor')?.value)||0;
+    const f=r.querySelector('.of-forma')?.value||'dinheiro';
+    totalOf+=v;
+    if(f==='pix')conta+=v; else caixa+=v;
+  });
   const missoes=parseFloat(document.getElementById('c-missoes')?.value)||0;
   const especiais=parseFloat(document.getElementById('c-especiais')?.value)||0;
   const outras=parseFloat(document.getElementById('c-outras')?.value)||0;
-  const total=totDiz+totOf+especiais+outras;
-  // separar por forma de pagamento
-  const totalDinheiro=[...dizs,...ofs].filter(x=>x.forma==='Dinheiro').reduce((a,x)=>a+x.valor,0)+especiais+outras;
-  const totalPix=[...dizs,...ofs].filter(x=>x.forma==='PIX').reduce((a,x)=>a+x.valor,0);
-  const el=id=>document.getElementById(id);
-  if(el('totalDizimosLabel'))el('totalDizimosLabel').textContent=fmt(totDiz);
-  if(el('totalOfertasLabel'))el('totalOfertasLabel').textContent=fmt(totOf);
-  if(el('totalArrecadado'))el('totalArrecadado').textContent=fmt(total);
-  if(el('c-caixa'))el('c-caixa').value=totalDinheiro.toFixed(2);
-  if(el('c-conta'))el('c-conta').value=totalPix.toFixed(2);
+  const totalGeral=totalDiz+totalOf+especiais+outras;
+  document.getElementById('totalDizimosLabel').textContent=fmt(totalDiz);
+  document.getElementById('totalOfertasLabel').textContent=fmt(totalOf);
+  document.getElementById('totalArrecadado').textContent  =fmt(totalGeral);
+  document.getElementById('c-caixa').value=caixa.toFixed(2);
+  document.getElementById('c-conta').value=conta.toFixed(2);
 }
 
 async function salvarCulto(e){
   e.preventDefault();
+  if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
+  setBtnLoading('btnSalvarCulto',true);
   const id=document.getElementById('c-id').value;
-  const data={
-    id:id||undefined,
+  const dizimistas=Array.from(document.querySelectorAll('#listaDizimistas .dizimista-row')).map(r=>({
+    nome:(r.querySelector('.diz-nome')?.value||'').trim(),
+    valor:parseFloat(r.querySelector('.diz-valor')?.value)||0,
+    forma:r.querySelector('.diz-forma')?.value||'dinheiro',
+  })).filter(d=>d.valor>0);
+  const ofertas=Array.from(document.querySelectorAll('#listaOfertas .oferta-row')).map(r=>({
+    nome:(r.querySelector('.of-nome')?.value||'').trim(),
+    valor:parseFloat(r.querySelector('.of-valor')?.value)||0,
+    forma:r.querySelector('.of-forma')?.value||'dinheiro',
+  })).filter(o=>o.valor>0);
+  const totalDizimos=sum(dizimistas,d=>d.valor);
+  const totalOfertas=sum(ofertas,o=>o.valor);
+  const missoes  =parseFloat(document.getElementById('c-missoes').value)||0;
+  const especiais=parseFloat(document.getElementById('c-especiais').value)||0;
+  const outras   =parseFloat(document.getElementById('c-outras').value)||0;
+  const totalArrecadado=totalDizimos+totalOfertas+especiais+outras;
+  const culto={
+    id:id||`local-${Date.now()}`,
     data:document.getElementById('c-data').value,
     horario:document.getElementById('c-horario').value,
-    tipo:document.getElementById('c-tipo').value,
     pastor:document.getElementById('c-pastor').value,
     pregador:document.getElementById('c-pregador').value,
+    tipo:document.getElementById('c-tipo').value,
+    cura:parseInt(document.getElementById('c-cura').value)||0,
     presentes:parseInt(document.getElementById('c-presentes').value)||0,
     visitantes:parseInt(document.getElementById('c-visitantes').value)||0,
     criancas:parseInt(document.getElementById('c-criancas').value)||0,
-    cura:parseInt(document.getElementById('c-cura').value)||0,
-    missoes:parseFloat(document.getElementById('c-missoes').value)||0,
-    especiais:parseFloat(document.getElementById('c-especiais').value)||0,
-    outras:parseFloat(document.getElementById('c-outras').value)||0,
-    observacoes:document.getElementById('c-observacoes').value,
-    dizimistas:JSON.stringify(getDizimistasForm()),
-    ofertas:JSON.stringify(getOfertasForm()),
+    dizimistas,ofertas,totalDizimos,totalOfertas,totalArrecadado,
+    missoes,especiais,outras,
     caixaLocal:parseFloat(document.getElementById('c-caixa').value)||0,
     contaCorrente:parseFloat(document.getElementById('c-conta').value)||0,
+    observacoes:document.getElementById('c-observacoes').value,
   };
-  const dizs=getDizimistasForm(),ofs=getOfertasForm();
-  data.totalDizimos=sum(dizs,d=>d.valor);
-  data.totalOfertas=sum(ofs,o=>o.valor);
-  data.totalArrecadado=data.totalDizimos+data.totalOfertas+(data.especiais||0)+(data.outras||0);
-
-  setBtnLoading('btnSalvarCulto',true);
   try{
-    const saved=await apiSave('cultos',data);
-    const normalized=normalizarCulto({...data,...saved});
-    if(id){const idx=DB.cultos.findIndex(c=>String(c.id)===String(id));if(idx!==-1)DB.cultos[idx]=normalized;else DB.cultos.push(normalized);}
-    else DB.cultos.push(normalized);
-
-    // Gerar entrada automática
-    await gerarEntradaDoCulto(normalized);
+    const saved=await apiSave('cultos',culto);
+    culto.id=saved?.id||culto.id;
+    if(id) DB.cultos=DB.cultos.map(x=>String(x.id)===String(id)?culto:x);
+    else    DB.cultos.push(culto);
+    await sincronizarEntradas(culto);
     DB.saveLocal();
     closeModal('modalNovoCulto');
-    renderCultos();
-    if(document.querySelector('#page-dashboard.active'))renderDashboard();
     buildGlobalMonthOptions();
-    showNotification(`✅ Culto de ${fmtDate(data.data)} salvo!`,'success');
-  }catch(err){showNotification(`❌ Erro: ${err.message}`,'error');}
+    setGlobalMonth(culto.data.substring(0,7));
+    renderCultos();
+    showNotification('✅ Culto salvo com sucesso!','success');
+  }catch(err){showNotification('❌ Erro ao salvar: '+err.message,'error');}
   finally{setBtnLoading('btnSalvarCulto',false,'Salvar');}
 }
 
-async function gerarEntradaDoCulto(culto){
-  const mk=culto.data?.substring(0,7);
-  DB.entradas=DB.entradas.filter(e=>e.cultoId!==String(culto.id));
-  if(culto.totalArrecadado>0||culto.missoes>0){
-    const total=culto.totalArrecadado+(culto.missoes||0);
-    const entData={
-      cultoId:String(culto.id||''),descricao:`Arrecadação Culto — ${fmtDate(culto.data)} (${culto.tipo||'Culto'})`,
-      valor:total,data:culto.data,origem:'culto'
-    };
-    try{const saved=await apiSave('entradas',entData);DB.entradas.push(normalizarEntrada({...entData,...saved}));}
-    catch{DB.entradas.push(normalizarEntrada({...entData,id:`local-${Date.now()}`}));}
-  }
-}
+async function sincronizarEntradas(culto){
+  const totalDiz =culto.totalDizimos   ||0;
+  const totalOf  =culto.totalOfertas   ||0;
+  const missoes  =culto.missoes        ||0;
+  const especiais=culto.especiais      ||0;
+  const outras   =culto.outras         ||0;
+  const totalSemMissoes=totalDiz+totalOf+especiais+outras;
+  if(totalSemMissoes<=0&&missoes<=0)return;
 
-async function editarCulto(id){
-  if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão.','error');return;}
-  const c=DB.cultos.find(x=>String(x.id)===String(id));if(!c)return;
-  document.getElementById('cultoModalTitulo').textContent='Editar Relatório de Culto (REFC)';
-  const s=id=>document.getElementById(id);
-  s('c-id').value=c.id;s('c-data').value=c.data;s('c-horario').value=c.horario||'19:30';
-  s('c-tipo').value=c.tipo||'Culto Regular';s('c-pastor').value=c.pastor||'';s('c-pregador').value=c.pregador||'';
-  s('c-presentes').value=c.presentes||0;s('c-visitantes').value=c.visitantes||0;s('c-criancas').value=c.criancas||0;
-  s('c-cura').value=c.cura||0;s('c-missoes').value=c.missoes||0;s('c-especiais').value=c.especiais||0;
-  s('c-outras').value=c.outras||0;s('c-observacoes').value=c.observacoes||'';
-  s('listaDizimistas').innerHTML='';s('listaOfertas').innerHTML='';
-  (c.dizimistas||[]).forEach(d=>adicionarDizimista(d));
-  (c.ofertas||[]).forEach(o=>adicionarOferta(o));
-  calcTotalCulto();openModal('modalNovoCulto');
+  const mk=culto.data.substring(0,7);
+  DB.entradas=DB.entradas.filter(e=>e.cultoId!==culto.id);
+
+  const entradasParaSalvar=[];
+  if(totalSemMissoes>0)
+    entradasParaSalvar.push({cultoId:culto.id,data:culto.data,descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo||'Regular'}`,valor:totalSemMissoes,origem:'culto',mes:mk});
+  if(missoes>0)
+    entradasParaSalvar.push({cultoId:culto.id,data:culto.data,descricao:`Missões — ${fmtDate(culto.data)}`,valor:missoes,origem:'missoes',mes:mk});
+
+  for(const en of entradasParaSalvar){
+    const saved=await apiSave('entradas',en);
+    DB.entradas.push({...en,id:saved?.id||`local-${Date.now()}`});
+  }
 }
 
 async function excluirCulto(id){
   if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-  const c=DB.cultos.find(x=>String(x.id)===String(id));
-  if(!c||!confirm(`Excluir culto de ${fmtDate(c.data)}?`))return;
+  if(!confirm('Excluir este culto? As entradas vinculadas também serão removidas.'))return;
   try{
     await apiDelete('cultos',id);
-    DB.cultos=DB.cultos.filter(x=>String(x.id)!==String(id));
-    DB.entradas=DB.entradas.filter(e=>e.cultoId!==String(id));
-    DB.saveLocal();renderCultos();buildGlobalMonthOptions();
-    showNotification('🗑️ Culto excluído e sincronizado.','info');
-  }catch(err){showNotification(`❌ Erro ao excluir: ${err.message}`,'error');}
+    const idsEnt=DB.entradas.filter(e=>e.cultoId===id).map(e=>e.id);
+    for(const eid of idsEnt){try{await apiDelete('entradas',eid);}catch{}}
+    DB.cultos  =DB.cultos.filter(c=>String(c.id)!==String(id));
+    DB.entradas=DB.entradas.filter(e=>e.cultoId!==id);
+    DB.saveLocal();renderCultos();
+    showNotification('🗑️ Culto excluído.','info');
+  }catch(err){showNotification('❌ Erro ao excluir: '+err.message,'error');}
 }
 
 function verCulto(id){
   const c=DB.cultos.find(x=>String(x.id)===String(id));if(!c)return;
-  document.getElementById('printArea').innerHTML=gerarHTMLCulto(c);
-  // Guarda id para whatsApp
-  document.getElementById('modalVerCulto').dataset.cultoId=id;
+  const cfg=DB.config||{};
+  const totalGeral=(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0);
+  const missoesEst=(c.missoes||0)*0.5;
+  const missoesNac=(c.missoes||0)*0.5;
+  document.getElementById('printArea').innerHTML=`
+  <div style="font-family:'Segoe UI',sans-serif;padding:16px;max-width:600px;margin:auto">
+    <div style="text-align:center;border-bottom:2px solid #1e3a5f;padding-bottom:16px;margin-bottom:16px">
+      <p style="color:#1e3a5f;font-weight:700;font-size:18px;">${escapeHtml(cfg.nomeIgreja||'IEQ Esplanada')}</p>
+      <p style="color:#555;font-size:13px">${escapeHtml(cfg.endereco||'')}</p>
+      <p style="color:#c8a951;font-weight:700;font-size:15px;margin-top:6px">RELATÓRIO DE CULTO (REFC)</p>
+      <p style="color:#555;font-size:12px">${fmtDate(c.data)} • ${c.horario||''} • ${escapeHtml(c.tipo||'')}</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:13px">
+      <div><b>Pastor:</b> ${escapeHtml(c.pastor||'—')}</div>
+      <div><b>Pregador:</b> ${escapeHtml(c.pregador||'—')}</div>
+      <div><b>Presentes:</b> ${c.presentes||0}</div>
+      <div><b>Visitantes:</b> ${c.visitantes||0}</div>
+      <div><b>Crianças:</b> ${c.criancas||0}</div>
+      <div><b>Curas:</b> ${c.cura||0}</div>
+    </div>
+    ${(c.dizimistas||[]).length?`
+    <div style="margin-bottom:12px">
+      <p style="font-weight:700;color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:13px">DÍZIMOS — ${fmt(c.totalDizimos)}</p>
+      ${(c.dizimistas||[]).map(d=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>${escapeHtml(d.nome||'—')} <span style="color:#888">(${d.forma||'dinheiro'})</span></span><b>${fmt(d.valor)}</b></div>`).join('')}
+    </div>`:''}
+    ${(c.ofertas||[]).length?`
+    <div style="margin-bottom:12px">
+      <p style="font-weight:700;color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:13px">OFERTAS — ${fmt(c.totalOfertas)}</p>
+      ${(c.ofertas||[]).map(o=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>${escapeHtml(o.nome||'—')} <span style="color:#888">(${o.forma||'dinheiro'})</span></span><b>${fmt(o.valor)}</b></div>`).join('')}
+    </div>`:''}
+    <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Dízimos:</span><b>${fmt(c.totalDizimos)}</b></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Ofertas:</span><b>${fmt(c.totalOfertas)}</b></div>
+      ${(c.especiais||0)>0?`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Especiais:</span><b>${fmt(c.especiais)}</b></div>`:''}
+      ${(c.outras||0)>0?`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Outras:</span><b>${fmt(c.outras)}</b></div>`:''}
+      ${(c.missoes||0)>0?`
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#0f766e"><span>Missões:</span><b>${fmt(c.missoes)}</b></div>
+      <div style="font-size:11px;color:#0f766e;margin-bottom:4px;padding-left:8px">→ Est. 50%: ${fmt(missoesEst)} | Nac. 50%: ${fmt(missoesNac)}</div>`:''}
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #e5e7eb;padding-top:6px;margin-top:6px;font-size:14px"><span><b>TOTAL (sem Missões):</b></span><b style="color:#1e3a5f">${fmt(totalGeral)}</b></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;font-size:13px">
+      <div style="background:#d1fae5;border-radius:8px;padding:10px;text-align:center">
+        <p style="color:#065f46;font-weight:700;font-size:11px">CAIXA LOCAL</p>
+        <p style="color:#065f46;font-weight:800;font-size:16px">${fmt(c.caixaLocal)}</p>
+      </div>
+      <div style="background:#dbeafe;border-radius:8px;padding:10px;text-align:center">
+        <p style="color:#1e40af;font-weight:700;font-size:11px">CONTA CORRENTE (PIX)</p>
+        <p style="color:#1e40af;font-weight:800;font-size:16px">${fmt(c.contaCorrente)}</p>
+      </div>
+    </div>
+    ${c.observacoes?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;font-size:12px"><b>Obs:</b> ${escapeHtml(c.observacoes)}</div>`:''}
+    <div style="margin-top:24px;text-align:center;font-size:11px;color:#888;border-top:1px solid #e5e7eb;padding-top:12px">
+      Pastor: ${escapeHtml(cfg.pastor||'Danilo de Oliveira Falcão')} | Tesoureiro: ${escapeHtml(cfg.tesoureiro||'Danilo Falcão')}
+    </div>
+  </div>`;
   openModal('modalVerCulto');
 }
 
-function renderCultos(){
-  const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
-  const filtroMes=document.getElementById('filtroCultoMes')?.value||'';
-  let cultos=[...DB.cultos].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-  if(filtroMes)cultos=cultos.filter(c=>(c.data||'').startsWith(filtroMes));
-  if(busca)cultos=cultos.filter(c=>`${c.data} ${c.tipo} ${c.pregador} ${c.pastor}`.toLowerCase().includes(busca));
-
-  document.getElementById('qtdCultosLabel').textContent=`${cultos.length} culto${cultos.length!==1?'s':''}`;
-
-  const tbody=document.getElementById('tabelaCultos');
-  if(!cultos.length){
-    tbody.innerHTML=`<tr><td colspan="8" class="py-8 text-center text-gray-400"><i class="fas fa-bible text-4xl mb-3 block text-gray-300"></i>Nenhum culto encontrado</td></tr>`;
-  } else {
-    tbody.innerHTML=cultos.map(c=>
-      `<tr class="table-row border-b border-gray-50">
-        <td class="p-2 text-sm font-medium">${fmtDate(c.data)}</td>
-        <td class="p-2 text-xs"><span class="badge-blue px-2 py-0.5 rounded-full">${escapeHtml(c.tipo||'Regular')}</span></td>
-        <td class="p-2 text-xs text-gray-600 hidden md:table-cell">${escapeHtml(c.pregador||'—')}</td>
-        <td class="p-2 text-center text-sm font-medium">${c.presentes||0}</td>
-        <td class="p-2 text-sm text-blue-600 font-medium">${fmt(c.totalDizimos||0)}</td>
-        <td class="p-2 text-sm text-green-600 font-medium">${fmt(c.totalOfertas||0)}</td>
-        <td class="p-2 text-sm font-bold text-gray-800">${fmt(c.totalArrecadado||0)}</td>
-        <td class="p-2">
-          <div class="flex gap-1 flex-wrap">
-            <button onclick="verCulto('${c.id}')" class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100" title="Ver"><i class="fas fa-eye"></i></button>
-            ${temPermissao('podeEditar')?`<button onclick="editarCulto('${c.id}')" class="px-2 py-1 bg-yellow-50 text-yellow-600 rounded text-xs hover:bg-yellow-100" title="Editar"><i class="fas fa-pen"></i></button>`:''}
-            ${temPermissao('podeExcluir')?`<button onclick="excluirCulto('${c.id}')" class="px-2 py-1 bg-red-50 text-red-500 rounded text-xs hover:bg-red-100" title="Excluir"><i class="fas fa-trash"></i></button>`:''}
-            <button onclick="whatsAppCulto('${c.id}')" class="btn-whatsapp text-xs px-2 py-1" title="Enviar WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          </div>
-        </td>
-      </tr>`).join('');
-  }
-
-  const mk=filtroMes||GLOBAL_MONTH;
-  const src=filtroMes?cultos:DB.cultos;
-  document.getElementById('tot-dizimos').textContent    =fmt(sum(src,c=>c.totalDizimos||0));
-  document.getElementById('tot-ofertas').textContent    =fmt(sum(src,c=>c.totalOfertas||0));
-  document.getElementById('tot-missoes').textContent    =fmt(sum(src,c=>c.missoes||0));
-  document.getElementById('tot-cultos-total').textContent=fmt(sum(src,c=>c.totalArrecadado||0));
-}
-
-  // ============================================================
-// WHATSAPP — CULTO (MELHORIA 1)
-// ============================================================
-function getWhatsAppNumero(){
+let _cultoAtualId=null;
+function whatsAppCultoAtual(){
+  const c=DB.cultos.find(x=>document.getElementById('printArea')?.innerHTML?.includes(String(x.id)))||
+          DB.cultos.find(x=>String(x.id)===_cultoAtualId);
+  if(!c)return;
   const cfg=DB.config||{};
-  return (cfg.whatsapp||'').replace(/\D/g,'');
-}
-
-function formatarMsgCulto(c){
-  const dizs=c.dizimistas||[];
-  const ofs=c.ofertas||[];
-  let msg=`⛪ *REFC — RELATÓRIO DE CULTO*\n`;
-  msg+=`📅 Data: ${fmtDate(c.data)} | ${c.horario||''}\n`;
-  msg+=`🏷️ Tipo: ${c.tipo||'Culto Regular'}\n`;
-  msg+=`👤 Pregador: ${c.pregador||c.pastor||'—'}\n`;
-  msg+=`👥 Presentes: ${c.presentes||0} | Visitantes: ${c.visitantes||0} | Crianças: ${c.criancas||0}\n`;
-  msg+=`\n💰 *DÍZIMOS* (${fmt(c.totalDizimos||0)})\n`;
-  if(dizs.length){
-    dizs.forEach(d=>{msg+=`  • ${d.nome||'Anônimo'}: ${fmt(d.valor)} (${d.forma||'Dinheiro'})\n`;});
-  } else { msg+=`  Nenhum dízimo registrado\n`; }
-  msg+=`\n🙏 *OFERTAS* (${fmt(c.totalOfertas||0)})\n`;
-  if(ofs.length){
-    ofs.forEach(o=>{msg+=`  • ${o.nome||'Geral'}: ${fmt(o.valor)} (${o.forma||'Dinheiro'})\n`;});
-  } else { msg+=`  Nenhuma oferta registrada\n`; }
-  if(c.missoes>0) msg+=`\n🌍 Missões: ${fmt(c.missoes)}\n`;
-  if(c.especiais>0)msg+=`✨ Especiais: ${fmt(c.especiais)}\n`;
-  msg+=`\n📊 *TOTAIS*\n`;
-  msg+=`  💵 Caixa (Dinheiro): ${fmt(c.caixaLocal||0)}\n`;
-  msg+=`  🔵 Conta (PIX): ${fmt(c.contaCorrente||0)}\n`;
-  msg+=`  ✅ Total Arrecadado: ${fmt(c.totalArrecadado||0)}\n`;
-  if(c.observacoes)msg+=`\n📝 Obs: ${c.observacoes}\n`;
-  msg+=`\n_Gerado em ${new Date().toLocaleString('pt-BR')}_`;
-  return msg;
-}
-
-function whatsAppCulto(id){
-  const c=DB.cultos.find(x=>String(x.id)===String(id));if(!c)return;
-  const msg=formatarMsgCulto(c);
-  const numero=getWhatsAppNumero();
-  const url=numero
-    ?`https://wa.me/55${numero}?text=${encodeURIComponent(msg)}`
-    :`https://wa.me/?text=${encodeURIComponent(msg)}`;
+  const total=(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0);
+  const txt=`*REFC — ${fmtDate(c.data)}*\n*${cfg.nomeIgreja||'IEQ Esplanada'}*\nTipo: ${c.tipo||''}\nPresentes: ${c.presentes||0}\nDízimos: ${fmt(c.totalDizimos)}\nOfertas: ${fmt(c.totalOfertas)}\nMissões: ${fmt(c.missoes||0)}\n*TOTAL: ${fmt(total)}*`;
+  const num=(cfg.whatsapp||'').replace(/\D/g,'');
+  const url=num?`https://wa.me/55${num}?text=${encodeURIComponent(txt)}`:`https://wa.me/?text=${encodeURIComponent(txt)}`;
   window.open(url,'_blank');
 }
-
-function whatsAppCultoAtual(){
-  const id=document.getElementById('modalVerCulto')?.dataset?.cultoId;
-  if(id)whatsAppCulto(id);
-}
-
-// ============================================================
-// HTML / IMPRESSÃO DO CULTO
-// ============================================================
-function gerarHTMLCulto(c){
-  const logoHtml=DB.config.logo?`<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:50%;object-fit:contain;border:2px solid #e5e7eb;background:white;padding:4px;">`:'<div style="font-size:40px">⛪</div>';
-  const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ Esplanada');
-  const dizs=c.dizimistas||[];const ofs=c.ofertas||[];
-  return`
-    <div style="font-family:'Segoe UI',Arial,sans-serif;color:#1f2937;max-width:700px;margin:0 auto;">
-      <div style="text-align:center;padding:16px 0 12px;border-bottom:3px solid #1e3a5f;margin-bottom:16px;">
-        ${logoHtml}
-        <h2 style="color:#1e3a5f;margin:8px 0 4px;font-size:16px;font-weight:800;">${nomeIgreja}</h2>
-        <h3 style="color:#c8a951;margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;">RELATÓRIO DE CULTO — REFC</h3>
-      </div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;">
-        <tr><td style="padding:5px 8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:600;width:35%">📅 Data</td><td style="padding:5px 8px;border:1px solid #e5e7eb;">${fmtDate(c.data)} às ${c.horario||'—'}</td></tr>
-        <tr><td style="padding:5px 8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:600;">🏷️ Tipo</td><td style="padding:5px 8px;border:1px solid #e5e7eb;">${escapeHtml(c.tipo||'Culto Regular')}</td></tr>
-        <tr><td style="padding:5px 8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:600;">👤 Pregador</td><td style="padding:5px 8px;border:1px solid #e5e7eb;">${escapeHtml(c.pregador||c.pastor||'—')}</td></tr>
-        <tr><td style="padding:5px 8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:600;">👥 Frequência</td><td style="padding:5px 8px;border:1px solid #e5e7eb;">Presentes: <b>${c.presentes||0}</b> | Visitantes: ${c.visitantes||0} | Crianças: ${c.criancas||0}</td></tr>
-      </table>
-      <div style="background:#1e3a5f;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;margin-top:12px;">DÍZIMOS — ${fmt(c.totalDizimos||0)}</div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:12px;">
-        ${dizs.length?dizs.map(d=>`<tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">${escapeHtml(d.nome||'Anônimo')}</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:center;">${escapeHtml(d.forma||'Dinheiro')}</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:right;font-weight:700;">${fmt(d.valor)}</td></tr>`).join(''):`<tr><td colspan="3" style="padding:8px;text-align:center;color:#9ca3af;border:1px solid #e5e7eb;">Nenhum dízimo</td></tr>`}
-      </table>
-      <div style="background:#1e3a5f;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;">OFERTAS — ${fmt(c.totalOfertas||0)}</div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:12px;">
-        ${ofs.length?ofs.map(o=>`<tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">${escapeHtml(o.nome||'Geral')}</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:center;">${escapeHtml(o.forma||'Dinheiro')}</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:right;font-weight:700;">${fmt(o.valor)}</td></tr>`).join(''):`<tr><td colspan="3" style="padding:8px;text-align:center;color:#9ca3af;border:1px solid #e5e7eb;">Nenhuma oferta</td></tr>`}
-      </table>
-      <div style="background:#1e3a5f;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;">RESUMO FINANCEIRO</div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px;">
-        ${c.missoes>0?`<tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">🌍 Missões</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:right;color:#0d9488;font-weight:700;">${fmt(c.missoes)}</td></tr>`:''}
-        ${c.especiais>0?`<tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">✨ Especiais</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:right;">${fmt(c.especiais)}</td></tr>`:''}
-        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">💵 Caixa (Dinheiro)</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:right;">${fmt(c.caixaLocal||0)}</td></tr>
-        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">🔵 Conta (PIX)</td><td style="padding:5px 10px;border:1px solid #e5e7eb;text-align:right;">${fmt(c.contaCorrente||0)}</td></tr>
-        <tr style="background:#f0fdf4;"><td style="padding:8px 10px;border:2px solid #86efac;font-weight:800;color:#065f46;">✅ TOTAL ARRECADADO</td><td style="padding:8px 10px;border:2px solid #86efac;text-align:right;font-weight:800;color:#065f46;font-size:15px;">${fmt(c.totalArrecadado||0)}</td></tr>
-      </table>
-      ${c.observacoes?`<div style="background:#fef9ef;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:12px;"><b>📝 Observações:</b> ${escapeHtml(c.observacoes)}</div>`:''}
-      <div style="text-align:center;color:#9ca3af;font-size:10px;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}
-      </div>
-    </div>`;
-}
-
-function imprimirCulto(){
-  const area=document.getElementById('printArea');
-  if(!area)return;
-  const w=window.open('','_blank','width=800,height=900');
-  w.document.write(`<html><head><title>REFC</title>
-    <style>body{font-family:'Segoe UI',Arial,sans-serif;margin:20px;} @media print{body{margin:0;}}</style>
-  </head><body>${area.innerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
-  w.document.close();
-}
-
+function imprimirCulto(){window.print();}
 // ============================================================
 // ENTRADAS
 // ============================================================
 function renderEntradas(){
-  const filtro=document.getElementById('filtroEntradaMes')?.value||'';
-  const busca =(document.getElementById('buscaEntrada')?.value||'').toLowerCase();
-  let entradas=[...DB.entradas].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-  if(filtro)entradas=entradas.filter(e=>(e.data||'').startsWith(filtro));
-  if(busca)entradas=entradas.filter(e=>`${e.descricao||''} ${e.origem||''}`.toLowerCase().includes(busca));
-  const total=sum(entradas,e=>e.valor);
-  document.getElementById('totalEntradasFiltro').textContent=fmt(total);
-
-  const mk=filtro||GLOBAL_MONTH;
-  const entMes=sum(getEntradasMes(mk),e=>e.valor);
-  const saiMes=sum(getDespesasMes(mk),d=>d.valor);
-  document.getElementById('kpiEntradasMes').textContent=fmt(entMes);
-  document.getElementById('kpiEntradasSaldoMes').textContent=fmt(entMes-saiMes);
-  document.getElementById('kpiQtdEntradas').textContent=DB.entradas.length;
-
+  const filtro=document.getElementById('filtroEntradaMes')?.value||GLOBAL_MONTH;
+  const busca=(document.getElementById('buscaEntrada')?.value||'').toLowerCase();
+  let ents=DB.entradas.filter(e=>(e.data||'').startsWith(filtro));
+  if(busca)ents=ents.filter(e=>(e.descricao||'').toLowerCase().includes(busca));
+  ents.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const totalFiltro=sum(ents,e=>e.valor);
+  document.getElementById('totalEntradasFiltro').textContent=fmt(totalFiltro);
+  document.getElementById('kpiEntradasMes').textContent=fmt(totalFiltro);
+  const despMes=sum(getDespesasMes(filtro),d=>d.valor);
+  document.getElementById('kpiEntradasSaldoMes').textContent=fmt(totalFiltro-despMes);
+  document.getElementById('kpiQtdEntradas').textContent=ents.length;
   const tbody=document.getElementById('tabelaEntradas');
-  if(!entradas.length){
-    tbody.innerHTML=`<tr><td colspan="5" class="py-6 text-center text-gray-400 text-sm">Nenhuma entrada encontrada no período</td></tr>`;return;
-  }
-  tbody.innerHTML=entradas.map(e=>`
-    <tr class="table-row border-b border-gray-50">
-      <td class="py-2 text-xs text-gray-500">${fmtDate(e.data)}</td>
-      <td class="py-2 text-sm text-gray-700">${escapeHtml(e.descricao||'—')}</td>
-      <td class="py-2 hidden sm:table-cell"><span class="badge-${e.origem==='culto'?'blue':'green'} px-2 py-0.5 rounded-full text-xs">${e.origem==='culto'?'Culto':'Manual'}</span></td>
-      <td class="py-2 text-right font-bold text-green-600 text-sm">${fmt(e.valor)}</td>
-      <td class="py-2 text-center">
-        ${e.origem!=='culto'&&temPermissao('podeExcluir')?`<button onclick="excluirEntrada('${e.id}')" class="px-2 py-1 bg-red-50 text-red-500 rounded text-xs hover:bg-red-100"><i class="fas fa-trash"></i></button>`:'<span class="text-gray-300 text-xs">auto</span>'}
+  tbody.innerHTML=ents.length?ents.map(e=>`
+    <tr class="table-row border-b text-sm">
+      <td class="py-2 text-gray-600">${fmtDate(e.data)}</td>
+      <td class="py-2 text-gray-800">${escapeHtml(e.descricao||'—')}</td>
+      <td class="py-2 hidden sm:table-cell"><span class="badge-${e.origem==='culto'?'blue':e.origem==='missoes'?'green':'yellow'} px-2 py-0.5 rounded-full text-xs">${escapeHtml(e.origem||'manual')}</span></td>
+      <td class="py-2 text-right font-bold text-green-600">${fmt(e.valor)}</td>
+      <td class="py-2">
+        ${e.origem==='local'||!e.cultoId?`<button onclick="excluirEntrada('${e.id}')" class="w-7 h-7 bg-red-50 text-red-500 rounded hover:bg-red-100 text-xs flex items-center justify-center"><i class="fas fa-trash"></i></button>`:''}
       </td>
-    </tr>`).join('');
+    </tr>`).join(''):
+    '<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Nenhuma entrada no período</td></tr>';
 }
 
 function limparFiltroEntradas(){
@@ -1938,13 +1821,27 @@ function limparFiltroEntradas(){
 
 async function salvarEntrada(e){
   e.preventDefault();
-  const data={descricao:document.getElementById('e-descricao').value,valor:parseFloat(document.getElementById('e-valor').value),data:document.getElementById('e-data').value,observacoes:document.getElementById('e-obs').value,origem:'manual'};
-  setBtnLoading('btnSalvarEntrada',true);
+  if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
+  setBtnLoading('btnSalvarEntrada',true,'Registrar');
+  const entrada={
+    id:`local-${Date.now()}`,
+    descricao:document.getElementById('e-descricao').value.trim(),
+    valor:parseFloat(document.getElementById('e-valor').value)||0,
+    data:document.getElementById('e-data').value,
+    obs:document.getElementById('e-obs').value,
+    origem:'local',
+  };
   try{
-    const s=await apiSave('entradas',data);DB.entradas.push(normalizarEntrada({...data,...s}));
-    DB.saveLocal();closeModal('modalNovaEntrada');document.getElementById('formEntrada').reset();
-    renderEntradas();buildGlobalMonthOptions();showNotification('✅ Entrada registrada!','success');
-  }catch(err){showNotification(`❌ ${err.message}`,'error');}
+    const saved=await apiSave('entradas',entrada);
+    entrada.id=saved?.id||entrada.id;
+    DB.entradas.push(entrada);DB.saveLocal();
+    closeModal('modalNovaEntrada');
+    buildGlobalMonthOptions();
+    setGlobalMonth(entrada.data.substring(0,7));
+    renderEntradas();
+    showNotification('✅ Entrada registrada!','success');
+    document.getElementById('formEntrada').reset();
+  }catch(err){showNotification('❌ Erro: '+err.message,'error');}
   finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
 }
 
@@ -1952,42 +1849,42 @@ async function excluirEntrada(id){
   if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
   if(!confirm('Excluir esta entrada?'))return;
   try{
-    await apiDelete('entradas',id);DB.entradas=DB.entradas.filter(e=>String(e.id)!==String(id));
-    DB.saveLocal();renderEntradas();showNotification('🗑️ Entrada excluída.','info');
-  }catch(err){showNotification(`❌ ${err.message}`,'error');}
+    await apiDelete('entradas',id);
+    DB.entradas=DB.entradas.filter(e=>String(e.id)!==String(id));
+    DB.saveLocal();renderEntradas();
+    showNotification('🗑️ Entrada excluída.','info');
+  }catch(err){showNotification('❌ Erro: '+err.message,'error');}
 }
 
 // ============================================================
 // DESPESAS
 // ============================================================
 function filtrarDespesas(){
-  const mk=document.getElementById('filtroDespesaMes')?.value||GLOBAL_MONTH;
-  const cat=document.getElementById('filtroCat')?.value||'';
-  let desp=[...DB.despesas].filter(d=>(d.data||'').startsWith(mk));
-  if(cat)desp=desp.filter(d=>d.categoria===cat);
-  desp.sort((a,b)=>(a.categoria||'').localeCompare(b.categoria||''));
-  const total=sum(desp,d=>d.valor);
+  const filtroMes=document.getElementById('filtroDespesaMes')?.value||GLOBAL_MONTH;
+  const filtroCat=document.getElementById('filtroCat')?.value||'';
+  let desps=DB.despesas.filter(d=>(d.data||'').startsWith(filtroMes));
+  if(filtroCat)desps=desps.filter(d=>d.categoria===filtroCat);
+  desps.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const total=sum(desps,d=>d.valor);
   document.getElementById('totalDespesasFiltro').textContent=fmt(total);
   document.getElementById('totalDespesas').textContent=fmt(total);
-
+  renderCategoriaSelects();
+  const canEdit=temPermissao('podeEditar');
   const tbody=document.getElementById('tabelaDespesas');
-  if(!desp.length){
-    tbody.innerHTML=`<tr><td colspan="5" class="py-6 text-center text-gray-400 text-sm">Nenhuma despesa encontrada</td></tr>`;return;
-  }
-  const icons=getCatIcons();
-  tbody.innerHTML=desp.map(d=>`
-    <tr class="table-row border-b border-gray-50">
-      <td class="py-2 px-2 text-sm"><span class="inline-flex items-center gap-1 font-medium text-gray-700">${icons[d.categoria]||'📌'} ${escapeHtml(d.categoria||'—')}</span></td>
-      <td class="py-2 px-2 text-sm text-gray-600 hidden sm:table-cell">${escapeHtml(d.descricao||'—')}</td>
-      <td class="py-2 px-2 text-xs text-gray-500 hidden md:table-cell">${fmtDate(d.data)}</td>
-      <td class="py-2 px-2 text-right font-bold text-red-600 text-sm">${fmt(d.valor)}</td>
-      <td class="py-2 px-2 text-center">
-        <div class="flex gap-1 justify-center">
-          ${temPermissao('podeEditar')?`<button onclick="abrirAlterarDespesa('${d.id}')" class="px-2 py-1 bg-yellow-50 text-yellow-600 rounded text-xs hover:bg-yellow-100"><i class="fas fa-pen"></i></button>`:''}
-          ${temPermissao('podeExcluir')?`<button onclick="excluirDespesa('${d.id}')" class="px-2 py-1 bg-red-50 text-red-500 rounded text-xs hover:bg-red-100"><i class="fas fa-trash"></i></button>`:''}
-        </div>
+  tbody.innerHTML=desps.length?desps.map(d=>`
+    <tr class="table-row border-b text-sm">
+      <td class="py-2"><span class="flex items-center gap-1 font-semibold">${getCatIcon(d.categoria)} ${escapeHtml(d.categoria||'—')}</span></td>
+      <td class="py-2 hidden sm:table-cell text-gray-600">${escapeHtml(d.descricao||'—')}</td>
+      <td class="py-2 hidden md:table-cell text-gray-500">${fmtDate(d.data)}</td>
+      <td class="py-2 text-right font-bold text-red-600">${fmt(d.valor)}</td>
+      <td class="py-2 text-center">
+        ${canEdit?`<div class="flex justify-center gap-1">
+          <button onclick="abrirAlterarDespesa('${d.id}')" class="w-7 h-7 bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 text-xs flex items-center justify-center" title="Alterar"><i class="fas fa-pen"></i></button>
+          <button onclick="excluirDespesa('${d.id}')" class="w-7 h-7 bg-red-50 text-red-500 rounded hover:bg-red-100 text-xs flex items-center justify-center" title="Excluir"><i class="fas fa-trash"></i></button>
+        </div>`:'—'}
       </td>
-    </tr>`).join('');
+    </tr>`).join(''):
+    '<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Nenhuma despesa no período</td></tr>';
 }
 
 function limparFiltrosDespesas(){
@@ -1998,13 +1895,26 @@ function limparFiltrosDespesas(){
 
 async function salvarDespesa(e){
   e.preventDefault();
-  const data={categoria:document.getElementById('d-categoria').value,descricao:document.getElementById('d-descricao').value,valor:parseFloat(document.getElementById('d-valor').value),data:document.getElementById('d-data').value};
-  setBtnLoading('btnSalvarDespesa',true);
+  if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
+  setBtnLoading('btnSalvarDespesa',true,'Registrar');
+  const despesa={
+    id:`local-${Date.now()}`,
+    categoria:document.getElementById('d-categoria').value,
+    descricao:document.getElementById('d-descricao').value.trim(),
+    valor:parseFloat(document.getElementById('d-valor').value)||0,
+    data:document.getElementById('d-data').value,
+  };
   try{
-    const s=await apiSave('despesas',data);DB.despesas.push(normalizarDespesa({...data,...s}));
-    DB.saveLocal();closeModal('modalNovaDespesa');document.getElementById('formDespesa').reset();
-    filtrarDespesas();buildGlobalMonthOptions();showNotification('✅ Despesa registrada!','success');
-  }catch(err){showNotification(`❌ ${err.message}`,'error');}
+    const saved=await apiSave('despesas',despesa);
+    despesa.id=saved?.id||despesa.id;
+    DB.despesas.push(despesa);DB.saveLocal();
+    closeModal('modalNovaDespesa');
+    buildGlobalMonthOptions();
+    setGlobalMonth(despesa.data.substring(0,7));
+    filtrarDespesas();
+    showNotification('✅ Despesa registrada!','success');
+    document.getElementById('formDespesa').reset();
+  }catch(err){showNotification('❌ Erro: '+err.message,'error');}
   finally{setBtnLoading('btnSalvarDespesa',false,'Registrar');}
 }
 
@@ -2012,48 +1922,54 @@ function abrirAlterarDespesa(id){
   const d=DB.despesas.find(x=>String(x.id)===String(id));if(!d)return;
   renderCategoriaSelects();
   document.getElementById('alt-d-id').value=d.id;
-  document.getElementById('alt-d-categoria').value=d.categoria;
+  document.getElementById('alt-d-categoria').value=d.categoria||'';
   document.getElementById('alt-d-descricao').value=d.descricao||'';
-  document.getElementById('alt-d-valor').value=d.valor;
+  document.getElementById('alt-d-valor').value=d.valor||0;
   document.getElementById('alt-d-data').value=d.data||'';
   openModal('modalAlterarDespesa');
 }
 
 async function confirmarAlteracaoDespesa(e){
   e.preventDefault();
+  if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão.','error');return;}
+  setBtnLoading('btnConfirmarAlterarDespesa',true,'Salvar Alterações');
   const id=document.getElementById('alt-d-id').value;
-  const data={id,categoria:document.getElementById('alt-d-categoria').value,descricao:document.getElementById('alt-d-descricao').value,valor:parseFloat(document.getElementById('alt-d-valor').value),data:document.getElementById('alt-d-data').value};
-  setBtnLoading('btnConfirmarAlterarDespesa',true);
+  const despesa={
+    id,
+    categoria:document.getElementById('alt-d-categoria').value,
+    descricao:document.getElementById('alt-d-descricao').value.trim(),
+    valor:parseFloat(document.getElementById('alt-d-valor').value)||0,
+    data:document.getElementById('alt-d-data').value,
+  };
   try{
-    await apiSave('despesas',data);
-    const idx=DB.despesas.findIndex(x=>String(x.id)===String(id));
-    if(idx!==-1)DB.despesas[idx]=normalizarDespesa({...DB.despesas[idx],...data});
-    DB.saveLocal();closeModal('modalAlterarDespesa');filtrarDespesas();
-    showNotification('✅ Despesa atualizada!','success');
-  }catch(err){showNotification(`❌ ${err.message}`,'error');}
+    await apiSave('despesas',despesa);
+    DB.despesas=DB.despesas.map(d=>String(d.id)===String(id)?{...d,...despesa}:d);
+    DB.saveLocal();
+    closeModal('modalAlterarDespesa');
+    filtrarDespesas();
+    showNotification('✅ Despesa alterada!','success');
+  }catch(err){showNotification('❌ Erro: '+err.message,'error');}
   finally{setBtnLoading('btnConfirmarAlterarDespesa',false,'Salvar Alterações');}
 }
 
 async function excluirDespesa(id){
   if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-  const d=DB.despesas.find(x=>String(x.id)===String(id));
-  if(!d||!confirm(`Excluir "${d.categoria} — ${d.descricao||''}"?`))return;
+  if(!confirm('Excluir esta despesa?'))return;
   try{
-    if(!d._fixed)await apiDelete('despesas',id);
-    DB.despesas=DB.despesas.filter(x=>String(x.id)!==String(id));
-    DB.saveLocal();filtrarDespesas();showNotification('🗑️ Despesa excluída.','info');
-  }catch(err){showNotification(`❌ ${err.message}`,'error');}
+    await apiDelete('despesas',id);
+    DB.despesas=DB.despesas.filter(d=>String(d.id)!==String(id));
+    DB.saveLocal();filtrarDespesas();
+    showNotification('🗑️ Despesa excluída.','info');
+  }catch(err){showNotification('❌ Erro: '+err.message,'error');}
 }
 
 // ============================================================
-// DISTRIBUIÇÕES
+// DISTRIBUIÇÕES — COM CORREÇÕES
 // ============================================================
 const DIST_CONFIG=[
-  {label:'CED',        pct:4.4, icon:'🏛️', cor:'bg-blue-50 border-blue-200 text-blue-700'},
-  {label:'CND',        pct:8.5, icon:'🌐', cor:'bg-purple-50 border-purple-200 text-purple-700'},
-  {label:'Taxa Regional',pct:4, icon:'🏦', cor:'bg-yellow-50 border-yellow-200 text-yellow-700'},
-  {label:'Prebenda',   pct:44.7,icon:'👤', cor:'bg-green-50 border-green-200 text-green-700'},
-  {label:'Caixa Local',pct:38.4,icon:'🏠', cor:'bg-gray-50 border-gray-200 text-gray-700'},
+  {label:'CED',           icon:'🏛️',pct:4.4},
+  {label:'CND',           icon:'🌐',pct:8.5},
+  {label:'Taxa Regional', icon:'🏦',pct:4},
 ];
 
 function renderDistribuicoesMes(){
@@ -2061,14 +1977,37 @@ function renderDistribuicoesMes(){
   const h=getHistoricoRow(mk);
   const entMes=sum(getEntradasMes(mk),e=>e.valor);
   const base=h?.entradas??entMes;
-  document.getElementById('distMesTitulo').textContent=monthLabelShort(mk);
+
+  // Missões do mês (soma dos cultos)
+  const cultosMes=getCultosMes(mk);
+  const totalMissoes=sum(cultosMes,c=>c.missoes||0);
+  const missoesEst=totalMissoes*0.5;
+  const missoesNac=totalMissoes*0.5;
+
+  document.getElementById('distMesTitulo').textContent=monthLabel(mk);
   document.getElementById('distBaseLabel').textContent=fmt(base);
+  document.getElementById('distMissoesLabel').textContent=fmt(totalMissoes);
+
+  const itens=[
+    {label:'CED',               icon:'🏛️',cor:'bg-blue-50 border-blue-200 text-blue-700',   valor:base*0.044,info:'4,4%'},
+    {label:'CND',               icon:'🌐',cor:'bg-purple-50 border-purple-200 text-purple-700',valor:base*0.085,info:'8,5%'},
+    {label:'Taxa Regional',     icon:'🏦',cor:'bg-yellow-50 border-yellow-200 text-yellow-700',valor:base*0.04, info:'4%'},
+    {label:'Missões — Est. 50%',icon:'🌍',cor:'bg-teal-50 border-teal-200 text-teal-700',   valor:missoesEst,info:`50% de ${fmt(totalMissoes)}`},
+    {label:'Missões — Nac. 50%',icon:'✈️',cor:'bg-cyan-50 border-cyan-200 text-cyan-700',   valor:missoesNac,info:`50% de ${fmt(totalMissoes)}`},
+  ];
+
   let totalDist=0;
-  document.getElementById('distCards').innerHTML=DIST_CONFIG.map(d=>{
-    const val=base*(d.pct/100);totalDist+=val;
+  document.getElementById('distCards').innerHTML=itens.map(d=>{
+    totalDist+=d.valor;
     return`<div class="card p-4 border ${d.cor} rounded-xl">
-      <div class="flex items-center gap-2 mb-2"><span class="text-2xl">${d.icon}</span><div><p class="font-bold text-sm">${d.label}</p><p class="text-xs opacity-70">${d.pct}%</p></div></div>
-      <p class="text-xl font-bold">${fmt(val)}</p>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">${d.icon}</span>
+        <div>
+          <p class="font-bold text-sm">${d.label}</p>
+          <p class="text-xs opacity-70">${d.info}</p>
+        </div>
+      </div>
+      <p class="text-xl font-bold">${fmt(d.valor)}</p>
     </div>`;
   }).join('');
   document.getElementById('distTotalDistribuido').textContent=fmt(totalDist);
@@ -2084,488 +2023,427 @@ function calcularDistribuicoes(){
 }
 
 // ============================================================
-// RELATÓRIO DE DIZIMISTAS (MELHORIA 2)
+// DIZIMISTAS
 // ============================================================
-function compilarDizimistas(mk){
-  // Filtra cultos do mês (ou todos se mk vazio)
-  const cultos=mk?getCultosMes(mk):DB.cultos;
-  const mapa={};// nome => {total, cultos, formas, maior, ultimaCultoData}
-
-  cultos.forEach(c=>{
-    (c.dizimistas||[]).forEach(d=>{
-      if(!d.nome||!d.valor)return;
-      const nome=d.nome.trim();
-      if(!mapa[nome])mapa[nome]={nome,total:0,qtdCultos:0,formas:{Dinheiro:0,PIX:0},maior:0,ultimaCultoData:''};
-      mapa[nome].total+=d.valor;
-      mapa[nome].qtdCultos++;
-      mapa[nome].formas[d.forma||'Dinheiro']=(mapa[nome].formas[d.forma||'Dinheiro']||0)+d.valor;
-      if(d.valor>mapa[nome].maior)mapa[nome].maior=d.valor;
-      if((c.data||'')>(mapa[nome].ultimaCultoData||''))mapa[nome].ultimaCultoData=c.data||'';
-    });
-  });
-
-  return Object.values(mapa).sort((a,b)=>b.total-a.total);
-}
-
+let chartDiz=null;
 function renderRelatorioDizimistas(){
   const mk=document.getElementById('filtroDizimistaMes')?.value||GLOBAL_MONTH;
   const busca=(document.getElementById('buscaDizimista')?.value||'').toLowerCase();
-  let dados=compilarDizimistas(mk);
-  if(busca)dados=dados.filter(d=>d.nome.toLowerCase().includes(busca));
+  const cultos=getCultosMes(mk);
+  const mapa={};
+  cultos.forEach(c=>{
+    (c.dizimistas||[]).filter(d=>d.valor>0).forEach(d=>{
+      const nome=(d.nome||'Anônimo').trim();
+      if(busca&&!nome.toLowerCase().includes(busca))return;
+      if(!mapa[nome])mapa[nome]={nome,total:0,qtd:0,maior:0,formas:{},ultimoData:'',ultimoCulto:''};
+      mapa[nome].total+=d.valor;
+      mapa[nome].qtd++;
+      if(d.valor>mapa[nome].maior)mapa[nome].maior=d.valor;
+      mapa[nome].formas[d.forma||'dinheiro']=(mapa[nome].formas[d.forma||'dinheiro']||0)+1;
+      if(!mapa[nome].ultimoData||c.data>mapa[nome].ultimoData){mapa[nome].ultimoData=c.data;mapa[nome].ultimoCulto=fmtDate(c.data);}
+    });
+  });
+  const lista=Object.values(mapa).sort((a,b)=>b.total-a.total);
+  const totalArrecadado=sum(lista,x=>x.total);
+  const totalPix=cultos.flatMap(c=>c.dizimistas||[]).filter(d=>d.forma==='pix').reduce((a,d)=>a+d.valor,0);
+  document.getElementById('kpiDizTotalArrecadado').textContent=fmt(totalArrecadado);
+  document.getElementById('kpiDizUnicos').textContent=lista.length;
+  document.getElementById('kpiDizMedia').textContent=fmt(lista.length?totalArrecadado/lista.length:0);
+  document.getElementById('kpiDizPix').textContent=fmt(totalPix);
+  document.getElementById('labelPeriodoDiz').textContent=monthLabel(mk);
 
-  const total=sum(dados,d=>d.total);
-  const pix=sum(dados,d=>d.formas.PIX||0);
-  const media=dados.length?total/dados.length:0;
-
-  // KPIs
-  document.getElementById('kpiDizTotalArrecadado').textContent=fmt(total);
-  document.getElementById('kpiDizUnicos').textContent=dados.length;
-  document.getElementById('kpiDizMedia').textContent=fmt(media);
-  document.getElementById('kpiDizPix').textContent=fmt(pix);
-  document.getElementById('labelPeriodoDiz').textContent=mk?monthLabel(mk):'Todos os períodos';
-
-  // Ranking Top 3
-  const rankEl=document.getElementById('dizimistasRanking');
-  if(!dados.length){rankEl.innerHTML='<p class="text-gray-400 text-sm text-center py-4">Nenhum dizimista no período</p>';}
-  else{
-    const medalhas=['🥇','🥈','🥉'];
-    rankEl.innerHTML=dados.slice(0,3).map((d,i)=>`
-      <div class="diz-rank-${i+1} rounded-xl p-3 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-xl">${medalhas[i]}</span>
-          <div><p class="font-bold text-sm text-gray-800">${escapeHtml(d.nome)}</p>
-          <p class="text-xs text-gray-500">${d.qtdCultos} culto${d.qtdCultos!==1?'s':''}</p></div>
-        </div>
-        <span class="font-bold text-gray-800">${fmt(d.total)}</span>
-      </div>`).join('');
-  }
-
-  // Gráfico
-  renderChartDizimistas(dados);
-
-  // Tabela detalhada
-  const tbody=document.getElementById('tabelaDizimistasRelatorio');
-  if(!dados.length){
-    tbody.innerHTML='<tr><td colspan="7" class="py-8 text-center text-gray-400 text-sm">Nenhum dado no período selecionado</td></tr>';
-  } else {
-    const totalGeral=sum(dados,d=>d.total);
-    tbody.innerHTML=dados.map((d,i)=>{
-      const pct=totalGeral>0?((d.total/totalGeral)*100).toFixed(1):0;
-      const formaPrincipal=d.formas.PIX>d.formas.Dinheiro?'PIX':'Dinheiro';
-      return`<tr class="table-row border-b border-gray-50">
-        <td class="p-2 text-center font-bold text-gray-500 text-sm">${i+1}</td>
-        <td class="p-2 text-sm font-medium text-gray-800">${escapeHtml(d.nome)}</td>
-        <td class="p-2 text-right font-bold text-blue-700 text-sm">${fmt(d.total)}<br><span class="text-xs text-gray-400 font-normal">${pct}%</span></td>
-        <td class="p-2 text-center text-sm">${d.qtdCultos}</td>
-        <td class="p-2 text-center"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${formaPrincipal==='PIX'?'badge-blue':'badge-green'}">${formaPrincipal}</span></td>
-        <td class="p-2 text-right text-sm text-gray-700">${fmt(d.maior)}</td>
-        <td class="p-2 text-sm text-gray-500">${fmtDate(d.ultimaCultoData)}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  // Histórico por culto
-  const cultos=mk?getCultosMes(mk):DB.cultos;
-  const cultosComDiz=cultos.filter(c=>(c.dizimistas||[]).length>0).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-  const histEl=document.getElementById('historicoCultosDiz');
-  if(!cultosComDiz.length){histEl.innerHTML='<p class="text-gray-400 text-sm text-center py-4">Nenhum dado no período</p>';return;}
-  histEl.innerHTML=cultosComDiz.map(c=>`
-    <div class="border border-gray-200 rounded-xl overflow-hidden">
-      <div class="bg-gray-50 px-4 py-2 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <i class="fas fa-bible text-blue-500 text-xs"></i>
-          <span class="font-semibold text-sm text-gray-700">${fmtDate(c.data)} — ${escapeHtml(c.tipo||'Culto')}</span>
-        </div>
-        <span class="font-bold text-blue-700 text-sm">${fmt(c.totalDizimos||0)}</span>
+  const top3=[{emoji:'🥇',cls:'diz-rank-1'},{emoji:'🥈',cls:'diz-rank-2'},{emoji:'🥉',cls:'diz-rank-3'}];
+  document.getElementById('dizimistasRanking').innerHTML=lista.slice(0,3).map((d,i)=>`
+    <div class="p-3 rounded-xl ${top3[i].cls}">
+      <div class="flex items-center justify-between">
+        <span class="font-bold text-sm">${top3[i].emoji} ${escapeHtml(d.nome)}</span>
+        <span class="font-bold text-green-700">${fmt(d.total)}</span>
       </div>
-      <div class="divide-y divide-gray-100">
-        ${(c.dizimistas||[]).map(d=>`
-          <div class="px-4 py-2 flex items-center justify-between text-sm">
-            <span class="text-gray-700">${escapeHtml(d.nome||'Anônimo')}</span>
-            <div class="flex items-center gap-3">
-              <span class="text-xs px-2 py-0.5 rounded-full ${d.forma==='PIX'?'badge-blue':'badge-green'}">${d.forma||'Dinheiro'}</span>
-              <span class="font-bold text-gray-800">${fmt(d.valor)}</span>
-            </div>
-          </div>`).join('')}
+      <p class="text-xs text-gray-500 mt-0.5">${d.qtd} culto${d.qtd!==1?'s':''} • Último: ${d.ultimoCulto}</p>
+    </div>`).join('')||'<p class="text-gray-400 text-sm text-center py-4">Nenhum dado</p>';
+
+  document.getElementById('tabelaDizimistasRelatorio').innerHTML=lista.length?lista.map((d,i)=>{
+    const formaPrincipal=Object.entries(d.formas).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+    return`<tr class="table-row border-b text-sm">
+      <td class="p-2 text-gray-500 font-bold">${i+1}</td>
+      <td class="p-2 font-semibold text-gray-800">${escapeHtml(d.nome)}</td>
+      <td class="p-2 text-right font-bold text-green-600">${fmt(d.total)}</td>
+      <td class="p-2 text-center text-gray-600">${d.qtd}</td>
+      <td class="p-2 text-center"><span class="badge-${formaPrincipal==='pix'?'blue':'green'} px-2 py-0.5 rounded-full text-xs">${formaPrincipal}</span></td>
+      <td class="p-2 text-right text-gray-600">${fmt(d.maior)}</td>
+      <td class="p-2 text-gray-500 text-xs">${d.ultimoCulto}</td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="7" class="py-8 text-center text-gray-400">Nenhum dado no período</td></tr>';
+
+  document.getElementById('historicoCultosDiz').innerHTML=cultos.length?cultos.sort((a,b)=>b.data.localeCompare(a.data)).map(c=>{
+    const dizs=(c.dizimistas||[]).filter(d=>d.valor>0);
+    if(!dizs.length)return'';
+    return`<div class="bg-gray-50 rounded-xl p-3 border">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-bold text-sm text-gray-800">${fmtDate(c.data)} — ${escapeHtml(c.tipo||'')}</span>
+        <span class="font-bold text-green-600">${fmt(sum(dizs,d=>d.valor))}</span>
       </div>
-    </div>`).join('');
+      ${dizs.map(d=>`<div class="flex justify-between text-sm py-1 border-b last:border-0">
+        <span class="text-gray-700">${escapeHtml(d.nome||'Anônimo')}</span>
+        <span class="font-semibold">${fmt(d.valor)} <span class="text-gray-400 text-xs">(${d.forma||'dinheiro'})</span></span>
+      </div>`).join('')}
+    </div>`;
+  }).join('')||'<p class="text-gray-400 text-sm text-center py-4">Sem cultos no período</p>':
+  '<p class="text-gray-400 text-sm text-center py-4">Nenhum dado no período</p>';
+
+  // Gráfico dizimistas
+  if(chartDiz)chartDiz.destroy();
+  const top=lista.slice(0,8);
+  if(top.length){
+    chartDiz=new Chart(document.getElementById('chartDizimistas').getContext('2d'),{
+      type:'doughnut',
+      data:{labels:top.map(d=>d.nome),datasets:[{data:top.map(d=>d.total),backgroundColor:['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#06b6d4','#84cc16'],borderWidth:2}]},
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}}
+    });
+  }
 }
 
 function limparFiltroDizimistas(){
-  document.getElementById('filtroDizimistaMes').value='';
+  document.getElementById('filtroDizimistaMes').value=GLOBAL_MONTH;
   document.getElementById('buscaDizimista').value='';
   renderRelatorioDizimistas();
 }
 
-// --- WHATSAPP DIZIMISTAS ---
 function compartilharDizimistasWhatsApp(){
   const mk=document.getElementById('filtroDizimistaMes')?.value||GLOBAL_MONTH;
-  const dados=compilarDizimistas(mk);
-  const total=sum(dados,d=>d.total);
-  const pix=sum(dados,d=>d.formas.PIX||0);
-  const periodo=mk?monthLabel(mk):'Todos os períodos';
-
-  let msg=`📋 *RELATÓRIO DE DIZIMISTAS*\n`;
-  msg+=`📅 ${periodo}\n`;
-  msg+=`━━━━━━━━━━━━━━━━━━━━\n`;
-  msg+=`💰 Total: ${fmt(total)}\n`;
-  msg+=`👥 Dizimistas: ${dados.length}\n`;
-  msg+=`🔵 Via PIX: ${fmt(pix)}\n`;
-  msg+=`━━━━━━━━━━━━━━━━━━━━\n\n`;
-
-  if(dados.length){
-    msg+=`*LISTA DE DIZIMISTAS:*\n`;
-    dados.forEach((d,i)=>{
-      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
-      msg+=`${medal} ${d.nome}: ${fmt(d.total)} (${d.qtdCultos} culto${d.qtdCultos!==1?'s':''})\n`;
-    });
-  } else {
-    msg+=`_Nenhum dizimista registrado no período._`;
-  }
-  msg+=`\n_Gerado em ${new Date().toLocaleString('pt-BR')}_`;
-
-  const numero=getWhatsAppNumero();
-  const url=numero
-    ?`https://wa.me/55${numero}?text=${encodeURIComponent(msg)}`
-    :`https://wa.me/?text=${encodeURIComponent(msg)}`;
+  const cultos=getCultosMes(mk);
+  const mapa={};
+  cultos.forEach(c=>(c.dizimistas||[]).filter(d=>d.valor>0).forEach(d=>{
+    const n=(d.nome||'Anônimo').trim();
+    mapa[n]=(mapa[n]||0)+d.valor;
+  }));
+  const lista=Object.entries(mapa).sort((a,b)=>b[1]-a[1]);
+  const total=lista.reduce((a,[,v])=>a+v,0);
+  const cfg=DB.config||{};
+  let txt=`*Rel. Dizimistas — ${monthLabel(mk)}*\n*${cfg.nomeIgreja||'IEQ Esplanada'}*\n\n`;
+  lista.forEach(([n,v],i)=>txt+=`${i+1}. ${n}: ${fmt(v)}\n`);
+  txt+=`\n*Total: ${fmt(total)}*`;
+  const num=(cfg.whatsapp||'').replace(/\D/g,'');
+  const url=num?`https://wa.me/55${num}?text=${encodeURIComponent(txt)}`:`https://wa.me/?text=${encodeURIComponent(txt)}`;
   window.open(url,'_blank');
 }
-
-// --- IMPRIMIR DIZIMISTAS ---
-function imprimirRelatorioDizimistas(){
-  const mk=document.getElementById('filtroDizimistaMes')?.value||GLOBAL_MONTH;
-  const dados=compilarDizimistas(mk);
-  const total=sum(dados,d=>d.total);
-  const pix=sum(dados,d=>d.formas.PIX||0);
-  const periodo=mk?monthLabel(mk):'Todos os períodos';
-  const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ Esplanada');
-  const logoHtml=DB.config.logo?`<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:50%;object-fit:contain;padding:4px;border:2px solid #e5e7eb;background:white;">`:'<div style="font-size:40px">⛪</div>';
-
-  const w=window.open('','_blank','width=800,height=900');
-  w.document.write(`<html><head><title>Relatório Dizimistas — ${periodo}</title>
-  <style>
-    body{font-family:'Segoe UI',Arial,sans-serif;color:#1f2937;margin:20px;font-size:13px;}
-    h1,h2,h3{margin:4px 0;}
-    table{width:100%;border-collapse:collapse;margin-bottom:16px;}
-    th{background:#1e3a5f;color:white;padding:8px;font-size:12px;text-align:left;}
-    td{padding:6px 8px;border:1px solid #e5e7eb;}
-    tr:nth-child(even) td{background:#f9fafb;}
-    .header{text-align:center;padding:16px 0 12px;border-bottom:3px solid #1e3a5f;margin-bottom:16px;}
-    .kpi-row{display:flex;gap:12px;margin-bottom:16px;}
-    .kpi{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-align:center;}
-    .kpi-val{font-size:18px;font-weight:800;color:#1e3a5f;}
-    .kpi-label{font-size:11px;color:#6b7280;}
-    .footer{text-align:center;color:#9ca3af;font-size:10px;margin-top:20px;padding-top:10px;border-top:1px solid #e5e7eb;}
-    @media print{body{margin:0;} @page{margin:1.5cm;size:A4;}}
-  </style></head><body>
-  <div class="header">
-    ${logoHtml}
-    <h1 style="color:#1e3a5f;font-size:18px;margin-top:8px;">${nomeIgreja}</h1>
-    <h2 style="color:#c8a951;font-size:12px;letter-spacing:2px;text-transform:uppercase;">RELATÓRIO DE DIZIMISTAS</h2>
-    <p style="color:#6b7280;font-size:12px;margin-top:4px;">📅 ${periodo}</p>
-  </div>
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-val">${fmt(total)}</div><div class="kpi-label">Total Arrecadado</div></div>
-    <div class="kpi"><div class="kpi-val">${dados.length}</div><div class="kpi-label">Dizimistas</div></div>
-    <div class="kpi"><div class="kpi-val">${fmt(dados.length?total/dados.length:0)}</div><div class="kpi-label">Média por Dizimista</div></div>
-    <div class="kpi"><div class="kpi-val">${fmt(pix)}</div><div class="kpi-label">Via PIX</div></div>
-  </div>
-  <table>
-    <thead><tr><th>#</th><th>Nome</th><th>Total</th><th>Qtd. Cultos</th><th>Forma Principal</th><th>Maior Dízimo</th><th>Último Culto</th></tr></thead>
-    <tbody>
-    ${dados.length?dados.map((d,i)=>`<tr>
-      <td style="text-align:center">${i+1}</td>
-      <td><b>${escapeHtml(d.nome)}</b></td>
-      <td style="text-align:right;font-weight:700;color:#1e3a5f">${fmt(d.total)}</td>
-      <td style="text-align:center">${d.qtdCultos}</td>
-      <td style="text-align:center">${d.formas.PIX>d.formas.Dinheiro?'PIX':'Dinheiro'}</td>
-      <td style="text-align:right">${fmt(d.maior)}</td>
-      <td>${fmtDate(d.ultimaCultoData)}</td>
-    </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:16px;color:#9ca3af;">Nenhum dado</td></tr>'}
-    </tbody>
-    <tfoot><tr style="background:#f0fdf4;">
-      <td colspan="2" style="padding:8px;font-weight:800;">TOTAL</td>
-      <td style="padding:8px;font-weight:800;text-align:right;color:#065f46">${fmt(total)}</td>
-      <td colspan="4"></td>
-    </tr></tfoot>
-  </table>
-  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}</div>
-  <script>window.onload=()=>window.print();<\/script>
-  </body></html>`);
-  w.document.close();
-}
-
-// --- EXPORTAR CSV DIZIMISTAS ---
+function imprimirRelatorioDizimistas(){window.print();}
 function exportarDizimistasCSV(){
   const mk=document.getElementById('filtroDizimistaMes')?.value||GLOBAL_MONTH;
-  const dados=compilarDizimistas(mk);
-  if(!dados.length){showNotification('⚠️ Nenhum dado para exportar.','warning');return;}
-  const header='#,Nome,Total,Qtd. Cultos,Total Dinheiro,Total PIX,Maior Dízimo,Último Culto';
-  const rows=dados.map((d,i)=>`${i+1},"${d.nome}",${d.total.toFixed(2)},${d.qtdCultos},${(d.formas.Dinheiro||0).toFixed(2)},${(d.formas.PIX||0).toFixed(2)},${d.maior.toFixed(2)},${d.ultimaCultoData}`);
-  const csv=[header,...rows].join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`dizimistas_${mk||'todos'}.csv`;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-  showNotification('✅ CSV exportado com sucesso!','success');
-}
-
-// --- EXPORTAR EXCEL FAKE (CSV) CULTOS ---
-function exportarCultosExcelFake(){
-  const ini=document.getElementById('relCultoIni')?.value||'';
-  const fim=document.getElementById('relCultoFim')?.value||'';
-  let cultos=[...DB.cultos].sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-  if(ini)cultos=cultos.filter(c=>(c.data||'')>=ini+'-01');
-  if(fim){const[y,m]=fim.split('-');const ultimo=new Date(y,m,0).toISOString().split('T')[0];cultos=cultos.filter(c=>(c.data||'')<=ultimo);}
-  if(!cultos.length){showNotification('⚠️ Nenhum culto no período.','warning');return;}
-  const header='Data,Tipo,Pregador,Presentes,Total Dízimos,Total Ofertas,Missões,Total Arrecadado';
-  const rows=cultos.map(c=>`${c.data},"${escapeHtml(c.tipo||'')}","${escapeHtml(c.pregador||'')}",${c.presentes||0},${(c.totalDizimos||0).toFixed(2)},${(c.totalOfertas||0).toFixed(2)},${(c.missoes||0).toFixed(2)},${(c.totalArrecadado||0).toFixed(2)}`);
-  const csv=[header,...rows].join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`cultos_${ini||'inicio'}_${fim||'fim'}.csv`;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-  showNotification('✅ Exportação concluída!','success');
+  const cultos=getCultosMes(mk);
+  const mapa={};
+  cultos.forEach(c=>(c.dizimistas||[]).filter(d=>d.valor>0).forEach(d=>{
+    const n=(d.nome||'Anônimo').trim();
+    if(!mapa[n])mapa[n]={total:0,qtd:0};
+    mapa[n].total+=d.valor;mapa[n].qtd++;
+  }));
+  let csv='Nome,Total,Qtd Cultos\n';
+  Object.entries(mapa).sort((a,b)=>b[1].total-a[1].total).forEach(([n,v])=>csv+=`"${n}",${v.total},${v.qtd}\n`);
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`dizimistas_${mk}.csv`;a.click();
 }
 
 // ============================================================
-// RELATÓRIOS — RELATÓRIO MENSAL
+// RELATÓRIOS
 // ============================================================
+let chartComp=null;
 function renderRelatorios(){
-  const sel=document.getElementById('relatorioMesSelect');
-  if(sel){
-    const meses=getMesesComDados();
-    sel.innerHTML=meses.map(mk=>`<option value="${mk}">${monthLabel(mk)}</option>`).join('');
-    if(meses.includes(GLOBAL_MONTH))sel.value=GLOBAL_MONTH;
-    else if(meses.length)sel.value=meses[meses.length-1];
-  }
-  renderChartComparativo();
+  const sel=document.getElementById('relatorioMesSelect');if(!sel)return;
+  const meses=getMesesComDados();
+  sel.innerHTML=meses.map(mk=>`<option value="${mk}">${monthLabel(mk)}</option>`).join('');
+  sel.value=GLOBAL_MONTH;
+  const now=new Date();
+  document.getElementById('relCultoIni').value=`${now.getFullYear()}-01`;
+  document.getElementById('relCultoFim').value=GLOBAL_MONTH;
+  const hist=DB.historico.slice(-6);
+  const labels=hist.map(h=>h.nome?.substring(0,3)||'');
+  if(chartComp)chartComp.destroy();
+  chartComp=new Chart(document.getElementById('chartComparativo').getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Entradas',data:hist.map(h=>h.entradas||0),backgroundColor:'rgba(16,185,129,0.7)',borderRadius:6},
+      {label:'Saídas',  data:hist.map(h=>h.saidas||0),  backgroundColor:'rgba(239,68,68,0.7)', borderRadius:6},
+      {label:'Saldo Final',data:hist.map(h=>h.saldoFinal||0),backgroundColor:'rgba(59,130,246,0.7)',borderRadius:6,type:'line'},
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+  });
 }
 
 function gerarRelatorio(){
-  const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
-  const entMes=sum(getEntradasMes(ms),e=>e.valor);
-  const saiMes=sum(getDespesasMes(ms),d=>d.valor);
-  const h=getHistoricoRow(ms);
-  const prev=getHistoricoRow(prevMonthKey(ms));
-  const saldoAnt=h?.saldoAnt??(prev?.saldoFinal??0);
-  const saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
-  const logoHtml=DB.config.logo?`<img src="${DB.config.logo}" style="width:64px;height:64px;border-radius:50%;object-fit:contain;background:white;padding:4px;border:2px solid #e5e7eb;">`:'<div style="font-size:40px">⛪</div>';
-  const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ Esplanada');
+  const mk=document.getElementById('relatorioMesSelect').value||GLOBAL_MONTH;
+  const h=getHistoricoRow(mk);
+  const entMes=sum(getEntradasMes(mk),e=>e.valor);
+  const despMes=sum(getDespesasMes(mk),d=>d.valor);
+  const totalEnt=h?.entradas??entMes;
+  const totalSaid=h?.saidas??despMes;
+  const saldoAnt=h?.saldoAnt??0;
+  const saldoFin=h?.saldoFinal??(saldoAnt+totalEnt-totalSaid);
+  const cfg=DB.config||{};
+  const cultosMes=getCultosMes(mk);
+  const totalMissoes=sum(cultosMes,c=>c.missoes||0);
+  const missoesEst=totalMissoes*0.5;
+  const missoesNac=totalMissoes*0.5;
+  const desp=getDespesasMes(mk);
+  const catMap={};
+  desp.forEach(d=>catMap[d.categoria]=(catMap[d.categoria]||0)+d.valor);
 
-  // Agrupar despesas por categoria
-  const despLista=[...getDespesasMes(ms)];
-  const despPorCategoria={};
-  despLista.forEach(d=>{
-    if(!despPorCategoria[d.categoria])despPorCategoria[d.categoria]={total:0,itens:[]};
-    despPorCategoria[d.categoria].total+=d.valor;
-    despPorCategoria[d.categoria].itens.push(d);
-  });
-  const cats=Object.entries(despPorCategoria);
-
-  const w=window.open('','_blank','width=800,height=900');
-  w.document.write(`<html><head><title>Relatório Mensal — ${monthLabel(ms)}</title>
-  <style>
-    body{font-family:'Segoe UI',Arial,sans-serif;color:#1f2937;margin:20px;font-size:13px;}
-    .header{text-align:center;padding:16px 0 12px;border-bottom:3px solid #1e3a5f;margin-bottom:16px;}
-    .header h1{color:#1e3a5f;font-size:20px;margin:8px 0 2px;}
-    .header h2{color:#c8a951;font-size:12px;letter-spacing:2px;text-transform:uppercase;}
-    .sec{background:#1e3a5f;color:white;padding:8px 12px;font-size:12px;font-weight:700;border-radius:6px 6px 0 0;margin-top:16px;}
-    table{width:100%;border-collapse:collapse;margin-bottom:0;}
-    th{background:#1e3a5f;color:white;padding:8px;font-size:12px;text-align:left;}
-    td{padding:6px 8px;border:1px solid #e5e7eb;font-size:12px;}
-    tr:nth-child(even) td{background:#f9fafb;}
-    .total-row td{background:#f0fdf4!important;font-weight:800;color:#065f46;font-size:13px;}
-    .footer{text-align:center;color:#9ca3af;font-size:10px;margin-top:20px;padding-top:10px;border-top:1px solid #e5e7eb;}
-    @media print{body{margin:0;} @page{margin:1.5cm;size:A4;}}
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório ${monthLabel(mk)}</title>
+  <style>body{font-family:'Segoe UI',sans-serif;margin:0;padding:20px;color:#1f2937}
+  .header{text-align:center;border-bottom:3px solid #1e3a5f;padding-bottom:16px;margin-bottom:20px}
+  .titulo{color:#1e3a5f;font-size:22px;font-weight:800}
+  .subtitulo{color:#c8a951;font-size:16px;font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:14px}
+  .box-title{font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px}
+  th{background:#1e3a5f;color:white;padding:8px 12px;text-align:left}
+  td{padding:7px 12px;border-bottom:1px solid #e5e7eb}
+  tr:nth-child(even) td{background:#f9fafb}
+  .total-row td{font-weight:800;background:#f0fdf4;border-top:2px solid #1e3a5f}
+  .footer{text-align:center;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px;margin-top:20px}
   </style></head><body>
   <div class="header">
-    ${logoHtml}
-    <h1>${nomeIgreja}</h1>
-    <h2>RELATÓRIO FINANCEIRO MENSAL</h2>
-    <p style="color:#6b7280;font-size:12px;margin-top:4px;">📅 ${monthLabel(ms)}</p>
+    <div class="titulo">${escapeHtml(cfg.nomeIgreja||'IEQ Esplanada')}</div>
+    <div style="color:#666;font-size:13px">${escapeHtml(cfg.endereco||'')}</div>
+    <div class="subtitulo">RELATÓRIO FINANCEIRO MENSAL</div>
+    <div style="color:#555;font-size:13px">${monthLabel(mk)}</div>
   </div>
-
-  <div class="sec">📊 RESUMO FINANCEIRO</div>
-  <table><tr><th>Item</th><th style="text-align:right">Valor</th></tr>
-    <tr><td>Saldo Anterior</td><td style="text-align:right">${fmt(saldoAnt)}</td></tr>
-    <tr><td>Total de Entradas</td><td style="text-align:right;color:#065f46;font-weight:700">${fmt(h?.entradas??entMes)}</td></tr>
-    <tr><td>Total de Saídas</td><td style="text-align:right;color:#991b1b;font-weight:700">${fmt(h?.saidas??saiMes)}</td></tr>
-    <tr class="total-row"><td>✅ SALDO FINAL</td><td style="text-align:right">${fmt(saldoFinal)}</td></tr>
+  <div class="grid2">
+    <div class="box"><div class="box-title">Saldo Anterior</div><div style="font-size:22px;font-weight:800;color:#1e3a5f">${fmt(saldoAnt)}</div></div>
+    <div class="box"><div class="box-title">Total Entradas</div><div style="font-size:22px;font-weight:800;color:#059669">${fmt(totalEnt)}</div></div>
+    <div class="box"><div class="box-title">Total Saídas</div><div style="font-size:22px;font-weight:800;color:#dc2626">${fmt(totalSaid)}</div></div>
+    <div class="box"><div class="box-title">Saldo Final</div><div style="font-size:22px;font-weight:800;color:#d97706">${fmt(saldoFin)}</div></div>
+  </div>
+  <h3 style="color:#1e3a5f;font-size:14px;margin-bottom:8px">DISTRIBUIÇÕES DO MÊS</h3>
+  <table>
+    <thead><tr><th>Descrição</th><th>Base/Referência</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>CED (4,4%)</td><td>${fmt(totalEnt)}</td><td>${fmt(totalEnt*0.044)}</td></tr>
+      <tr><td>CND (8,5%)</td><td>${fmt(totalEnt)}</td><td>${fmt(totalEnt*0.085)}</td></tr>
+      <tr><td>Taxa Regional (4%)</td><td>${fmt(totalEnt)}</td><td>${fmt(totalEnt*0.04)}</td></tr>
+      <tr><td>Missões — Est. (50%)</td><td>${fmt(totalMissoes)}</td><td>${fmt(missoesEst)}</td></tr>
+      <tr><td>Missões — Nac. (50%)</td><td>${fmt(totalMissoes)}</td><td>${fmt(missoesNac)}</td></tr>
+    </tbody>
   </table>
-
-  ${cats.length?cats.map(([cat,d])=>`
-    <div class="sec">${getCatIcon(cat)} ${escapeHtml(cat)} — ${fmt(d.total)}</div>
-    <table><tr><th>Descrição</th><th style="width:20%;text-align:center">Data</th><th style="width:20%;text-align:right">Valor</th></tr>
-    ${d.itens.map(it=>`<tr><td>${escapeHtml(it.descricao||'—')}</td><td style="text-align:center">${fmtDate(it.data)}</td><td style="text-align:right">${fmt(it.valor)}</td></tr>`).join('')}
-    </table>`).join(''):''}
-
-  <div class="sec">💰 ENTRADAS DO MÊS</div>
-  <table><tr><th>Descrição</th><th style="width:20%;text-align:center">Data</th><th style="width:20%;text-align:right">Valor</th></tr>
-  ${getEntradasMes(ms).length?getEntradasMes(ms).map(e=>`<tr><td>${escapeHtml(e.descricao||'—')}</td><td style="text-align:center">${fmtDate(e.data)}</td><td style="text-align:right">${fmt(e.valor)}</td></tr>`).join(''):'<tr><td colspan="3" style="text-align:center;padding:12px;color:#9ca3af;">Nenhuma entrada registrada</td></tr>'}
+  <h3 style="color:#1e3a5f;font-size:14px;margin-bottom:8px">DESPESAS POR CATEGORIA</h3>
+  <table>
+    <thead><tr><th>Categoria</th><th>Total</th></tr></thead>
+    <tbody>
+      ${Object.entries(catMap).map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td>${fmt(v)}</td></tr>`).join('')}
+    </tbody>
+    <tfoot><tr class="total-row"><td>TOTAL</td><td>${fmt(totalSaid)}</td></tr></tfoot>
   </table>
-
-  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja} — ${escapeHtml(DB.config.tesoureiro||'')}</div>
-  <script>window.onload=()=>window.print();<\/script>
+  <div class="footer">Pastor: ${escapeHtml(cfg.pastor||'Danilo de Oliveira Falcão')} | Tesoureiro: ${escapeHtml(cfg.tesoureiro||'Danilo Falcão')}</div>
+  <script>window.onload=function(){window.print();}<\/script>
   </body></html>`);
   w.document.close();
+}
+
+function exportarCultosExcelFake(){
+  const ini=document.getElementById('relCultoIni').value;
+  const fim=document.getElementById('relCultoFim').value;
+  let cultos=DB.cultos;
+  if(ini)cultos=cultos.filter(c=>c.data>=ini+'-01');
+  if(fim)cultos=cultos.filter(c=>c.data<=fim+'-31');
+  let csv='Data,Tipo,Pregador,Presentes,Dizimos,Ofertas,Missoes,Total\n';
+  cultos.forEach(c=>csv+=`"${c.data}","${c.tipo||''}","${c.pregador||''}",${c.presentes||0},${c.totalDizimos||0},${c.totalOfertas||0},${c.missoes||0},${(c.totalDizimos||0)+(c.totalOfertas||0)}\n`);
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cultos.csv';a.click();
+  showNotification('✅ CSV exportado!','success');
 }
 
 // ============================================================
 // HISTÓRICO
 // ============================================================
+let chartSaldos=null;
 function renderHistorico(){
   const tbody=document.getElementById('tabelaHistorico');
+  const nomes=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   tbody.innerHTML=DB.historico.map(h=>{
-    const atual=h.mes===new Date().getMonth()+1&&h.ano===new Date().getFullYear();
-    return`<tr class="table-row border-b ${atual?'bg-yellow-50':''}">
-      <td class="p-2 font-semibold text-sm">${h.nome} ${h.ano}${atual?' <span class="badge-yellow px-1.5 py-0.5 rounded text-xs">Atual</span>':''}</td>
-      <td class="p-2 text-sm">${fmt(h.saldoAnt)}</td>
-      <td class="p-2 text-sm text-green-600 font-medium">${fmt(h.entradas)}</td>
-      <td class="p-2 text-sm text-red-600 font-medium">${fmt(h.saidas)}</td>
-      <td class="p-2 text-sm font-bold">${fmt(h.saldoFinal)}</td>
-      <td class="p-2 text-sm text-center">${h.ceia??'—'}</td>
-      <td class="p-2"><span class="badge-${h.saldoFinal>=0?'green':'red'} px-2 py-0.5 rounded-full text-xs">${h.saldoFinal>=0?'Positivo':'Negativo'}</span></td>
+    const sf=h.saldoFinal??(h.saldoAnt+h.entradas-h.saidas);
+    const status=sf>0?'badge-green':'badge-red';
+    return`<tr class="table-row border-b text-sm">
+      <td class="p-2 font-semibold">${nomes[h.mes]||h.nome} ${h.ano}</td>
+      <td class="p-2">${fmt(h.saldoAnt??0)}</td>
+      <td class="p-2 text-green-600 font-semibold">${fmt(h.entradas)}</td>
+      <td class="p-2 text-red-600 font-semibold">${fmt(h.saidas)}</td>
+      <td class="p-2 font-bold">${fmt(sf)}</td>
+      <td class="p-2 text-center">${h.ceia||'—'}</td>
+      <td class="p-2"><span class="${status} px-2 py-0.5 rounded-full text-xs font-semibold">${sf>0?'Superávit':'Déficit'}</span></td>
     </tr>`;
   }).join('');
-  renderChartSaldos();
+  if(chartSaldos)chartSaldos.destroy();
+  chartSaldos=new Chart(document.getElementById('chartSaldos').getContext('2d'),{
+    type:'line',
+    data:{
+      labels:DB.historico.map(h=>(nomes[h.mes]||h.nome||'').substring(0,3)),
+      datasets:[{label:'Saldo Final',data:DB.historico.map(h=>h.saldoFinal??(h.saldoAnt+h.entradas-h.saidas)),borderColor:'#1e3a5f',backgroundColor:'rgba(30,58,95,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#c8a951'}]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+  });
 }
 
 // ============================================================
 // CONFIGURAÇÕES
 // ============================================================
 function renderConfiguracoes(){
-  const cfg=DB.config;
-  if(cfg.nomeIgreja)document.getElementById('cfg-nome-igreja').value=cfg.nomeIgreja;
-  if(cfg.endereco)document.getElementById('cfg-endereco').value=cfg.endereco;
-  if(cfg.pastor)document.getElementById('cfg-pastor').value=cfg.pastor;
-  if(cfg.tesoureiro)document.getElementById('cfg-tesoureiro').value=cfg.tesoureiro;
-  if(cfg.whatsapp)document.getElementById('cfg-whatsapp').value=cfg.whatsapp;
+  const cfg=DB.config||{};
+  document.getElementById('cfg-nome-igreja').value=cfg.nomeIgreja||'IEQ Esplanada';
+  document.getElementById('cfg-endereco').value=cfg.endereco||'';
+  document.getElementById('cfg-pastor').value=cfg.pastor||'Danilo de Oliveira Falcão';
+  document.getElementById('cfg-tesoureiro').value=cfg.tesoureiro||'Danilo Falcão';
+  document.getElementById('cfg-whatsapp').value=cfg.whatsapp||'';
   document.getElementById('cfgQtdCultos').textContent=DB.cultos.length;
-  document.getElementById('cfgQtdDespesas').textContent=DB.despesas.filter(d=>!d._fixed).length;
+  document.getElementById('cfgQtdDespesas').textContent=DB.despesas.length;
   document.getElementById('cfgQtdEntradas').textContent=DB.entradas.length;
-  if(cfg.logo){
-    document.getElementById('logoPreviewImg').src=cfg.logo;
-    document.getElementById('logoPreviewImg').style.display='block';
-    document.getElementById('logoPreviewIcon').style.display='none';
-    document.getElementById('logoPreviewLabel').textContent='Logo configurada';
-    document.getElementById('btnRemoverLogo').style.display='';
-  }
   renderListaCategoriasCfg();
+  renderCategoriaSelects();
+  const logo=cfg.logo||localStorage.getItem('ieq_logo')||'';
+  atualizarPreviewLogo(logo);
 }
 
-function carregarConfig(){
-  try{const c=JSON.parse(localStorage.getItem('ieq_config')||'{}');DB.config=c;aplicarLogoSistema();}catch{}
-}
 function salvarConfiguracoes(){
   DB.config={
     ...DB.config,
-    nomeIgreja:document.getElementById('cfg-nome-igreja').value,
-    endereco:document.getElementById('cfg-endereco').value,
-    pastor:document.getElementById('cfg-pastor').value,
-    tesoureiro:document.getElementById('cfg-tesoureiro').value,
-    whatsapp:document.getElementById('cfg-whatsapp').value.replace(/\D/g,''),
+    nomeIgreja:document.getElementById('cfg-nome-igreja').value.trim(),
+    endereco:document.getElementById('cfg-endereco').value.trim(),
+    pastor:document.getElementById('cfg-pastor').value.trim(),
+    tesoureiro:document.getElementById('cfg-tesoureiro').value.trim(),
+    whatsapp:document.getElementById('cfg-whatsapp').value.trim(),
   };
   localStorage.setItem('ieq_config',JSON.stringify(DB.config));
-  aplicarLogoSistema();showNotification('✅ Configurações salvas!','success');
-}
-function aplicarLogoSistema(){
-  const c=DB.config;
-  const nome=c.nomeIgreja||'IEQ Esplanada';
-  document.querySelectorAll('#sidebarNomeIgreja').forEach(e=>e.textContent=nome);
+  const nome=DB.config.nomeIgreja||'IEQ Esplanada';
+  document.getElementById('sidebarNomeIgreja').textContent=nome;
   document.getElementById('loginNomeIgreja').textContent=nome;
-  if(c.logo){
-    document.getElementById('sidebarLogoDefault').style.display='none';
-    document.getElementById('sidebarLogoImg').style.display='block';
-    document.getElementById('sidebarLogoImg').src=c.logo;
-    document.getElementById('loginLogoIcon').style.display='none';
-    document.getElementById('loginLogoImg').style.display='block';
-    document.getElementById('loginLogoImg').src=c.logo;
-  } else {
-    document.getElementById('sidebarLogoDefault').style.display='flex';
-    document.getElementById('sidebarLogoImg').style.display='none';
-    document.getElementById('loginLogoIcon').style.display='';
-    document.getElementById('loginLogoImg').style.display='none';
-  }
+  showNotification('✅ Configurações salvas!','success');
 }
 
 function handleLogoUpload(e){
-  const file=e.target.files[0];if(!file)return;
-  if(file.size>2*1024*1024){showNotification('⚠️ Arquivo muito grande. Máx 2MB.','warning');return;}
+  const file=e.target.files?.[0];if(!file)return;
+  if(file.size>2*1024*1024){showNotification('⚠️ Imagem muito grande (máx. 2MB).','warning');return;}
   const reader=new FileReader();
-  reader.onload=ev=>{
-    const b64=ev.target.result;
-    document.getElementById('logoPreviewImg').src=b64;
-    document.getElementById('logoPreviewImg').style.display='block';
-    document.getElementById('logoPreviewIcon').style.display='none';
-    document.getElementById('logoPreviewLabel').textContent=file.name;
-    document.getElementById('btnRemoverLogo').style.display='';
-    DB.config._logoTemp=b64;
-  };
+  reader.onload=ev=>{atualizarPreviewLogo(ev.target.result);};
   reader.readAsDataURL(file);
 }
 function handleLogoDrop(e){
-  e.preventDefault();const file=e.dataTransfer.files[0];
-  if(file)handleLogoUpload({target:{files:[file]}});
+  e.preventDefault();const file=e.dataTransfer.files?.[0];if(!file)return;
+  if(!file.type.startsWith('image/')){showNotification('⚠️ Apenas imagens.','warning');return;}
+  const reader=new FileReader();
+  reader.onload=ev=>{atualizarPreviewLogo(ev.target.result);};
+  reader.readAsDataURL(file);
+}
+function atualizarPreviewLogo(src){
+  const img=document.getElementById('logoPreviewImg');
+  const icon=document.getElementById('logoPreviewIcon');
+  const label=document.getElementById('logoPreviewLabel');
+  const btnRem=document.getElementById('btnRemoverLogo');
+  const sideImg=document.getElementById('sidebarLogoImg');
+  const sideDef=document.getElementById('sidebarLogoDefault');
+  const loginImg=document.getElementById('loginLogoImg');
+  const loginIcon=document.getElementById('loginLogoIcon');
+  if(src){
+    img.src=src;img.style.display='block';icon.style.display='none';
+    label.textContent='Logo carregada';btnRem.style.display='';
+    sideImg.src=src;sideImg.style.display='block';sideDef.style.display='none';
+    loginImg.src=src;loginImg.style.display='block';loginIcon.style.display='none';
+  } else {
+    img.src='';img.style.display='none';icon.style.display='flex';
+    label.textContent='Nenhuma logo configurada';btnRem.style.display='none';
+    sideImg.src='';sideImg.style.display='none';sideDef.style.display='flex';
+    loginImg.src='';loginImg.style.display='none';loginIcon.style.display='';
+  }
 }
 function salvarLogo(){
-  if(!DB.config._logoTemp){showNotification('⚠️ Nenhuma logo selecionada.','warning');return;}
-  DB.config.logo=DB.config._logoTemp;delete DB.config._logoTemp;
+  const src=document.getElementById('logoPreviewImg').src;
+  if(!src||!src.startsWith('data:')){showNotification('⚠️ Selecione uma imagem primeiro.','warning');return;}
+  localStorage.setItem('ieq_logo',src);
+  DB.config={...DB.config,logo:src};
   localStorage.setItem('ieq_config',JSON.stringify(DB.config));
-  aplicarLogoSistema();showNotification('✅ Logo salva!','success');
+  showNotification('✅ Logo salva!','success');
 }
 function removerLogo(){
-  if(!confirm('Remover a logo?'))return;
-  delete DB.config.logo;delete DB.config._logoTemp;
+  if(!confirm('Remover logo?'))return;
+  localStorage.removeItem('ieq_logo');
+  DB.config={...DB.config,logo:''};
   localStorage.setItem('ieq_config',JSON.stringify(DB.config));
-  document.getElementById('logoPreviewImg').style.display='none';
-  document.getElementById('logoPreviewIcon').style.display='flex';
-  document.getElementById('logoPreviewLabel').textContent='Nenhuma logo configurada';
-  document.getElementById('btnRemoverLogo').style.display='none';
-  document.getElementById('logoFileInput').value='';
-  aplicarLogoSistema();showNotification('🗑️ Logo removida.','info');
+  atualizarPreviewLogo('');
+  showNotification('🗑️ Logo removida.','info');
 }
-
 function limparCacheLocal(){
-  if(!confirm('Limpar todo o cache local? Os dados do servidor não serão apagados.'))return;
-  localStorage.removeItem('despesas_cache');localStorage.removeItem('cultos_cache');
-  localStorage.removeItem('entradas_cache');localStorage.removeItem('categorias_cache');
-  DB.cultos=[];DB.entradas=[];DB.despesas=[...DESPESAS_PADRAO];DB.categorias=[...CATEGORIAS_PADRAO];
-  showNotification('🗑️ Cache limpo. Sincronizando...','info');
+  if(!confirm('Limpar cache local? Os dados do servidor serão recarregados.'))return;
+  ['despesas_cache','cultos_cache','entradas_cache','categorias_cache'].forEach(k=>localStorage.removeItem(k));
+  showNotification('✅ Cache limpo! Sincronizando...','success');
   sincronizarTudo();
 }
 
 // ============================================================
 // INICIALIZAÇÃO
 // ============================================================
-window.addEventListener('DOMContentLoaded',()=>{
-  GLOBAL_MONTH=monthKeyFromDate(new Date());
+async function inicializarSistema(){
   DB.loadLocal();
-  carregarConfig();
-  // Pré-preencher usuário lembrado
+  const cfg=DB.config||{};
+  const nome=cfg.nomeIgreja||'IEQ Esplanada';
+  document.getElementById('sidebarNomeIgreja').textContent=nome;
+  document.getElementById('loginNomeIgreja').textContent=nome;
+  const logo=cfg.logo||localStorage.getItem('ieq_logo')||'';
+  if(logo)atualizarPreviewLogo(logo);
+  if(DB.despesas.length===0)DB.despesas=[...DESPESAS_PADRAO];
+  if(!DB.categorias||!DB.categorias.length)DB.categorias=[...CATEGORIAS_PADRAO];
+  DB.saveLocal();
+
+  const now=new Date();
+  GLOBAL_MONTH=monthKeyFromDate(now);
+  buildGlobalMonthOptions();
+  ['filtroEntradaMes','filtroDespesaMes','filtroCultoMes','filtroDizimistaMes'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value=GLOBAL_MONTH;
+  });
+  const lembrado=localStorage.getItem('ieq_lembrar_user');
+  if(lembrado)document.getElementById('loginUser').value=lembrado;
+
+  renderCategoriaSelects();
+  mostrarLoading(true,'Carregando dados...','Sincronizando com Google Sheets');
+  await sincronizarTudo(true);
+  mostrarLoading(false);
+  renderDashboard();
+
+  // Auto-sync a cada 5 minutos
+  setInterval(()=>sincronizarTudo(true),5*60*1000);
+}
+
+// ============================================================
+// STARTUP
+// ============================================================
+window.addEventListener('DOMContentLoaded',()=>{
+  DB.loadLocal();
+  const cfg=DB.config||{};
+  const nome=cfg.nomeIgreja||'IEQ Esplanada';
+  document.getElementById('loginNomeIgreja').textContent=nome;
+  const logo=cfg.logo||localStorage.getItem('ieq_logo')||'';
+  if(logo){
+    const li=document.getElementById('loginLogoImg');
+    const lic=document.getElementById('loginLogoIcon');
+    if(li){li.src=logo;li.style.display='block';}
+    if(lic)lic.style.display='none';
+  }
   const lembrado=localStorage.getItem('ieq_lembrar_user');
   if(lembrado){
     document.getElementById('loginUser').value=lembrado;
     document.getElementById('lembrarUser').checked=true;
   }
-  // Verificar sessão ativa
-  const s=carregarSessao();
-  if(s){
-    SESSAO=s;
-    document.getElementById('loginScreen').classList.remove('active');
-    document.getElementById('appRoot').style.display='block';
-    aplicarPermissoesUI();
-    // Verificar integridade em background ao retomar sessão
-    verificarIntegridadeAoLogin().then(()=>inicializarSistema());
+  const sessao=carregarSessao();
+  if(sessao){
+    SESSAO=sessao;
+    entrarNoSistema();
+  } else {
+    document.getElementById('loginScreen').classList.add('active');
   }
-  // Atalho de teclado Escape para fechar modais
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape')document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
-  });
 });
 </script>
 </body>
 </html>
-
   
+  
+  
+
+    
