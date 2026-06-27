@@ -1,1136 +1,539 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IEQ Esplanada — Sistema Financeiro</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  <style>
-    :root { --primary: #1e3a5f; --secondary: #c8a951; --accent: #e63946; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
-    .sidebar { background: linear-gradient(180deg, #1e3a5f 0%, #0f2240 100%); transition: left 0.3s ease; }
-    .nav-item { transition: all 0.2s; }
-    .nav-item:hover, .nav-item.active { background: rgba(200,169,81,0.2); border-left: 3px solid #c8a951; }
-    .card { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-    .badge-green { background: #d1fae5; color: #065f46; }
-    .badge-red { background: #fee2e2; color: #991b1b; }
-    .badge-blue { background: #dbeafe; color: #1e40af; }
-    .badge-yellow { background: #fef3c7; color: #92400e; }
-    .page { display: none; }
-    .page.active { display: block; }
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 16px; }
-    .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
-    .sidebar { position: fixed; left: -280px; top: 0; z-index: 999; width: 260px; height: 100vh; overflow-y: auto; }
-    .sidebar.open { left: 0; }
-    @media (min-width: 1024px) {
-      .sidebar { left: 0; }
-      #mainContent { margin-left: 260px; }
-      #menuToggle { display: none; }
-      #sidebarOverlay { display: none !important; }
-    }
-    @media (max-width: 1023px) { #mainContent { margin-left: 0 !important; } }
-    #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 998; }
-    #sidebarOverlay.active { display: block; }
-    .input-field { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; width: 100%; transition: border-color 0.2s; outline: none; }
-    .input-field:focus { border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
-    .btn-primary { background: #1e3a5f; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; }
-    .btn-primary:hover { background: #16304f; transform: translateY(-1px); }
-    .btn-secondary { background: #c8a951; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; }
-    .btn-secondary:hover { background: #b8973f; }
-    .btn-danger { background: #ef4444; color: white; padding: 8px 16px; border-radius: 6px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; }
-    .btn-whatsapp { background: #25d366; color: white; padding: 6px 14px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-whatsapp:hover { background: #1ebe5d; transform: translateY(-1px); }
-    .table-row:hover { background: #f8fafc; }
-    .sync-pulse { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-    .notification { position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 600; animation: slideIn 0.3s ease; max-width: calc(100vw - 40px); }
-    @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
-    .notif-success { background: #10b981; }
-    .notif-error { background: #ef4444; }
-    .notif-info { background: #3b82f6; }
-    .notif-warning { background: #f59e0b; }
-    .dizimista-row, .oferta-row {
-      display: grid; grid-template-columns: 1fr 100px 100px 32px;
-      gap: 6px; align-items: center; margin-bottom: 8px;
-    }
-    @media (max-width: 640px) {
-      .dizimista-row, .oferta-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
-      .dizimista-row .btn-remove, .oferta-row .btn-remove { grid-column: 2; grid-row: 2; justify-self: end; }
-    }
-    .btn-remove { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; font-size: 14px; transition: background 0.2s; flex-shrink: 0; }
-    .btn-remove:hover { background: #fecaca; }
-    .btn-add-row { background: #eff6ff; color: #1d4ed8; border: 1px dashed #93c5fd; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 4px; transition: background 0.2s; }
-    .btn-add-row:hover { background: #dbeafe; }
-    .forma-pag { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 13px; background: white; cursor: pointer; outline: none; width: 100%; }
-    .input-auto { background: #f0fdf4; font-weight: 600; cursor: default; }
-    .input-auto-pix { background: #eff6ff; font-weight: 600; cursor: default; }
-    @media (max-width: 640px) { .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } .table-scroll table { min-width: 500px; } }
-    #loadingOverlay { position: fixed; inset: 0; background: rgba(30,58,95,0.85); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-    #loadingOverlay.hidden { display: none; }
-    .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #c8a951; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #sidebarLogoWrap { width: 44px; height: 44px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; }
-    #sidebarLogoDefault { width: 44px; height: 44px; border-radius: 50%; background: #eab308; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    #sidebarLogoImg { position: absolute; inset: 0; width: 44px; height: 44px; border-radius: 50%; object-fit: contain; object-position: center; background: white; display: none; border: 2px solid rgba(255,255,255,0.3); }
-    .logo-preview-box { width: 96px; height: 96px; min-width: 64px; min-height: 64px; max-width: 25vw; max-height: 25vw; border-radius: 12px; border: 2px solid #e2e8f0; background: #f9fafb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; position: relative; }
-    #logoPreviewIcon { display: flex; }
-    #logoPreviewImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; display: none; }
-    @media (max-width: 420px) { .logo-preview-box { width: 72px; height: 72px; } }
-    .logo-upload-area { border: 2px dashed #c8a951; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fffbeb; }
-    .logo-upload-area:hover { border-color: #1e3a5f; background: #eff6ff; }
-    #loginScreen { display: none; position: fixed; inset: 0; z-index: 10000; background: linear-gradient(135deg, #1e3a5f 0%, #0f2240 50%, #1a1a2e 100%); align-items: center; justify-content: center; padding: 16px; }
-    #loginScreen.active { display: flex; }
-    .login-card { background: white; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); width: 100%; max-width: 420px; overflow: hidden; }
-    .login-header { background: linear-gradient(135deg, #1e3a5f, #2d5a8f); padding: 32px 32px 24px; text-align: center; }
-    .login-logo-wrap { width: 72px; height: 72px; background: rgba(255,255,255,0.15); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border: 3px solid rgba(200,169,81,0.6); position: relative; overflow: hidden; }
-    #loginLogoImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; padding: 4px; }
-    .login-body { padding: 28px 32px 32px; }
-    .login-input-wrap { position: relative; margin-bottom: 16px; }
-    .login-input-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 15px; pointer-events: none; }
-    .login-input { width: 100%; padding: 12px 14px 12px 42px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; outline: none; transition: all 0.2s; background: #f9fafb; color: #1f2937; box-sizing: border-box; }
-    .login-input:focus { border-color: #1e3a5f; background: white; box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
-    .login-input.erro { border-color: #ef4444; background: #fff5f5; }
-    .btn-login { width: 100%; padding: 14px; background: linear-gradient(135deg, #1e3a5f, #2d5a8f); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
-    .btn-login:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30,58,95,0.4); }
-    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-    .login-erro { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: none; align-items: center; gap: 8px; }
-    .login-erro.active { display: flex; }
-    .show-pass-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #9ca3af; padding: 4px; transition: color 0.2s; }
-    .show-pass-btn:hover { color: #1e3a5f; }
-    .perm-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: default; }
-    .perm-admin { background: #fee2e2; color: #991b1b; }
-    .perm-tesoureiro { background: #dbeafe; color: #1e40af; }
-    .perm-visualizador { background: #d1fae5; color: #065f46; }
-    .btn-logout { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 8px; border: none; background: rgba(239,68,68,0.15); color: #fca5a5; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
-    .btn-logout:hover { background: rgba(239,68,68,0.3); color: #fff; }
-    .diz-rank-1 { background: linear-gradient(135deg,#fef3c7,#fde68a); border-left: 4px solid #f59e0b; }
-    .diz-rank-2 { background: linear-gradient(135deg,#f1f5f9,#e2e8f0); border-left: 4px solid #94a3b8; }
-    .diz-rank-3 { background: linear-gradient(135deg,#fef9ef,#fde8c8); border-left: 4px solid #f97316; }
-    .login-check-msg { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 14px; font-size: 12px; margin-bottom: 12px; display: none; align-items: center; gap: 8px; }
-    .login-check-msg.active { display: flex; }
-    @media print {
-      @page { margin: 1.5cm; size: A4; }
-      body { background: white !important; font-size: 12px; color: #1f2937; }
-      .sidebar, header, #sidebarOverlay, #menuToggle, #loadingOverlay, .modal-overlay,
-      .notification, #globalMonthSelector, #syncStatus, nav, .btn-primary, .btn-secondary,
-      .btn-danger, .btn-logout, .btn-add-row, .btn-remove, .btn-whatsapp,
-      button:not(.print-keep), .no-print { display: none !important; }
-      #mainContent { margin-left: 0 !important; padding: 0 !important; }
-      .card { box-shadow: none !important; border: 1px solid #e5e7eb !important; page-break-inside: avoid; }
-      .page { display: block !important; }
-      table { font-size: 11px; width: 100%; border-collapse: collapse; }
-      th { background: #1e3a5f !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      td, th { padding: 6px 10px; border: 1px solid #d1d5db; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão Financeira IEQ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --primary:#1e3a5f;
+    --secondary:#c8a951;
+    --success:#10b981;
+    --danger:#ef4444;
+    --warning:#f59e0b;
+    --info:#3b82f6;
+    --bg:#f3f4f6;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden}
+  .app{display:flex;height:100vh}
+  .sidebar{width:260px;background:var(--primary);color:#fff;flex-shrink:0;display:flex;flex-direction:column;transition:transform .3s;z-index:50}
+  .sidebar-header{padding:20px;border-bottom:1px solid rgba(255,255,255,.1);text-align:center}
+  .sidebar-header h2{font-size:18px;color:var(--secondary)}
+  .nav-item{padding:14px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s;border-left:3px solid transparent}
+  .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);border-left-color:var(--secondary)}
+  .nav-item i{width:22px;text-align:center}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .header{height:64px;background:var(--card);border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+  .header-left{display:flex;align-items:center;gap:16px}
+  .menu-btn{display:none;background:none;border:none;font-size:20px;color:var(--primary);cursor:pointer}
+  .header-title h1{font-size:18px;color:var(--primary)}
+  .header-title p{font-size:12px;color:var(--muted)}
+  .content{flex:1;overflow:auto;padding:24px}
+  .page{display:none}
+  .page.active{display:block}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px}
+  .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .card-title{font-size:12px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:700}
+  .card-value{font-size:24px;font-weight:800;color:var(--primary)}
+  .card-sub{font-size:11px;color:var(--muted);margin-top:4px}
+  .section-title{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:16px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:none;font-weight:700;cursor:pointer;transition:.2s;font-size:13px}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:#152a45}
+  .btn-success{background:var(--success);color:#fff}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-sm{padding:6px 12px;font-size:12px}
+  .table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}
+  .table th{background:#f9fafb;padding:12px 16px;text-align:left;font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid #e5e7eb}
+  .table td{padding:12px 16px;border-bottom:1px solid #f3f4f6;font-size:13px}
+  .table tr:last-child td{border-bottom:none}
+  .table-row:hover{background:#f9fafb}
+  .badge-green{background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .badge-red{background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .badge-blue{background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .badge-yellow{background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .input-field{width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:13px;outline:none}
+  .input-field:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,58,95,.1)}
+  .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+  .label{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;display:block}
+  .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .toolbar input,.toolbar select{padding:8px 12px;border:1px solid #d1d5db;border-radius:10px;font-size:13px}
+  .dizimista-row,.oferta-row{display:grid;grid-template-columns:1fr 120px 100px 32px;gap:8px;align-items:center;margin-bottom:8px}
+  .forma-pag{padding:8px;border-radius:8px;border:1px solid #d1d5db;font-size:13px}
+  .btn-remove{width:28px;height:28px;border-radius:6px;border:none;background:#fee2e2;color:#991b1b;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;visibility:hidden;transition:.2s;padding:16px}
+  .modal-overlay.active{opacity:1;visibility:visible}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:800px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+  .modal-header{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;background:var(--primary);color:#fff}
+  .modal-header h3{font-size:16px}
+  .modal-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+  .modal-body{padding:20px;overflow:auto;flex:1}
+  .modal-footer{padding:16px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px}
+  .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200}
+  .loading-overlay.hidden{display:none}
+  .spinner{width:48px;height:48px;border:4px solid #e5e7eb;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .notification{position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:12px;color:#fff;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,.15);font-size:13px}
+  .notif-success{background:var(--success)}
+  .notif-error{background:var(--danger)}
+  .notif-warning{background:var(--warning)}
+  .notif-info{background:var(--info)}
+  .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;opacity:0;visibility:hidden;transition:.2s}
+  .sidebar-overlay.active{opacity:1;visibility:visible}
+  .config-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .cat-list{display:flex;flex-direction:column;gap:8px}
+  .month-selector{padding:8px 12px;border-radius:10px;border:1px solid #d1d5db;font-size:13px}
+  .empty-state{text-align:center;padding:40px;color:var(--muted)}
+  .empty-state i{font-size:40px;color:#e5e7eb;margin-bottom:12px}
+  @media(max-width:1024px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%)}
+    .sidebar.open{transform:translateX(0)}
+    .menu-btn{display:block}
+    .dizimista-row,.oferta-row{grid-template-columns:1fr}
+  }
+  .totals-bar{background:var(--card);border-radius:12px;padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+  .totals-bar div{text-align:center}
+  .totals-bar .label{font-size:11px;color:var(--muted)}
+  .totals-bar .value{font-size:18px;font-weight:800}
+</style>
 </head>
-  <body class="min-h-screen">
+<body>
 
-<!-- TELA DE LOGIN -->
-<div id="loginScreen" class="active">
-  <div class="login-card">
-    <div class="login-header">
-      <div class="login-logo-wrap" id="loginLogoWrap">
-        <i class="fas fa-church text-white text-2xl" id="loginLogoIcon"></i>
-        <img id="loginLogoImg" src="" alt="Logo">
-      </div>
-      <h1 class="text-white font-bold text-xl" id="loginNomeIgreja">IEQ Esplanada</h1>
-      <p class="text-blue-200 text-sm mt-1">Sistema Financeiro</p>
-    </div>
-    <div class="login-body">
-      <h2 class="text-gray-800 font-bold text-lg mb-1">Entrar</h2>
-      <p class="text-gray-500 text-sm mb-4">Informe suas credenciais de acesso</p>
-      <div class="login-check-msg" id="loginCheckMsg">
-        <i class="fas fa-sync-alt fa-spin mr-1"></i>
-        <span id="loginCheckTxt">Sincronizando dados com o servidor...</span>
-      </div>
-      <div class="login-erro" id="loginErro">
-        <i class="fas fa-exclamation-circle mr-2 flex-shrink-0"></i>
-        <span id="loginErroMsg">Usuário ou senha incorretos.</span>
-      </div>
-      <form id="formLogin" onsubmit="efetuarLogin(event)">
-        <div class="login-input-wrap">
-          <i class="fas fa-user"></i>
-          <input type="text" id="loginUser" class="login-input" placeholder="Usuário" autocomplete="username" required>
-        </div>
-        <div class="login-input-wrap" style="margin-bottom:8px">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="loginPass" class="login-input" placeholder="Senha" autocomplete="current-password" required>
-          <button type="button" class="show-pass-btn" onclick="toggleSenha()" title="Mostrar/ocultar senha">
-            <i class="fas fa-eye" id="togglePassIcon"></i>
-          </button>
-        </div>
-        <label class="flex items-center gap-2 text-sm text-gray-600 mb-5 cursor-pointer select-none">
-          <input type="checkbox" id="lembrarUser" class="rounded"> Lembrar usuário
-        </label>
-        <button type="submit" class="btn-login" id="btnLogin">
-          <i class="fas fa-sign-in-alt mr-2"></i> Entrar
-        </button>
-      </form>
-      <p class="text-center text-xs text-gray-400 mt-5">
-        <i class="fas fa-shield-alt mr-1"></i> Acesso restrito a usuários autorizados
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- SISTEMA PRINCIPAL -->
-<div id="appRoot" style="display:none">
-
-<div id="loadingOverlay">
+<div class="loading-overlay hidden" id="loadingOverlay">
   <div class="spinner"></div>
-  <p class="text-lg font-bold" id="loadingMsg">Carregando dados...</p>
-  <p class="text-sm text-blue-200 mt-1" id="loadingSubMsg">Sincronizando com Google Sheets</p>
+  <div id="loadingMsg" style="font-weight:700;color:var(--primary)">Carregando...</div>
+  <div id="loadingSubMsg" style="font-size:12px;color:var(--muted);margin-top:8px">Sincronizando...</div>
 </div>
 
-<div id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-<aside class="sidebar w-64 flex flex-col" id="sidebar">
-  <div class="p-5 border-b border-blue-800">
-    <div class="flex items-center gap-3">
-      <div id="sidebarLogoWrap">
-        <div id="sidebarLogoDefault"><i class="fas fa-church text-white text-sm"></i></div>
-        <img id="sidebarLogoImg" src="" alt="Logo da Igreja">
-      </div>
-      <div class="flex-1 min-w-0">
-        <h1 class="text-white font-bold text-sm leading-tight truncate" id="sidebarNomeIgreja">IEQ Esplanada</h1>
-        <p class="text-blue-300 text-xs">Sistema Financeiro</p>
-      </div>
-      <button onclick="toggleSidebar()" class="ml-auto text-blue-300 hover:text-white lg:hidden flex-shrink-0">
-        <i class="fas fa-times text-lg"></i>
-      </button>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2><i class="fas fa-church"></i> IEQ Esplanada</h2>
+      <p style="font-size:11px;opacity:.7">Gestão Financeira</p>
     </div>
-  </div>
-  <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-    <button onclick="showPage('dashboard')" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-dashboard"><i class="fas fa-chart-pie w-4"></i> Dashboard</button>
-    <button onclick="showPage('culto')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-culto"><i class="fas fa-bible w-4"></i> Relatório de Culto</button>
-    <button onclick="showPage('entradas')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-entradas"><i class="fas fa-arrow-down w-4"></i> Entradas</button>
-    <button onclick="showPage('despesas')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-despesas"><i class="fas fa-arrow-up w-4"></i> Despesas</button>
-    <button onclick="showPage('distribuicoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-distribuicoes"><i class="fas fa-share-alt w-4"></i> Distribuições</button>
-    <button onclick="showPage('dizimistas')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-dizimistas"><i class="fas fa-hand-holding-usd w-4"></i> Rel. Dizimistas</button>
-    <button onclick="showPage('relatorios')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-relatorios"><i class="fas fa-file-alt w-4"></i> Relatórios</button>
-    <button onclick="showPage('historico')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-historico"><i class="fas fa-history w-4"></i> Histórico</button>
-    <button onclick="showPage('configuracoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-configuracoes"><i class="fas fa-cog w-4"></i> Configurações</button>
-  </nav>
-  <div class="p-4 border-t border-blue-800">
-    <div class="flex items-center gap-3 mb-2">
-      <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <i class="fas fa-user text-white text-xs"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-white text-xs font-semibold truncate" id="sidebarUserNome">—</p>
-        <div id="sidebarUserPerm"></div>
-      </div>
-    </div>
-    <button onclick="logout()" class="btn-logout">
-      <i class="fas fa-sign-out-alt"></i> Sair do sistema
-    </button>
-  </div>
-</aside>
+    <nav style="flex:1;padding:12px 0">
+      <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
+      <div class="nav-item" id="nav-culto" onclick="showPage('culto')"><i class="fas fa-bible"></i> Culto</div>
+      <div class="nav-item" id="nav-entradas" onclick="showPage('entradas')"><i class="fas fa-arrow-down"></i> Entradas</div>
+      <div class="nav-item" id="nav-despesas" onclick="showPage('despesas')"><i class="fas fa-arrow-up"></i> Despesas</div>
+      <div class="nav-item" id="nav-distribuicoes" onclick="showPage('distribuicoes')"><i class="fas fa-hand-holding-usd"></i> Distribuições</div>
+      <div class="nav-item" id="nav-dizimistas" onclick="showPage('dizimistas')"><i class="fas fa-users"></i> Dizimistas</div>
+      <div class="nav-item" id="nav-relatorios" onclick="showPage('relatorios')"><i class="fas fa-file-alt"></i> Relatórios</div>
+      <div class="nav-item" id="nav-historico" onclick="showPage('historico')"><i class="fas fa-history"></i> Histórico</div>
+      <div class="nav-item" id="nav-configuracoes" onclick="showPage('configuracoes')"><i class="fas fa-cog"></i> Configurações</div>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <main class="min-h-screen flex flex-col" id="mainContent">
-  <header class="bg-white shadow-sm sticky top-0 z-40 px-4 py-3 no-print">
-    <div class="flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <button id="menuToggle" onclick="toggleSidebar()" class="text-gray-500 hover:text-gray-700 p-1">
-          <i class="fas fa-bars text-xl"></i>
-        </button>
-        <div>
-          <h2 class="text-gray-800 font-bold text-base leading-tight" id="pageTitle">Dashboard</h2>
-          <p class="text-gray-500 text-xs hidden sm:block" id="pageSubtitle">Visão geral financeira</p>
+  <main class="main">
+    <header class="header">
+      <div class="header-left">
+        <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <div class="header-title">
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Visão geral</p>
         </div>
       </div>
-      <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-        <div class="hidden sm:flex items-center gap-2 text-sm" id="syncStatus">
-          <div class="w-2 h-2 bg-green-400 rounded-full sync-pulse"></div>
-          <span class="text-gray-600 text-xs">Sincronizado</span>
-        </div>
-        <button onclick="sincronizarTudo()" title="Sincronizar" class="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition text-sm">
-  <i class="fas fa-sync-alt"></i>
-</button>
-<button onclick="sincronizarLimpandoExcluidos()" title="Limpar registros excluídos em outro dispositivo" class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition text-sm" style="font-size:11px">
-  <i class="fas fa-broom"></i>
-</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <select id="globalMonthSelector" class="month-selector" onchange="changeGlobalMonth()">
+          <option value="">Mês atual</option>
+        </select>
+        <button class="btn btn-sm btn-primary" onclick="sincronizarTudo()" title="Sincronizar"><i class="fas fa-sync"></i> Sincronizar</button>
+      </div>
+    </header>
 
-        <select class="input-field text-xs sm:text-sm" style="width:auto;min-width:135px;max-width:170px"
-                id="globalMonthSelector" onchange="changeGlobalMonth()"></select>
-      </div>
-    </div>
-  </header>
+    <div class="content">
 
-  <div class="p-3 sm:p-6 flex-1">
-      <!-- ===== DASHBOARD ===== -->
-    <div class="page active" id="page-dashboard">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div class="card p-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-gray-500 text-xs font-medium">Saldo Anterior</span>
-            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-wallet text-blue-600 text-xs"></i></div>
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="grid">
+          <div class="card"><div class="card-title">Saldo Anterior</div><div class="card-value" id="kpi-saldo-ant">R$ 0,00</div><div class="card-sub" id="kpi-saldo-ant-sub">Calculado</div></div>
+          <div class="card"><div class="card-title">Entradas</div><div class="card-value text-green-600" id="kpi-entradas">R$ 0,00</div><div class="card-sub" id="kpi-entradas-var">—</div></div>
+          <div class="card"><div class="card-title">Saídas</div><div class="card-value text-red-600" id="kpi-saidas">R$ 0,00</div><div class="card-sub" id="kpi-saidas-var">—</div></div>
+          <div class="card"><div class="card-title">Saldo Final</div><div class="card-value" id="kpi-saldo">R$ 0,00</div><div class="card-sub" id="kpi-saldo-sub">—</div></div>
+          <div class="card"><div class="card-title">Santa Ceia</div><div class="card-value" id="kpi-presentes">—</div><div class="card-sub" id="kpi-presentes-info">1º domingo</div></div>
+          <div class="card"><div class="card-title">Cultos no Mês</div><div class="card-value" id="kpi-cultos">0</div></div>
+          <div class="card"><div class="card-title">Média por Pessoa</div><div class="card-value" id="kpi-media-pessoa">R$ 0,00</div></div>
+          <div class="card"><div class="card-title">Missões</div><div class="card-value" id="kpi-missoes-mes">R$ 0,00</div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="section-title">Distribuições Obrigatórias</div>
+          <div id="dashDistribuicoes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <div class="card">
+            <div class="section-title">Evolução Mensal</div>
+            <canvas id="chartEvolucao"></canvas>
           </div>
-          <p class="text-lg sm:text-2xl font-bold text-gray-800" id="kpi-saldo-ant">R$ 0,00</p>
-          <p class="text-xs text-gray-500 mt-1" id="kpi-saldo-ant-sub">—</p>
-        </div>
-        <div class="card p-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-gray-500 text-xs font-medium">Total Entradas</span>
-            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-arrow-down text-green-600 text-xs"></i></div>
-          </div>
-          <p class="text-lg sm:text-2xl font-bold text-green-600" id="kpi-entradas">R$ 0,00</p>
-          <p class="text-xs text-green-500 mt-1" id="kpi-entradas-var">—</p>
-        </div>
-        <div class="card p-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-gray-500 text-xs font-medium">Total Saídas</span>
-            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center"><i class="fas fa-arrow-up text-red-600 text-xs"></i></div>
-          </div>
-          <p class="text-lg sm:text-2xl font-bold text-red-600" id="kpi-saidas">R$ 0,00</p>
-          <p class="text-xs text-red-500 mt-1" id="kpi-saidas-var">—</p>
-        </div>
-        <div class="card p-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-gray-500 text-xs font-medium">Saldo Final</span>
-            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-coins text-yellow-600 text-xs"></i></div>
-          </div>
-          <p class="text-lg sm:text-2xl font-bold text-yellow-600" id="kpi-saldo">R$ 0,00</p>
-          <p class="text-xs text-gray-500 mt-1" id="kpi-saldo-sub">—</p>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-line text-blue-600"></i> Evolução Financeira 2026</h3>
-          <canvas id="chartEvolucao"></canvas>
-        </div>
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-pie text-yellow-600"></i> Despesas por Categoria (mês)</h3>
-          <canvas id="chartDespesas"></canvas>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div class="card p-4 lg:col-span-2">
-          <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-share-alt text-purple-600"></i> Distribuições do Mês</h3>
-          <div class="space-y-3" id="dashDistribuicoes"></div>
-        </div>
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-users text-teal-600"></i> Métricas de Culto (mês)</h3>
-          <div class="space-y-3">
-            <div class="text-center p-3 bg-blue-50 rounded-xl">
-              <p class="text-3xl font-bold text-blue-600" id="kpi-presentes">0</p>
-              <p class="text-sm text-gray-600 mt-1">Presentes na Ceia</p>
-              <p class="text-xs text-blue-400 mt-0.5" id="kpi-presentes-info">1º domingo do mês</p>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div class="text-center p-2 bg-green-50 rounded-lg">
-                <p class="text-xl font-bold text-green-600" id="kpi-cultos">0</p>
-                <p class="text-xs text-gray-600">Cultos no mês</p>
-              </div>
-              <div class="text-center p-2 bg-yellow-50 rounded-lg">
-                <p class="text-xl font-bold text-yellow-600" id="kpi-media-pessoa">R$ 0,00</p>
-                <p class="text-xs text-gray-600">Média/Pessoa</p>
-              </div>
-            </div>
-            <div class="text-center p-3 bg-teal-50 rounded-xl border border-teal-200">
-              <p class="text-2xl font-bold text-teal-600" id="kpi-missoes-mes">R$ 0,00</p>
-              <p class="text-sm text-gray-600 mt-1">Oferta de Missões (mês)</p>
-            </div>
+          <div class="card">
+            <div class="section-title">Despesas por Categoria</div>
+            <canvas id="chartDespesas"></canvas>
           </div>
         </div>
-      </div>
-      <div class="card p-4">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-gray-800 flex items-center gap-2 text-sm"><i class="fas fa-list text-gray-600"></i> Últimas Movimentações</h3>
-          <button class="text-blue-600 text-sm font-medium hover:underline" onclick="showPage('despesas')">Ver saídas</button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:520px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b">
-              <th class="pb-2 font-semibold">Data</th><th class="pb-2 font-semibold">Descrição</th>
-              <th class="pb-2 font-semibold">Tipo</th><th class="pb-2 font-semibold text-right">Valor</th>
-            </tr></thead>
+
+        <div class="card" style="margin-top:20px">
+          <div class="section-title">Últimas Movimentações</div>
+          <table class="table">
+            <thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th style="text-align:right">Valor</th></tr></thead>
             <tbody id="tabelaMovimentacoes"></tbody>
           </table>
         </div>
       </div>
-    </div>
 
-    <!-- ===== RELATÓRIO DE CULTO ===== -->
-    <div class="page" id="page-culto">
-      <div class="card p-4 mb-4">
-        <div class="flex flex-col sm:flex-row gap-3">
-          <div class="flex items-center gap-2 flex-1">
-            <i class="fas fa-search text-gray-400"></i>
-            <input type="text" id="buscaCulto" placeholder="Buscar culto..." class="input-field text-sm" oninput="renderCultos()">
-          </div>
-          <div class="flex gap-2">
-            <input type="month" id="filtroCultoMes" class="input-field text-sm flex-1" onchange="renderCultos()">
-            <button class="btn-primary flex items-center gap-2 text-sm whitespace-nowrap" id="btnNovoCulto" onclick="openNovoCulto()">
-              <i class="fas fa-plus"></i><span class="hidden sm:inline">Novo Culto</span><span class="sm:hidden">Novo</span>
-            </button>
+      <!-- CULTOS -->
+      <div class="page" id="page-culto">
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="openNovoCulto()"><i class="fas fa-plus"></i> Novo REFC</button>
+          <div style="display:flex;gap:8px">
+            <input type="month" id="filtroCultoMes">
+            <input type="text" id="buscaCulto" placeholder="Buscar culto..." oninput="renderCultos()">
           </div>
         </div>
-      </div>
-      <div class="card p-4 mb-4">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-gray-800 text-sm">Cultos Registrados</h3>
-          <span class="text-sm text-gray-500" id="qtdCultosLabel">0 cultos</span>
+        <div class="totals-bar">
+          <div><div class="label">Dízimos</div><div class="value text-green-600" id="tot-dizimos">R$ 0,00</div></div>
+          <div><div class="label">Ofertas</div><div class="value text-blue-600" id="tot-ofertas">R$ 0,00</div></div>
+          <div><div class="label">Missões</div><div class="value text-yellow-600" id="tot-missoes">R$ 0,00</div></div>
+          <div><div class="label">Total Arrecadado</div><div class="value text-purple-700" id="tot-cultos-total">R$ 0,00</div></div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:780px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-              <th class="p-2 font-semibold">Data</th>
-              <th class="p-2 font-semibold">Tipo</th>
-              <th class="p-2 font-semibold hidden md:table-cell">Pregador</th>
-              <th class="p-2 font-semibold text-center">Pres.</th>
-              <th class="p-2 font-semibold">Dízimos</th>
-              <th class="p-2 font-semibold">Ofertas</th>
-              <th class="p-2 font-semibold">Total</th>
-              <th class="p-2 font-semibold">Ações</th>
-            </tr></thead>
-            <tbody id="tabelaCultos">
-              <tr><td colspan="8" class="py-8 text-center text-gray-400">
-                <i class="fas fa-bible text-4xl mb-3 block text-gray-300"></i>Nenhum culto registrado ainda
-              </td></tr>
-            </tbody>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="section-title" style="margin:0">Relatórios de Culto</div>
+            <span id="qtdCultosLabel" style="font-size:12px;color:var(--muted)">0 cultos</span>
+          </div>
+          <table class="table">
+            <thead><tr><th>Data</th><th>Tipo</th><th class="hidden md:table-cell">Pregador</th><th class="text-center">Pres.</th><th>Dízimos</th><th>Ofertas</th><th>Total</th><th>Ações</th></tr></thead>
+            <tbody id="tabelaCultos"></tbody>
           </table>
         </div>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="card p-4 text-center border-t-4 border-blue-500"><p class="text-xl font-bold text-blue-600" id="tot-dizimos">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Dízimos</p></div>
-        <div class="card p-4 text-center border-t-4 border-green-500"><p class="text-xl font-bold text-green-600" id="tot-ofertas">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Ofertas</p></div>
-        <div class="card p-4 text-center border-t-4 border-yellow-500"><p class="text-xl font-bold text-yellow-600" id="tot-missoes">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Missões (acumulado)</p></div>
-        <div class="card p-4 text-center border-t-4 border-purple-500"><p class="text-xl font-bold text-purple-600" id="tot-cultos-total">R$ 0,00</p><p class="text-xs text-gray-500 mt-1">Total Díz+Ofertas</p></div>
-      </div>
-    </div>
 
-    <!-- ===== ENTRADAS ===== -->
-    <div class="page" id="page-entradas">
-      <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p class="text-gray-500 text-sm">Entradas alimentadas automaticamente pelos relatórios de culto</p>
-        <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" id="btnNovaEntrada" onclick="openModal('modalNovaEntrada')"><i class="fas fa-plus"></i> Entrada Manual</button>
-      </div>
-      <div class="card p-4 mb-4">
-        <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-          <div class="flex items-center gap-2"><i class="fas fa-calendar text-gray-400"></i><label class="text-sm text-gray-600 font-medium whitespace-nowrap">Filtrar por Mês:</label></div>
-          <input type="month" id="filtroEntradaMes" class="input-field text-sm sm:w-48" onchange="renderEntradas()">
-          <button class="btn-secondary text-sm" onclick="limparFiltroEntradas()"><i class="fas fa-times mr-1"></i> Todos</button>
-          <span class="text-sm text-gray-500 flex items-center sm:ml-auto">Total: <strong class="ml-1 text-green-600" id="totalEntradasFiltro">R$ 0,00</strong></span>
+      <!-- ENTRADAS -->
+      <div class="page" id="page-entradas">
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="openModal('modalNovaEntrada')"><i class="fas fa-plus"></i> Nova Entrada</button>
+          <div style="display:flex;gap:8px">
+            <input type="month" id="filtroEntradaMes">
+            <input type="text" id="buscaEntrada" placeholder="Buscar..." oninput="renderEntradas()">
+          </div>
         </div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <div class="card p-4 border-l-4 border-green-500"><p class="text-xs text-gray-500">Entradas do Mês</p><p class="text-xl font-bold text-green-600" id="kpiEntradasMes">R$ 0,00</p></div>
-        <div class="card p-4 border-l-4 border-blue-500"><p class="text-xs text-gray-500">Saldo (no mês)</p><p class="text-xl font-bold text-blue-600" id="kpiEntradasSaldoMes">R$ 0,00</p></div>
-        <div class="card p-4 border-l-4 border-purple-500"><p class="text-xs text-gray-500">Total Registros</p><p class="text-xl font-bold text-purple-600" id="kpiQtdEntradas">0</p></div>
-      </div>
-      <div class="card p-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-          <h3 class="font-bold text-gray-800 text-sm">Registro de Entradas</h3>
-          <input type="text" id="buscaEntrada" placeholder="Buscar descrição..." class="input-field text-sm sm:w-48" oninput="renderEntradas()">
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:450px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b">
-              <th class="pb-2 font-semibold">Data</th><th class="pb-2 font-semibold">Descrição</th>
-              <th class="pb-2 font-semibold hidden sm:table-cell">Origem</th>
-              <th class="pb-2 font-semibold text-right">Valor</th><th class="pb-2 font-semibold">Ações</th>
-            </tr></thead>
-            <tbody id="tabelaEntradas"><tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Registre cultos para ver as entradas automaticamente</td></tr></tbody>
+        <div class="card">
+          <div class="section-title">Entradas do Mês</div>
+          <table class="table">
+            <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
+            <tbody id="tabelaEntradas"></tbody>
           </table>
         </div>
       </div>
-    </div>
-    <!-- ===== DESPESAS ===== -->
-    <div class="page" id="page-despesas">
-      <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p class="text-gray-500 text-sm">Gerencie todas as saídas financeiras do mês</p>
-        <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" id="btnNovaDespesa" onclick="openModal('modalNovaDespesa')"><i class="fas fa-plus"></i> Nova Despesa</button>
-      </div>
-      <div class="card p-4 mb-4">
-        <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
-          <div class="flex items-center gap-2"><i class="fas fa-calendar text-gray-400 text-sm"></i><label class="text-sm text-gray-600 font-medium whitespace-nowrap">Mês:</label></div>
-          <input type="month" id="filtroDespesaMes" class="input-field text-sm sm:w-44" onchange="filtrarDespesas()">
-          <select class="input-field text-sm sm:w-auto" id="filtroCat" onchange="filtrarDespesas()">
-            <option value="">Todas as categorias</option>
-          </select>
-          <div class="flex gap-2 items-center">
-            <button class="btn-secondary text-sm" onclick="limparFiltrosDespesas()"><i class="fas fa-times mr-1"></i> Todos</button>
-            <span class="text-sm text-gray-500 flex items-center ml-auto sm:ml-2">Total: <strong class="ml-1" id="totalDespesasFiltro">R$ 0,00</strong></span>
+
+      <!-- DESPESAS -->
+      <div class="page" id="page-despesas">
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="openModal('modalNovaDespesa')"><i class="fas fa-plus"></i> Nova Despesa</button>
+          <div style="display:flex;gap:8px">
+            <input type="month" id="filtroDespesaMes">
+            <select id="filtroCat" onchange="filtrarDespesas()"><option value="">Todas as categorias</option></select>
+            <input type="text" id="buscaDespesa" placeholder="Buscar..." oninput="filtrarDespesas()">
           </div>
         </div>
-      </div>
-      <div class="card p-4">
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:500px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b">
-              <th class="pb-2 font-semibold">Categoria</th>
-              <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
-              <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
-              <th class="pb-2 font-semibold text-right">Valor</th>
-              <th class="pb-2 font-semibold text-center">Ações</th>
-            </tr></thead>
+        <div class="card">
+          <div class="section-title">Despesas do Mês</div>
+          <table class="table">
+            <thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
             <tbody id="tabelaDespesas"></tbody>
-            <tfoot><tr class="border-t-2">
-              <td colspan="3" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
-              <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
-              <td></td>
-            </tr></tfoot>
           </table>
         </div>
       </div>
-    </div>
 
-    <!-- ===== DISTRIBUIÇÕES ===== -->
-    <div class="page" id="page-distribuicoes">
-      <div class="card p-4 mb-4">
-        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-calculator text-blue-600"></i> Cálculo de Distribuições — <span id="distMesTitulo">—</span></h3>
-        <div class="bg-blue-50 rounded-xl p-3 mb-4">
-          <p class="text-sm text-blue-700">Base de cálculo (entradas): <strong id="distBaseLabel">R$ 0,00</strong></p>
-          <p class="text-sm text-teal-700 mt-1">Total missões do mês: <strong id="distMissoesLabel">R$ 0,00</strong></p>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="distCards"></div>
-        <div class="mt-4 p-3 bg-gray-50 rounded-xl flex justify-between items-center">
-          <span class="font-bold text-gray-700">TOTAL DISTRIBUÍDO</span>
-          <span class="font-bold text-gray-800 text-xl" id="distTotalDistribuido">R$ 0,00</span>
+      <!-- DISTRIBUIÇÕES -->
+      <div class="page" id="page-distribuicoes">
+        <div class="card">
+          <div class="section-title">Distribuições do Mês</div>
+          <div id="distribuicoesContent"></div>
         </div>
       </div>
-      <div class="card p-4">
-        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-calculator text-green-600"></i> Calculadora de Distribuição</h3>
-        <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-4">
-          <div class="flex-1"><label class="text-sm text-gray-600 mb-1 block">Base de Cálculo (R$)</label><input type="number" id="calcBase" class="input-field" value="0" oninput="calcularDistribuicoes()"></div>
-          <button class="btn-secondary sm:w-auto" onclick="calcularDistribuicoes()">Calcular</button>
-        </div>
-        <div id="resultadoCalculo" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm"></div>
-      </div>
-    </div>
 
-    <!-- ===== RELATÓRIO DE DIZIMISTAS ===== -->
-    <div class="page" id="page-dizimistas">
-      <div class="card p-4 mb-4">
-        <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-wrap">
-          <div class="flex items-center gap-2">
-            <i class="fas fa-calendar text-gray-400"></i>
-            <label class="text-sm text-gray-600 font-medium whitespace-nowrap">Mês:</label>
-          </div>
-          <input type="month" id="filtroDizimistaMes" class="input-field text-sm sm:w-44" onchange="renderRelatorioDizimistas()">
-          <input type="text" id="buscaDizimista" placeholder="Buscar dizimista..." class="input-field text-sm sm:w-48" oninput="renderRelatorioDizimistas()">
-          <button class="btn-secondary text-sm" onclick="limparFiltroDizimistas()"><i class="fas fa-times mr-1"></i> Todos</button>
-          <div class="flex gap-2 sm:ml-auto">
-            <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-            <button class="btn-primary text-sm flex items-center gap-2" onclick="imprimirRelatorioDizimistas()"><i class="fas fa-print"></i> Imprimir/PDF</button>
-            <button class="btn-secondary text-sm flex items-center gap-2" onclick="exportarDizimistasCSV()"><i class="fas fa-file-csv"></i> CSV</button>
-          </div>
+      <!-- DIZIMISTAS -->
+      <div class="page" id="page-dizimistas">
+        <div class="toolbar">
+          <input type="month" id="filtroDizimistaMes">
+          <button class="btn btn-primary" onclick="compartilharDizimistasWhatsApp()"><i class="fab fa-whatsapp"></i> Compartilhar</button>
+        </div>
+        <div class="card">
+          <div class="section-title">Relatório de Dizimistas</div>
+          <div id="dizimistasContent"></div>
         </div>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <div class="card p-4 border-t-4 border-blue-500"><p class="text-xs text-gray-500">Total Arrecadado</p><p class="text-xl font-bold text-blue-600" id="kpiDizTotalArrecadado">R$ 0,00</p></div>
-        <div class="card p-4 border-t-4 border-green-500"><p class="text-xs text-gray-500">Dizimistas Únicos</p><p class="text-xl font-bold text-green-600" id="kpiDizUnicos">0</p></div>
-        <div class="card p-4 border-t-4 border-yellow-500"><p class="text-xs text-gray-500">Média por Dizimista</p><p class="text-xl font-bold text-yellow-600" id="kpiDizMedia">R$ 0,00</p></div>
-        <div class="card p-4 border-t-4 border-purple-500"><p class="text-xs text-gray-500">Via PIX</p><p class="text-xl font-bold text-purple-600" id="kpiDizPix">R$ 0,00</p></div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-trophy text-yellow-500"></i> Top Dizimistas</h3>
-          <div id="dizimistasRanking" class="space-y-2"><p class="text-gray-400 text-sm text-center py-4">Nenhum dado</p></div>
-        </div>
-        <div class="card p-4 lg:col-span-2">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-pie text-blue-600"></i> Participação por Dizimista</h3>
-          <canvas id="chartDizimistas" style="max-height:220px"></canvas>
-        </div>
-      </div>
-      <div class="card p-4 mb-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-bold text-gray-800 text-sm">Detalhamento por Dizimista</h3>
-          <span class="text-xs text-gray-500" id="labelPeriodoDiz">—</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:600px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-              <th class="p-2 font-semibold">#</th>
-              <th class="p-2 font-semibold">Nome</th>
-              <th class="p-2 font-semibold text-right">Total</th>
-              <th class="p-2 font-semibold text-center">Qtd. Cultos</th>
-              <th class="p-2 font-semibold text-center">Forma</th>
-              <th class="p-2 font-semibold text-right">Maior Dízimo</th>
-              <th class="p-2 font-semibold">Último Culto</th>
-            </tr></thead>
-            <tbody id="tabelaDizimistasRelatorio">
-              <tr><td colspan="7" class="py-8 text-center text-gray-400 text-sm">Selecione um mês para visualizar</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card p-4">
-        <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-list-alt text-gray-600"></i> Histórico por Culto</h3>
-        <div id="historicoCultosDiz" class="space-y-3"><p class="text-gray-400 text-sm text-center py-4">Nenhum dado no período</p></div>
-      </div>
-    </div>
 
-    <!-- ===== RELATÓRIOS ===== -->
-    <div class="page" id="page-relatorios">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-file-pdf text-red-600"></i> Relatório Mensal</h3>
-          <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês com dados reais</p>
-          <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
-          <button class="btn-primary w-full text-sm" onclick="gerarRelatorio()"><i class="fas fa-print mr-2"></i> Imprimir Relatório</button>
-<button class="btn-whatsapp w-full text-sm mt-2" onclick="whatsAppRelatorioMensal()"><i class="fab fa-whatsapp mr-2"></i> Enviar por WhatsApp</button>
-
-        </div>
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
-          <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
-          <div class="grid grid-cols-2 gap-2 mb-3">
-            <input type="month" class="input-field text-sm" id="relCultoIni">
-            <input type="month" class="input-field text-sm" id="relCultoFim">
-          </div>
-          <button class="btn-secondary w-full text-sm" onclick="exportarCultosExcelFake()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
-        </div>
-        <div class="card p-4 md:col-span-2">
-          <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-chart-bar text-purple-600"></i> Análise Comparativa 2026</h3>
-          <canvas id="chartComparativo"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== HISTÓRICO ===== -->
-    <div class="page" id="page-historico">
-      <div class="card p-4 mb-4">
-        <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:600px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-              <th class="p-2 font-semibold">Mês</th><th class="p-2 font-semibold">Saldo Ant.</th>
-              <th class="p-2 font-semibold">Entradas</th><th class="p-2 font-semibold">Saídas</th>
-              <th class="p-2 font-semibold">Saldo Final</th><th class="p-2 font-semibold">Ceia</th>
-              <th class="p-2 font-semibold">Status</th>
-            </tr></thead>
-            <tbody id="tabelaHistorico"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card p-4"><h3 class="font-bold text-gray-800 mb-4 text-sm">Evolução de Saldos</h3><canvas id="chartSaldos"></canvas></div>
-    </div>
-
-    <!-- ===== CONFIGURAÇÕES ===== -->
-    <div class="page" id="page-configuracoes">
-      <div class="max-w-2xl mx-auto space-y-5">
-        <div class="card p-5">
-          <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-image text-yellow-500"></i> Logo da Igreja</h3>
-          <p class="text-xs text-gray-400 mb-4">A logo será exibida na sidebar e nos relatórios.</p>
-          <div class="flex items-center gap-4 mb-4">
-            <div class="logo-preview-box" id="logoPreviewWrap">
-              <i class="fas fa-church text-gray-300 text-3xl" id="logoPreviewIcon"></i>
-              <img id="logoPreviewImg" src="" alt="Logo">
-            </div>
+      <!-- RELATÓRIOS -->
+      <div class="page" id="page-relatorios">
+        <div class="card">
+          <div class="section-title">Relatórios Mensais</div>
+          <div class="form-row">
             <div>
-              <p class="text-sm font-semibold text-gray-700" id="logoPreviewLabel">Nenhuma logo configurada</p>
-              <p class="text-xs text-gray-400">JPG, PNG ou SVG — Máx. 2MB</p>
+              <label class="label">Mês</label>
+              <input type="month" id="relatorioMes" class="input-field">
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px">
+              <button class="btn btn-primary" onclick="gerarRelatorio()"><i class="fas fa-file-alt"></i> Gerar</button>
+              <button class="btn btn-success" onclick="imprimirRelatorioMensal()"><i class="fas fa-print"></i> Imprimir</button>
+              <button class="btn btn-success" onclick="whatsAppRelatorioMensal()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
             </div>
           </div>
-          <div class="logo-upload-area" id="logoUploadArea"
-               onclick="document.getElementById('logoFileInput').click()"
-               ondragover="event.preventDefault()" ondrop="handleLogoDrop(event)">
-            <i class="fas fa-cloud-upload-alt text-yellow-500 text-3xl mb-2"></i>
-            <p class="text-sm font-semibold text-gray-700">Clique ou arraste a imagem aqui</p>
-          </div>
-          <input type="file" id="logoFileInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
-          <div class="flex gap-3 mt-4">
-            <button class="btn-primary flex-1 text-sm" onclick="salvarLogo()"><i class="fas fa-save mr-2"></i> Salvar Logo</button>
-            <button class="btn-danger text-sm px-4" onclick="removerLogo()" id="btnRemoverLogo" style="display:none"><i class="fas fa-trash mr-1"></i> Remover</button>
-          </div>
-        </div>
-        <div class="card p-5">
-          <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Informações da Igreja</h3>
-          <p class="text-xs text-gray-400 mb-4">Aparecerá nos relatórios e no cabeçalho.</p>
-          <div class="space-y-3">
-            <div><label class="text-sm text-gray-600 mb-1 block">Nome da Igreja</label><input type="text" id="cfg-nome-igreja" class="input-field text-sm" value="IEQ Esplanada"></div>
-            <div><label class="text-sm text-gray-600 mb-1 block">Endereço</label><input type="text" id="cfg-endereco" class="input-field text-sm"></div>
-            <div class="grid grid-cols-2 gap-3">
-              <div><label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label><input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão"></div>
-              <div><label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label><input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão"></div>
-            </div>
-            <div><label class="text-sm text-gray-600 mb-1 block"><i class="fab fa-whatsapp text-green-500 mr-1"></i> WhatsApp da Igreja (com DDD)</label>
-              <input type="tel" id="cfg-whatsapp" class="input-field text-sm" placeholder="Ex: 16999990000" maxlength="15">
-              <p class="text-xs text-gray-400 mt-1">Usado para enviar relatórios pelo WhatsApp</p>
-            </div>
-          </div>
-          <button class="btn-primary w-full mt-4 text-sm" onclick="salvarConfiguracoes()"><i class="fas fa-save mr-2"></i> Salvar Configurações</button>
-        </div>
-        <div class="card p-5" id="cardCategorias">
-          <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-tags text-orange-500"></i> Categorias de Despesas</h3>
-          <p class="text-xs text-gray-400 mb-4">Gerencie as categorias usadas nos lançamentos.</p>
-          <div class="mb-3 space-y-1.5 max-h-64 overflow-y-auto" id="listaCategoriasCfg"></div>
-          <div class="flex gap-2 mt-3">
-            <input type="text" id="novaCategoriaInput" class="input-field text-sm flex-1" placeholder="Nome da nova categoria...">
-            <button class="btn-primary text-sm px-4 whitespace-nowrap" onclick="adicionarCategoria()"><i class="fas fa-plus mr-1"></i> Adicionar</button>
-          </div>
-          <button class="w-full mt-3 py-2 border-2 border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50 text-xs font-semibold transition" onclick="restaurarCategoriasPadrao()">
-            <i class="fas fa-undo mr-1"></i> Restaurar Categorias Padrão
-          </button>
-        </div>
-        <div class="card p-5" id="cardUsuarios">
-          <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-users-cog text-purple-600"></i> Usuários do Sistema</h3>
-          <p class="text-xs text-gray-400 mb-4">Gerencie os acessos na aba <strong>usuarios</strong> da planilha.</p>
-          <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-2">
-            <p><span class="font-semibold text-red-600">🔴 admin</span> — Acesso total</p>
-            <p><span class="font-semibold text-blue-600">🔵 tesoureiro</span> — Pode lançar, editar e excluir</p>
-            <p><span class="font-semibold text-green-600">🟢 visualizador</span> — Apenas visualização</p>
-          </div>
-        </div>
-        <div class="card p-5">
-          <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-database text-purple-600"></i> Dados do Sistema</h3>
-          <p class="text-xs text-gray-400 mb-4">Gerencie o cache local do sistema.</p>
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-blue-600" id="cfgQtdCultos">0</p><p class="text-xs text-gray-500">Cultos</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-red-600" id="cfgQtdDespesas">0</p><p class="text-xs text-gray-500">Despesas</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-green-600" id="cfgQtdEntradas">0</p><p class="text-xs text-gray-500">Entradas</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-yellow-600" id="cfgVersao">v4.3</p><p class="text-xs text-gray-500">Versão</p></div>
-          </div>
-          <button class="w-full py-2 border-2 border-red-200 text-red-500 rounded-lg hover:bg-red-50 text-sm font-semibold transition" onclick="limparCacheLocal()">
-            <i class="fas fa-trash mr-2"></i> Limpar Cache Local
-          </button>
+          <div id="relatorioMensalContent" style="margin-top:20px"></div>
         </div>
       </div>
-    </div>
 
-  </div><!-- fim .p-3 -->
-</main>
-<!-- MODAL: NOVO/EDITAR CULTO -->
-<div class="modal-overlay" id="modalNovoCulto">
-  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
-    <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
-      <h3 class="text-white font-bold text-base flex items-center gap-2"><i class="fas fa-bible"></i><span id="cultoModalTitulo">Novo Relatório de Culto (REFC)</span></h3>
-      <button onclick="closeModal('modalNovoCulto')" class="text-white hover:text-blue-200"><i class="fas fa-times text-xl"></i></button>
+      <!-- HISTÓRICO -->
+      <div class="page" id="page-historico">
+        <div class="card">
+          <div class="section-title">Histórico Anual</div>
+          <div id="historicoContent"></div>
+        </div>
+      </div>
+
+      <!-- CONFIGURAÇÕES -->
+      <div class="page" id="page-configuracoes">
+        <div class="config-grid">
+          <div class="card">
+            <div class="section-title">Dados da Igreja</div>
+            <div class="form-row">
+              <div><label class="label">Nome da Igreja</label><input type="text" id="cfg-nome" class="input-field"></div>
+              <div><label class="label">Endereço</label><input type="text" id="cfg-endereco" class="input-field"></div>
+            </div>
+            <div class="form-row">
+              <div><label class="label">Pastor</label><input type="text" id="cfg-pastor" class="input-field"></div>
+              <div><label class="label">Tesoureiro</label><input type="text" id="cfg-tesoureiro" class="input-field"></div>
+              <div><label class="label">WhatsApp</label><input type="text" id="cfg-whatsapp" class="input-field"></div>
+            </div>
+            <div class="actions"><button class="btn btn-primary" onclick="salvarConfiguracoes()"><i class="fas fa-save"></i> Salvar</button></div>
+          </div>
+          <div class="card">
+            <div class="section-title">Categorias de Despesa</div>
+            <div class="form-row" style="grid-template-columns:1fr auto">
+              <input type="text" id="novaCategoriaInput" class="input-field" placeholder="Nova categoria">
+              <button class="btn btn-primary" onclick="adicionarCategoria()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="cat-list" id="listaCategoriasCfg"></div>
+            <button class="btn btn-sm" style="margin-top:12px" onclick="restaurarCategoriasPadrao()">Restaurar padrão</button>
+          </div>
+        </div>
+      </div>
+
     </div>
-    <div class="p-4 overflow-y-auto flex-1">
+  </main>
+</div>
+
+<!-- MODAL VER CULTO -->
+<div class="modal-overlay" id="modalVerCulto">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-eye"></i> Visualizar REFC</h3>
+      <button class="modal-close" onclick="closeModal('modalVerCulto')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="printArea"></div>
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="whatsAppCultoAtual()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+      <button class="btn btn-danger" onclick="closeModal('modalVerCulto')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVO/EDITAR CULTO -->
+<div class="modal-overlay" id="modalNovoCulto">
+  <div class="modal" style="max-width:900px">
+    <div class="modal-header">
+      <h3 id="cultoModalTitulo">Novo Relatório de Culto (REFC)</h3>
+      <button class="modal-close" onclick="closeModal('modalNovoCulto')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
       <form id="formCulto" onsubmit="salvarCulto(event)">
         <input type="hidden" id="c-id">
-        <div class="bg-gray-50 rounded-xl p-3 mb-3">
-          <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide flex items-center gap-2"><i class="fas fa-info-circle text-blue-500"></i> Informações do Culto</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="text-xs text-gray-600 mb-1 block">Data*</label><input type="date" id="c-data" class="input-field text-sm" required></div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Horário</label><input type="time" id="c-horario" class="input-field text-sm" value="19:30"></div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Pastor</label><input type="text" id="c-pastor" class="input-field text-sm"></div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Pregador</label><input type="text" id="c-pregador" class="input-field text-sm"></div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Tipo de Culto</label>
-              <select id="c-tipo" class="input-field text-sm">
-                <option>Culto Regular</option><option>Culto de Santa Ceia</option>
-                <option>3° Domingo (Missões)</option><option>Culto Especial</option>
-              </select>
-            </div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Testemunhos de Cura</label><input type="number" id="c-cura" class="input-field text-sm" value="0" min="0"></div>
+        <div class="form-row">
+          <div><label class="label">Data</label><input type="date" id="c-data" class="input-field" required></div>
+          <div><label class="label">Horário</label><input type="time" id="c-horario" class="input-field" value="19:30"></div>
+          <div><label class="label">Tipo</label>
+            <select id="c-tipo" class="input-field">
+              <option>Culto Regular</option>
+              <option>Culto de Santa Ceia</option>
+              <option>Culto de Missões</option>
+              <option>Culto de Jovens</option>
+              <option>Culto Especial</option>
+            </select>
           </div>
         </div>
-        <div class="bg-gray-50 rounded-xl p-3 mb-3">
-          <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide"><i class="fas fa-users text-teal-500 mr-1"></i> Frequência</h4>
-          <div class="grid grid-cols-3 gap-3">
-            <div><label class="text-xs text-gray-600 mb-1 block">Presentes</label><input type="number" id="c-presentes" class="input-field text-sm" value="0" min="0"></div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Visitantes</label><input type="number" id="c-visitantes" class="input-field text-sm" value="0" min="0"></div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Crianças</label><input type="number" id="c-criancas" class="input-field text-sm" value="0" min="0"></div>
-          </div>
+        <div class="form-row">
+          <div><label class="label">Pastor</label><input type="text" id="c-pastor" class="input-field"></div>
+          <div><label class="label">Pregador</label><input type="text" id="c-pregador" class="input-field"></div>
+          <div><label class="label">Cura</label><input type="number" id="c-cura" class="input-field" value="0" min="0"></div>
         </div>
-        <div class="bg-green-50 rounded-xl p-3 mb-3 border border-green-200">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wide"><i class="fas fa-hand-holding-usd text-green-600 mr-1"></i> Dízimos</h4>
-            <span class="text-green-700 font-bold text-xs bg-green-100 px-2 py-1 rounded-full">Total: <span id="totalDizimosLabel">R$ 0,00</span></span>
-          </div>
-          <div class="hidden sm:grid sm:grid-cols-[1fr_100px_100px_32px] gap-2 mb-1 px-1">
-            <span class="text-xs font-semibold text-gray-500">Nome</span>
-            <span class="text-xs font-semibold text-gray-500">Valor (R$)</span>
-            <span class="text-xs font-semibold text-gray-500">Forma</span>
-            <span></span>
-          </div>
-          <div id="listaDizimistas"></div>
-          <button type="button" class="btn-add-row mt-2" onclick="adicionarDizimista()"><i class="fas fa-plus mr-1"></i> Adicionar Dizimista</button>
+        <div class="form-row">
+          <div><label class="label">Presentes</label><input type="number" id="c-presentes" class="input-field" value="0" min="0"></div>
+          <div><label class="label">Visitantes</label><input type="number" id="c-visitantes" class="input-field" value="0" min="0"></div>
+          <div><label class="label">Crianças</label><input type="number" id="c-criancas" class="input-field" value="0" min="0"></div>
         </div>
-        <div class="bg-blue-50 rounded-xl p-3 mb-3 border border-blue-200">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wide"><i class="fas fa-donate text-blue-600 mr-1"></i> Ofertas Gerais</h4>
-            <span class="text-blue-700 font-bold text-xs bg-blue-100 px-2 py-1 rounded-full">Total: <span id="totalOfertasLabel">R$ 0,00</span></span>
-          </div>
-          <div class="hidden sm:grid sm:grid-cols-[1fr_100px_100px_32px] gap-2 mb-1 px-1">
-            <span class="text-xs font-semibold text-gray-500">Nome</span>
-            <span class="text-xs font-semibold text-gray-500">Valor (R$)</span>
-            <span class="text-xs font-semibold text-gray-500">Forma</span>
-            <span></span>
-          </div>
-          <div id="listaOfertas"></div>
-          <button type="button" class="btn-add-row mt-2" onclick="adicionarOferta()"><i class="fas fa-plus mr-1"></i> Adicionar Oferta</button>
+        <div class="form-row">
+          <div><label class="label">Missões</label><input type="number" id="c-missoes" class="input-field" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
+          <div><label class="label">Especiais</label><input type="number" id="c-especiais" class="input-field" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
+          <div><label class="label">Outras</label><input type="number" id="c-outras" class="input-field" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
         </div>
-        <div class="bg-yellow-50 rounded-xl p-3 mb-3 border border-yellow-200">
-          <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide"><i class="fas fa-coins text-yellow-600 mr-1"></i> Outras Arrecadações</h4>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="text-xs text-gray-600 mb-1 block">Ofertas Missões (R$)</label>
-              <input type="number" id="c-missoes" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()">
-              <p class="text-xs text-teal-600 mt-1 font-medium"><i class="fas fa-info-circle mr-1"></i>Distribuído 50% Est. / 50% Nac.</p>
-            </div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Ofertas Especiais (R$)</label><input type="number" id="c-especiais" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Outras Entradas (R$)</label><input type="number" id="c-outras" class="input-field text-sm" value="0" min="0" step="0.01" oninput="calcTotalCulto()"></div>
-            <div class="bg-green-100 rounded-xl p-3 flex flex-col justify-center border border-green-300">
-              <label class="text-xs font-bold text-green-700 mb-1">TOTAL (sem Missões)</label>
-              <p class="text-lg font-bold text-green-700" id="totalArrecadado">R$ 0,00</p>
-            </div>
-          </div>
+
+        <div class="section-title" style="margin-top:24px">Dízimistas</div>
+        <div id="listaDizimistas"></div>
+        <button type="button" class="btn btn-sm" style="margin-bottom:16px" onclick="adicionarDizimista()"><i class="fas fa-plus"></i> Adicionar Dízimista</button>
+
+        <div class="section-title">Ofertas</div>
+        <div id="listaOfertas"></div>
+        <button type="button" class="btn btn-sm" style="margin-bottom:16px" onclick="adicionarOferta()"><i class="fas fa-plus"></i> Adicionar Oferta</button>
+
+        <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+          <div><label class="label">Total Dízimos</label><div id="totalDizimosLabel" class="input-field" style="background:#f9fafb;font-weight:700">R$ 0,00</div></div>
+          <div><label class="label">Total Ofertas</label><div id="totalOfertasLabel" class="input-field" style="background:#f9fafb;font-weight:700">R$ 0,00</div></div>
+          <div><label class="label">Total Arrecadado</label><div id="totalArrecadado" class="input-field" style="background:#f9fafb;font-weight:700">R$ 0,00</div></div>
         </div>
-        <div class="bg-gray-50 rounded-xl p-3 mb-3 border border-gray-200">
-          <h4 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wide"><i class="fas fa-sticky-note text-gray-500 mr-1"></i> Observações</h4>
-          <textarea id="c-observacoes" class="input-field text-sm resize-none" rows="3" placeholder="Anotações, destaques do culto, informes especiais..."></textarea>
-        </div>
-        <div class="bg-purple-50 rounded-xl p-3 mb-4 border border-purple-200">
-          <h4 class="font-semibold text-gray-700 mb-1 text-xs uppercase tracking-wide"><i class="fas fa-exchange-alt text-purple-600 mr-1"></i> Destino da Arrecadação</h4>
-          <p class="text-xs text-gray-400 mb-3"><i class="fas fa-magic text-purple-300 mr-1"></i>Preenchido automaticamente</p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="text-xs text-gray-600 mb-1 block">Caixa Local — Dinheiro</label>
-              <div class="relative"><input type="number" id="c-caixa" class="input-field text-sm input-auto pr-16" value="0" readonly style="color:#065f46;border-color:#86efac;"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-green-600 font-bold bg-green-100 px-1 py-0.5 rounded">AUTO</span></div>
-            </div>
-            <div><label class="text-xs text-gray-600 mb-1 block">Conta Corrente — PIX</label>
-              <div class="relative"><input type="number" id="c-conta" class="input-field text-sm input-auto-pix pr-16" value="0" readonly style="color:#1d4ed8;border-color:#93c5fd;"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-600 font-bold bg-blue-100 px-1 py-0.5 rounded">AUTO</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="flex gap-3">
-          <button type="button" onclick="closeModal('modalNovoCulto')" class="flex-1 py-3 border-2 rounded-xl text-gray-600 hover:bg-gray-50 font-semibold text-sm">Cancelar</button>
-          <button type="submit" class="flex-1 btn-primary py-3 text-sm" id="btnSalvarCulto"><i class="fas fa-save mr-2"></i> Salvar</button>
-        </div>
+        <input type="hidden" id="c-caixa">
+        <input type="hidden" id="c-conta">
+
+        <div><label class="label">Observações</label><textarea id="c-observacoes" class="input-field" rows="3"></textarea></div>
+        <div class="actions"><button type="button" class="btn" style="background:#e5e7eb" onclick="closeModal('modalNovoCulto')">Cancelar</button><button type="submit" class="btn btn-primary" id="btnSalvarCulto"><i class="fas fa-save"></i> Salvar</button></div>
       </form>
     </div>
   </div>
 </div>
-<!-- MODAL: VER CULTO -->
-<div class="modal-overlay" id="modalVerCulto">
-  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
-    <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
-      <h3 class="text-white font-bold text-base flex items-center gap-2"><i class="fas fa-file-alt"></i> Detalhes do REFC</h3>
-      <div class="flex items-center gap-2">
-        <button onclick="whatsAppCultoAtual()" class="btn-whatsapp text-xs"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-        <button onclick="closeModal('modalVerCulto')" class="text-white hover:text-blue-200"><i class="fas fa-times text-xl"></i></button>
-      </div>
-    </div>
-    <div class="overflow-y-auto flex-1 p-4"><div id="printArea"></div></div>
-  </div>
-</div>
 
-<!-- MODAL: NOVA DESPESA -->
+<!-- MODAL NOVA DESPESA -->
 <div class="modal-overlay" id="modalNovaDespesa">
-  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-    <div class="bg-gradient-to-r from-red-700 to-red-500 p-4 flex justify-between items-center rounded-t-2xl">
-      <h3 class="text-white font-bold text-base"><i class="fas fa-minus-circle mr-2"></i>Nova Despesa</h3>
-      <button onclick="closeModal('modalNovaDespesa')" class="text-white hover:text-red-200"><i class="fas fa-times text-xl"></i></button>
-    </div>
-    <div class="p-4">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><h3>Nova Despesa</h3><button class="modal-close" onclick="closeModal('modalNovaDespesa')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
       <form id="formDespesa" onsubmit="salvarDespesa(event)">
-        <div class="space-y-3">
-          <div><label class="text-sm text-gray-600 mb-1 block">Categoria*</label>
-            <select id="d-categoria" class="input-field text-sm" required><option value="">Selecione...</option></select>
-          </div>
-          <div><label class="text-sm text-gray-600 mb-1 block">Descrição</label><input type="text" id="d-descricao" class="input-field text-sm" placeholder="Detalhes da despesa"></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-sm text-gray-600 mb-1 block">Valor (R$)*</label><input type="number" id="d-valor" class="input-field text-sm" min="0" step="0.01" required></div>
-            <div><label class="text-sm text-gray-600 mb-1 block">Data</label><input type="date" id="d-data" class="input-field text-sm"></div>
-          </div>
+        <input type="hidden" id="d-id">
+        <div class="form-row">
+          <div><label class="label">Data</label><input type="date" id="d-data" class="input-field" required></div>
+          <div><label class="label">Categoria</label><select id="d-categoria" class="input-field" required></select></div>
         </div>
-        <div class="flex gap-3 mt-4">
-          <button type="button" onclick="closeModal('modalNovaDespesa')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
-          <button type="submit" class="flex-1 btn-primary bg-red-600 hover:bg-red-700 text-sm" id="btnSalvarDespesa"><i class="fas fa-save mr-2"></i> Registrar</button>
+        <div class="form-row">
+          <div><label class="label">Descrição</label><input type="text" id="d-descricao" class="input-field" required></div>
+          <div><label class="label">Valor</label><input type="number" id="d-valor" class="input-field" min="0" step="0.01" required></div>
         </div>
+        <div class="actions"><button type="button" class="btn" style="background:#e5e7eb" onclick="closeModal('modalNovaDespesa')">Cancelar</button><button type="submit" class="btn btn-primary" id="btnSalvarDespesa"><i class="fas fa-save"></i> Salvar</button></div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- MODAL: ALTERAR DESPESA -->
+<!-- MODAL ALTERAR DESPESA -->
 <div class="modal-overlay" id="modalAlterarDespesa">
-  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-    <div class="bg-gradient-to-r from-yellow-600 to-yellow-400 p-4 flex justify-between items-center rounded-t-2xl">
-      <h3 class="text-white font-bold text-base"><i class="fas fa-pen mr-2"></i>Alterar Despesa</h3>
-      <button onclick="closeModal('modalAlterarDespesa')" class="text-white hover:text-yellow-100"><i class="fas fa-times text-xl"></i></button>
-    </div>
-    <div class="p-4">
-      <form id="formAlterarDespesa" onsubmit="confirmarAlteracaoDespesa(event)">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><h3>Alterar Despesa</h3><button class="modal-close" onclick="closeModal('modalAlterarDespesa')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
+      <form id="formAlterarDespesa" onsubmit="salvarAlteracaoDespesa(event)">
         <input type="hidden" id="alt-d-id">
-        <div class="space-y-3">
-          <div><label class="text-sm text-gray-600 mb-1 block">Categoria*</label>
-            <select id="alt-d-categoria" class="input-field text-sm" required><option value="">Selecione...</option></select>
-          </div>
-          <div><label class="text-sm text-gray-600 mb-1 block">Descrição</label><input type="text" id="alt-d-descricao" class="input-field text-sm"></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-sm text-gray-600 mb-1 block">Valor (R$)*</label><input type="number" id="alt-d-valor" class="input-field text-sm" min="0" step="0.01" required></div>
-            <div><label class="text-sm text-gray-600 mb-1 block">Data</label><input type="date" id="alt-d-data" class="input-field text-sm"></div>
-          </div>
+        <div class="form-row">
+          <div><label class="label">Data</label><input type="date" id="alt-d-data" class="input-field" required></div>
+          <div><label class="label">Categoria</label><select id="alt-d-categoria" class="input-field" required></select></div>
         </div>
-        <div class="flex gap-3 mt-4">
-          <button type="button" onclick="closeModal('modalAlterarDespesa')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
-          <button type="submit" class="flex-1 text-sm font-semibold py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white" id="btnConfirmarAlterarDespesa"><i class="fas fa-save mr-2"></i> Salvar Alterações</button>
+        <div class="form-row">
+          <div><label class="label">Descrição</label><input type="text" id="alt-d-descricao" class="input-field" required></div>
+          <div><label class="label">Valor</label><input type="number" id="alt-d-valor" class="input-field" min="0" step="0.01" required></div>
         </div>
+        <div class="actions"><button type="button" class="btn" style="background:#e5e7eb" onclick="closeModal('modalAlterarDespesa')">Cancelar</button><button type="submit" class="btn btn-primary" id="btnSalvarAlteracao"><i class="fas fa-save"></i> Salvar</button></div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- MODAL: NOVA ENTRADA -->
+<!-- MODAL NOVA ENTRADA -->
 <div class="modal-overlay" id="modalNovaEntrada">
-  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-    <div class="bg-gradient-to-r from-green-700 to-green-500 p-4 flex justify-between items-center rounded-t-2xl">
-      <h3 class="text-white font-bold text-base"><i class="fas fa-plus-circle mr-2"></i>Nova Entrada Manual</h3>
-      <button onclick="closeModal('modalNovaEntrada')" class="text-white hover:text-green-200"><i class="fas fa-times text-xl"></i></button>
-    </div>
-    <div class="p-4">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><h3>Nova Entrada</h3><button class="modal-close" onclick="closeModal('modalNovaEntrada')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
       <form id="formEntrada" onsubmit="salvarEntrada(event)">
-        <div class="space-y-3">
-          <div><label class="text-sm text-gray-600 mb-1 block">Descrição*</label><input type="text" id="e-descricao" class="input-field text-sm" required></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-sm text-gray-600 mb-1 block">Valor (R$)*</label><input type="number" id="e-valor" class="input-field text-sm" min="0" step="0.01" required></div>
-            <div><label class="text-sm text-gray-600 mb-1 block">Data*</label><input type="date" id="e-data" class="input-field text-sm" required></div>
-          </div>
-          <div><label class="text-sm text-gray-600 mb-1 block">Observações</label><textarea id="e-obs" class="input-field text-sm h-16 resize-none"></textarea></div>
+        <input type="hidden" id="e-id">
+        <div class="form-row">
+          <div><label class="label">Data</label><input type="date" id="e-data" class="input-field" required></div>
+          <div><label class="label">Descrição</label><input type="text" id="e-descricao" class="input-field" required></div>
         </div>
-        <div class="flex gap-3 mt-4">
-          <button type="button" onclick="closeModal('modalNovaEntrada')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
-          <button type="submit" class="flex-1 btn-primary bg-green-600 hover:bg-green-700 text-sm" id="btnSalvarEntrada"><i class="fas fa-save mr-2"></i> Registrar</button>
+        <div class="form-row">
+          <div><label class="label">Valor</label><input type="number" id="e-valor" class="input-field" min="0" step="0.01" required></div>
         </div>
+        <div class="actions"><button type="button" class="btn" style="background:#e5e7eb" onclick="closeModal('modalNovaEntrada')">Cancelar</button><button type="submit" class="btn btn-primary" id="btnSalvarEntrada"><i class="fas fa-save"></i> Salvar</button></div>
       </form>
     </div>
   </div>
 </div>
 
-</div><!-- fim #appRoot -->
 <script>
 // ============================================================
-// API
+// CONSTANTES E MOCK DO BANCO LOCAL
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbyE5QwJN4tTxt-rm79nv_hFaLaY1D5uHkgMXfXjJt4P_vFYKNLFSJ8OYbPqjGJpVFzW/exec";
-
-async function apiGet(sheet) {
-  const r = await fetch(`${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const j = await r.json();
-  if (!j.ok) throw new Error(j.error || 'Erro');
-  return j.data || [];
-}
-async function apiSave(sheet, data) {
-  const r = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'save',sheet,data}) });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const j = await r.json();
-  if (!j.ok) throw new Error(j.error || 'Erro ao salvar');
-  return j.data;
-}
-async function apiDelete(sheet, id) {
-  const r = await fetch(`${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const j = await r.json();
-  if (!j.ok) throw new Error(j.error || 'Erro ao excluir');
-  return j.data;
-}
-
-// ============================================================
-// SESSÃO / LOGIN
-// ============================================================
-const SESSION_KEY = 'ieq_session';
-const SESSION_TTL = 8 * 60 * 60 * 1000;
-let SESSAO = null;
-
-const PERMISSOES = {
-  podeEditar:  ['admin','tesoureiro'],
-  podeExcluir: ['admin','tesoureiro'],
-  podeLancar:  ['admin','tesoureiro'],
-  podeConfig:  ['admin'],
-};
-function temPermissao(a) { return SESSAO && (PERMISSOES[a]||[]).includes(SESSAO.permissao); }
-function salvarSessao(d) { const s={...d,loginEm:Date.now()}; localStorage.setItem(SESSION_KEY,JSON.stringify(s)); SESSAO=s; }
-function carregarSessao() {
-  try { const r=localStorage.getItem(SESSION_KEY); if(!r)return null; const s=JSON.parse(r); if(Date.now()-s.loginEm>SESSION_TTL){localStorage.removeItem(SESSION_KEY);return null;} return s; } catch{return null;}
-}
-function limparSessao() { localStorage.removeItem(SESSION_KEY); SESSAO=null; }
-
-function toggleSenha() {
-  const i=document.getElementById('loginPass'),icon=document.getElementById('togglePassIcon'),show=i.type==='password';
-  i.type=show?'text':'password'; icon.className=show?'fas fa-eye-slash':'fas fa-eye';
-}
-function mostrarErroLogin(m) {
-  document.getElementById('loginErroMsg').textContent=m;
-  document.getElementById('loginErro').classList.add('active');
-  document.getElementById('loginUser').classList.add('erro');
-  document.getElementById('loginPass').classList.add('erro');
-}
-function limparErroLogin() {
-  document.getElementById('loginErro').classList.remove('active');
-  document.getElementById('loginUser').classList.remove('erro');
-  document.getElementById('loginPass').classList.remove('erro');
-}
-
-async function efetuarLogin(e) {
-  e.preventDefault();
-  limparErroLogin();
-  const login=document.getElementById('loginUser').value.trim();
-  const senha=document.getElementById('loginPass').value;
-  const lembrar=document.getElementById('lembrarUser').checked;
-  const btn=document.getElementById('btnLogin');
-  if(!login||!senha){mostrarErroLogin('Preencha usuário e senha.');return;}
-  if(lembrar)localStorage.setItem('ieq_lembrar_user',login);
-  else localStorage.removeItem('ieq_lembrar_user');
-  btn.disabled=true;
-  btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
-  try {
-    const url=`${API_URL}?action=login&login=${encodeURIComponent(login)}&senha=${encodeURIComponent(senha)}`;
-    const resp=await fetch(url);
-    const json=await resp.json();
-    if(json.ok){
-      salvarSessao({nome:json.nome,permissao:json.permissao});
-      const msgEl=document.getElementById('loginCheckMsg');
-      const txtEl=document.getElementById('loginCheckTxt');
-      msgEl.classList.add('active');
-      txtEl.textContent='Verificando integridade dos dados...';
-      btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i> Sincronizando...';
-      await verificarIntegridadeAoLogin();
-      msgEl.classList.remove('active');
-      entrarNoSistema();
-    } else {
-      mostrarErroLogin(json.erro||'Usuário ou senha incorretos.');
-      document.getElementById('loginPass').value='';
-      document.getElementById('loginPass').focus();
-    }
-  } catch(err){ mostrarErroLogin('Erro de conexão. Verifique sua internet.'); }
-  finally { btn.disabled=false; btn.innerHTML='<i class="fas fa-sign-in-alt mr-2"></i> Entrar'; }
-}
-
-async function verificarIntegridadeAoLogin() {
-  try {
-    DB.loadLocal();
-    const timeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('Timeout')),10000));
-    const [cultosR, entradasR, despesasR] = await Promise.race([
-      Promise.all([apiGet('cultos'), apiGet('entradas'), apiGet('despesas')]),
-      timeout
-    ]);
-    let removidos = 0;
-    const idsCultosServidor   = new Set((cultosR   ||[]).map(c=>String(c.id)));
-    const idsEntradasServidor = new Set((entradasR ||[]).map(e=>String(e.id)));
-    const idsDespesasServidor = new Set((despesasR ||[]).map(d=>String(d.id)));
-    const cultosFiltrados = DB.cultos.filter(c => {
-      if (!c.id || String(c.id).startsWith('fix-')) return true;
-      if (!idsCultosServidor.has(String(c.id))) { removidos++; return false; }
-      return true;
-    });
-    const entradasFiltradas = DB.entradas.filter(e => {
-      if (!e.id || e.origem==='local') return true;
-      if (!idsEntradasServidor.has(String(e.id))) { removidos++; return false; }
-      return true;
-    });
-    const despesasFiltradas = DB.despesas.filter(d => {
-      if (d._fixed) return true;
-      if (!d.id)    return true;
-      if (!idsDespesasServidor.has(String(d.id))) { removidos++; return false; }
-      return true;
-    });
-    DB.cultos   = cultosR.length   > 0 ? cultosR.map(normalizarCulto)     : cultosFiltrados;
-    DB.entradas = entradasR.length > 0 ? entradasR.map(normalizarEntrada) : entradasFiltradas;
-    if (despesasR.length > 0) {
-      const ids = new Set(despesasR.map(d=>String(d.id)));
-      DB.despesas = [
-        ...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),
-        ...despesasR.map(normalizarDespesa)
-      ];
-    } else {
-      DB.despesas = despesasFiltradas;
-    }
-    DB.saveLocal();
-    if (removidos > 0) {
-      showNotification(`🧹 ${removidos} registro(s) excluídos em outro dispositivo foram removidos do cache.`,'info');
-    }
-  } catch(err) {
-    console.warn('Verificação de integridade offline:', err.message);
-  }
-}
-
-function entrarNoSistema() {
-  document.getElementById('loginScreen').classList.remove('active');
-  document.getElementById('appRoot').style.display='block';
-  aplicarPermissoesUI();
-  inicializarSistema();
-}
-
-function logout() {
-  if(!confirm('Deseja sair do sistema?'))return;
-  limparSessao();
-  document.getElementById('appRoot').style.display='none';
-  document.getElementById('loginScreen').classList.add('active');
-  document.getElementById('loginPass').value='';
-  document.getElementById('loginUser').value=localStorage.getItem('ieq_lembrar_user')||'';
-  limparErroLogin();
-  showNotification('👋 Sessão encerrada.','info');
-}
-
-function aplicarPermissoesUI() {
-  if(!SESSAO)return;
-  const{nome,permissao}=SESSAO;
-  document.getElementById('sidebarUserNome').textContent=nome;
-  const pL={admin:'Admin',tesoureiro:'Tesoureiro',visualizador:'Visualizador'};
-  const pC={admin:'perm-admin',tesoureiro:'perm-tesoureiro',visualizador:'perm-visualizador'};
-  document.getElementById('sidebarUserPerm').innerHTML=
-    `<span class="perm-badge ${pC[permissao]||'perm-visualizador'}">
-       <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'eye'} text-xs"></i>
-       ${pL[permissao]||permissao}</span>`;
-  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.style.display=v?'':'none';};
-  sv('btnNovoCulto', temPermissao('podeLancar'));
-  sv('btnNovaEntrada', temPermissao('podeLancar'));
-  sv('btnNovaDespesa', temPermissao('podeLancar'));
-  sv('cardUsuarios', temPermissao('podeConfig'));
-  sv('cardCategorias', temPermissao('podeConfig'));
-}
-
-// ============================================================
-// DB LOCAL
-// ============================================================
-const DB = {
-  historico:[
-    {mes:1,ano:2026,nome:'Janeiro',   saldoAnt:0,      entradas:2641.82,saidas:2641.82,saldoFinal:0,      ceia:56},
-    {mes:2,ano:2026,nome:'Fevereiro', saldoAnt:122.40, entradas:4022.91,saidas:2963.70,saldoFinal:1181.61,ceia:44},
-    {mes:3,ano:2026,nome:'Março',     saldoAnt:1181.61,entradas:4172.40,saidas:4023.12,saldoFinal:1330.89,ceia:53},
-    {mes:4,ano:2026,nome:'Abril',     saldoAnt:1330.89,entradas:4235.18,saidas:4253.26,saldoFinal:1312.81,ceia:60},
-    {mes:5,ano:2026,nome:'Maio',      saldoAnt:1099.81,entradas:3483.14,saidas:3335.42,saldoFinal:1247.53,ceia:60},
-  ],
-  despesas:[],cultos:[],entradas:[],categorias:[],config:{},
-  saveLocal(){
-    try{
-      localStorage.setItem('despesas_cache',JSON.stringify(this.despesas));
-      localStorage.setItem('cultos_cache',JSON.stringify(this.cultos));
-      localStorage.setItem('entradas_cache',JSON.stringify(this.entradas));
-      localStorage.setItem('categorias_cache',JSON.stringify(this.categorias));
-    }catch(e){}
-  },
-  loadLocal(){
-    try{
-      this.despesas   =JSON.parse(localStorage.getItem('despesas_cache')  ||'[]');
-      this.cultos     =JSON.parse(localStorage.getItem('cultos_cache')    ||'[]');
-      this.entradas   =JSON.parse(localStorage.getItem('entradas_cache')  ||'[]');
-      this.categorias =JSON.parse(localStorage.getItem('categorias_cache')||'[]');
-      this.config     =JSON.parse(localStorage.getItem('ieq_config')      ||'{}');
-    }catch(e){this.despesas=[];this.cultos=[];this.entradas=[];this.categorias=[];this.config={};}
-  }
-};
-
-const CATEGORIAS_PADRAO=['ENERGIA','AGUA','CED','CND','CONTADOR','TAXA REGIONAL','COMBUSTIVEL','PREBENDA','PAPELARIA','DARF','MATERIAL','OUTROS'];
-const CAT_ICONS_BASE={'ENERGIA':'⚡','AGUA':'💧','CED':'🏛️','CND':'🌐','CONTADOR':'🧮','TAXA REGIONAL':'🏦','COMBUSTIVEL':'⛽','PREBENDA':'👤','PAPELARIA':'📄','DARF':'🧾','MATERIAL':'📦','OUTROS':'➕'};
-
+const STORAGE_KEY='ieq_finance_data_v1';
+const CATEGORIAS_PADRAO=['ÁGUA','LUZ','ALUGUEL','INTERNET','MATERIAL','MANUTENÇÃO','TRANSPORTE','ALIMENTAÇÃO','OUTRAS'];
+const CAT_ICONS_BASE={'ÁGUA':'💧','LUZ':'⚡','ALUGUEL':'🏠','INTERNET':'🌐','MATERIAL':'📦','MANUTENÇÃO':'🔧','TRANSPORTE':'🚗','ALIMENTAÇÃO':'🍽️','OUTRAS':'📌'};
 const DESPESAS_PADRAO=[
-  {id:'fix-1', categoria:'ENERGIA',       descricao:'Conta de Energia',     valor:114.48, data:'2026-05-10',_fixed:true},
-  {id:'fix-2', categoria:'AGUA',          descricao:'Conta de Água',         valor:109.84, data:'2026-05-10',_fixed:true},
-  {id:'fix-3', categoria:'CED',           descricao:'Contribuição Estadual', valor:184.41, data:'2026-05-15',_fixed:true},
-  {id:'fix-4', categoria:'CND',           descricao:'Contribuição Nacional', valor:353.82, data:'2026-05-15',_fixed:true},
-  {id:'fix-5', categoria:'CONTADOR',      descricao:'Honorários Contador',   valor:150.00, data:'2026-05-05',_fixed:true},
-  {id:'fix-6', categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',      valor:169.41, data:'2026-05-15',_fixed:true},
-  {id:'fix-7', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:40.00,  data:'2026-05-02',_fixed:true},
-  {id:'fix-8', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,  data:'2026-05-06',_fixed:true},
-  {id:'fix-9', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:100.00, data:'2026-05-09',_fixed:true},
-  {id:'fix-10',categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,  data:'2026-05-12',_fixed:true},
-  {id:'fix-11',categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,  data:'2026-05-16',_fixed:true},
-  {id:'fix-12',categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,  data:'2026-05-20',_fixed:true},
-  {id:'fix-13',categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,  data:'2026-05-23',_fixed:true},
-  {id:'fix-14',categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',   valor:1863.46,data:'2026-05-30',_fixed:true},
+  {id:'fixo-1',data:'2026-01-05',categoria:'ALUGUEL',descricao:'Aluguel mensal',valor:1200,_fixed:true},
+  {id:'fixo-2',data:'2026-01-10',categoria:'INTERNET',descricao:'Internet',valor:120,_fixed:true}
 ];
-<!-- CONTINUAÇÃO DO SCRIPT -->
+
+const DB={
+  cultos:[],
+  entradas:[],
+  despesas:[],
+  historico:[],
+  categorias:[...CATEGORIAS_PADRAO],
+  config:{nomeIgreja:'IEQ Esplanada',endereco:'',pastor:'Danilo de Oliveira Falcão',tesoureiro:'Danilo Falcão',whatsapp:''},
+  saveLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify({cultos:this.cultos,entradas:this.entradas,despesas:this.despesas,historico:this.historico,categorias:this.categorias,config:this.config}))},
+  loadLocal(){
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      try{
+        const d=JSON.parse(raw);
+        this.cultos=d.cultos||[];this.entradas=d.entradas||[];this.despesas=d.despesas||[];this.historico=d.historico||[];
+        this.categorias=d.categorias||[...CATEGORIAS_PADRAO];this.config=d.config||this.config;
+      }catch(e){}
+    }
+    if(this.despesas.length===0)this.despesas=[...DESPESAS_PADRAO];
+  }
+};
+
+// ============================================================
+// STUBS API (substituir pelo backend real)
+// ============================================================
+function apiStubDelay(ms){return new Promise(r=>setTimeout(r,ms||300));}
+async function apiGet(tipo){
+  await apiStubDelay();return DB[tipo]||[];
+}
+async function apiSave(tipo,obj){
+  await apiStubDelay();
+  const arr=DB[tipo];
+  if(!obj.id)obj.id=`${tipo.slice(0,3)}-${Date.now()}`;
+  const idx=arr.findIndex(x=>String(x.id)===String(obj.id));
+  if(idx>=0)arr[idx]=obj;else arr.push(obj);
+  DB.saveLocal();
+  return obj;
+}
+async function apiDelete(tipo,id){
+  await apiStubDelay();
+  DB[tipo]=DB[tipo].filter(x=>String(x.id)!==String(id));
+  DB.saveLocal();
+  return {ok:true};
+}
+
+// ============================================================
+// PERMISSÕES
+// ============================================================
+function temPermissao(acao){
+  return true; // simplificado; substituir por lógica real
+}
+
 // ============================================================
 // NORMALIZAÇÃO
 // ============================================================
@@ -1196,22 +599,19 @@ function restaurarCategoriasPadrao(){
 function renderListaCategoriasCfg(){
   const el=document.getElementById('listaCategoriasCfg');if(!el)return;
   const cats=getCategorias();
-  if(!cats.length){el.innerHTML='<p class="text-gray-400 text-sm text-center py-4">Nenhuma categoria.</p>';return;}
+  if(!cats.length){el.innerHTML='<p class="empty-state" style="padding:20px">Nenhuma categoria.</p>';return;}
   el.innerHTML=cats.map(c=>{
     const eu=DB.despesas.some(d=>d.categoria===c);
-    return`<div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-      <div class="flex items-center gap-2"><span>${getCatIcon(c)}</span><span class="text-sm font-medium text-gray-700">${escapeHtml(c)}</span>${eu?'<span class="text-xs text-gray-400">(em uso)</span>':''}</div>
-      <div class="flex gap-1">
-        <button onclick="editarCategoria('${c.replaceAll("'","\\\'")}')" class="w-7 h-7 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 text-xs flex items-center justify-center"><i class="fas fa-pen"></i></button>
-        <button onclick="excluirCategoria('${c.replaceAll("'","\\\'")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs flex items-center justify-center"><i class="fas fa-trash"></i></button>
+    return`<div class="flex items-center justify-between" style="background:#f9fafb;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:8px"><span>${getCatIcon(c)}</span><span style="font-weight:600;font-size:13px">${escapeHtml(c)}</span>${eu?'<span style="font-size:11px;color:#9ca3af">(em uso)</span>':''}</div>
+      <div style="display:flex;gap:6px">
+        <button onclick="editarCategoria('${c.replaceAll("'","\\'")}')" class="w-7 h-7" style="background:#fef3c7;color:#92400e;border:none;border-radius:6px;cursor:pointer"><i class="fas fa-pen"></i></button>
+        <button onclick="excluirCategoria('${c.replaceAll("'","\\'")}')" class="w-7 h-7" style="background:#fee2e2;color:#991b1b;border:none;border-radius:6px;cursor:pointer"><i class="fas fa-trash"></i></button>
       </div>
     </div>`;
   }).join('');
 }
 
-// ============================================================
-// MESES COM DADOS
-// ============================================================
 function getMesesComDados(){
   const s=new Set();
   DB.historico.forEach(h=>s.add(`${h.ano}-${String(h.mes).padStart(2,'0')}`));
@@ -1232,6 +632,9 @@ function setGlobalMonth(mk){
   if(p==='despesas')     filtrarDespesas();
   if(p==='distribuicoes')renderDistribuicoesMes();
   if(p==='dizimistas')   renderRelatorioDizimistas();
+  if(p==='relatorios')   renderRelatorios();
+  if(p==='historico')    renderHistorico();
+  if(p==='configuracoes')renderConfiguracoes();
 }
 
 function updatePageSubtitleForMonth(){
@@ -1244,7 +647,7 @@ function updatePageSubtitleForMonth(){
     distribuicoes:['Distribuições','Taxas e repasses obrigatórios'],
     dizimistas:['Relatório de Dizimistas','Compilação mensal de dízimos'],
     relatorios:['Relatórios','Análises e exportações'],
-    historico:['Histórico','Dados históricos 2026'],
+    historico:['Histórico','Dados históricos'],
     configuracoes:['Configurações','Logo, dados da igreja e sistema'],
   };
   document.getElementById('pageTitle').textContent  =map[a]?.[0]||a;
@@ -1320,7 +723,7 @@ function closeSidebar(){
 }
 
 // ============================================================
-// SINCRONIZAÇÃO COMPLETA
+// SINCRONIZAÇÃO
 // ============================================================
 async function sincronizarTudo(silent=false){
   if(!silent)mostrarLoading(true,'Sincronizando dados...','Buscando dados do servidor...');
@@ -1330,88 +733,17 @@ async function sincronizarTudo(silent=false){
     if(entradasR.length>0) DB.entradas =entradasR.map(normalizarEntrada);
     if(despesasR.length>0){
       const ids=new Set(despesasR.map(d=>String(d.id)));
-      DB.despesas=[
-        ...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),
-        ...despesasR.map(normalizarDespesa)
-      ];
-    } else {
-      if(DB.despesas.length===0) DB.despesas=[...DESPESAS_PADRAO];
-    }
+      DB.despesas=[...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),...despesasR.map(normalizarDespesa)];
+    } else if(DB.despesas.length===0) DB.despesas=[...DESPESAS_PADRAO];
     DB.saveLocal();
     buildGlobalMonthOptions();
-    const p=document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard';
-    if(p==='dashboard')     renderDashboard();
-    if(p==='culto')         renderCultos();
-    if(p==='entradas')      renderEntradas();
-    if(p==='despesas')      filtrarDespesas();
-    if(p==='distribuicoes') renderDistribuicoesMes();
-    if(p==='dizimistas')    renderRelatorioDizimistas();
-    if(p==='historico')     renderHistorico();
-    if(p==='configuracoes') renderConfiguracoes();
+    showPage(document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard');
     if(!silent)showNotification('✅ Dados sincronizados!','success');
   }catch(err){
     console.error('Sync error:',err);
     if(!silent)showNotification('⚠️ Erro ao sincronizar. Usando dados locais.','warning');
   }finally{
     if(!silent)mostrarLoading(false);
-  }
-}
-
-async function sincronizarLimpandoExcluidos(){
-  mostrarLoading(true,'Limpando registros excluídos...','Consultando servidor...');
-  try{
-    const[cultosR,entradasR,despesasR]=await Promise.all([apiGet('cultos'),apiGet('entradas'),apiGet('despesas')]);
-    const idsCultos   =new Set((cultosR  ||[]).map(c=>String(c.id)));
-    const idsEntradas =new Set((entradasR||[]).map(e=>String(e.id)));
-    const idsDespesas =new Set((despesasR||[]).map(d=>String(d.id)));
-    let removidos=0;
-
-    const antCultos=DB.cultos.length;
-    DB.cultos=cultosR.length>0
-      ? cultosR.map(normalizarCulto)
-      : DB.cultos.filter(c=>!c.id||String(c.id).startsWith('local-')||idsCultos.has(String(c.id)));
-
-    const antEntradas=DB.entradas.length;
-    DB.entradas=entradasR.length>0
-      ? entradasR.map(normalizarEntrada)
-      : DB.entradas.filter(e=>!e.id||e.origem==='local'||idsEntradas.has(String(e.id)));
-
-    const antDespesas=DB.despesas.length;
-    if(despesasR.length>0){
-      const ids=new Set(despesasR.map(d=>String(d.id)));
-      DB.despesas=[
-        ...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),
-        ...despesasR.map(normalizarDespesa)
-      ];
-    } else {
-      DB.despesas=DB.despesas.filter(d=>d._fixed||!d.id||idsDespesas.has(String(d.id)));
-    }
-
-    removidos=(antCultos-DB.cultos.length)+(antEntradas-DB.entradas.length)+(antDespesas-DB.despesas.length);
-    if(removidos<0)removidos=0;
-
-    DB.saveLocal();
-    buildGlobalMonthOptions();
-    const p=document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard';
-    if(p==='dashboard')     renderDashboard();
-    if(p==='culto')         renderCultos();
-    if(p==='entradas')      renderEntradas();
-    if(p==='despesas')      filtrarDespesas();
-    if(p==='distribuicoes') renderDistribuicoesMes();
-    if(p==='dizimistas')    renderRelatorioDizimistas();
-    if(p==='historico')     renderHistorico();
-    if(p==='configuracoes') renderConfiguracoes();
-    showNotification(
-      removidos>0
-        ? `🧹 ${removidos} registro(s) excluído(s) em outro dispositivo foram removidos.`
-        : '✅ Cache sincronizado! Nenhum registro órfão encontrado.',
-      removidos>0?'info':'success'
-    );
-  }catch(err){
-    console.error('Sync limpar error:',err);
-    showNotification('⚠️ Erro ao sincronizar. Verifique sua conexão.','warning');
-  }finally{
-    mostrarLoading(false);
   }
 }
 
@@ -1457,8 +789,7 @@ function renderDashboard(){
   document.getElementById('kpi-media-pessoa').textContent=fmt(mediaPes);
   document.getElementById('kpi-missoes-mes').textContent =fmt(missoesMes);
 
-  const cultosMesParaDist=getCultosMes(mk);
-  const totalMissoes=sum(cultosMesParaDist,c=>c.missoes||0);
+  const totalMissoes=sum(cultosMes,c=>c.missoes||0);
   const missoesEst=totalMissoes*0.5;
   const missoesNac=totalMissoes*0.5;
 
@@ -1471,12 +802,12 @@ function renderDashboard(){
   ];
 
   document.getElementById('dashDistribuicoes').innerHTML=distConfigDashboard.map(d=>`
-    <div class="flex items-center justify-between p-3 ${d.cor} rounded-xl">
-      <div class="flex items-center gap-2">
-        <span class="font-bold text-sm">${d.label}</span>
-        <span class="text-xs opacity-70">${d.info}</span>
+    <div class="flex items-center justify-between p-3 rounded-xl" style="background:${d.cor.split(' ')[0].replace('bg-','#').includes('blue')?'#dbeafe':d.cor.includes('purple')?'#f3e8ff':d.cor.includes('yellow')?'#fef3c7':d.cor.includes('teal')?'#ccfbf1':'#e0f2fe'};color:${d.cor.includes('blue')?'#1e40af':d.cor.includes('purple')?'#6b21a8':d.cor.includes('yellow')?'#92400e':d.cor.includes('teal')?'#0f766e':'#0369a1'}">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-weight:700;font-size:14px">${d.label}</span>
+        <span style="font-size:12px;opacity:.8">${d.info}</span>
       </div>
-      <span class="font-bold text-sm">${fmt(d.valor)}</span>
+      <span style="font-weight:700;font-size:14px">${fmt(d.valor)}</span>
     </div>`).join('');
 
   const movs=[
@@ -1485,21 +816,21 @@ function renderDashboard(){
   ].sort((a,b)=>b.data?.localeCompare(a.data||'')).slice(0,8);
 
   document.getElementById('tabelaMovimentacoes').innerHTML=movs.length?movs.map(m=>`
-    <tr class="table-row border-b text-sm">
+    <tr class="table-row">
       <td class="py-2 text-gray-600">${fmtDate(m.data)}</td>
       <td class="py-2 text-gray-800">${escapeHtml(m.desc)}</td>
-      <td class="py-2"><span class="badge-${m.tipo==='entrada'?'green':'red'} px-2 py-0.5 rounded-full text-xs font-semibold">${m.tipo==='entrada'?'Entrada':'Saída'}</span></td>
-      <td class="py-2 text-right font-bold ${m.tipo==='entrada'?'text-green-600':'text-red-600'}">${fmt(m.valor)}</td>
+      <td class="py-2"><span class="${m.tipo==='entrada'?'badge-green':'badge-red'}">${m.tipo==='entrada'?'Entrada':'Saída'}</span></td>
+      <td class="py-2" style="text-align:right;font-weight:700;color:${m.tipo==='entrada'?'#10b981':'#ef4444'}">${fmt(m.valor)}</td>
     </tr>`).join(''):
-    '<tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm">Sem movimentações no mês</td></tr>';
+    '<tr><td colspan="4" class="empty-state">Sem movimentações no mês</td></tr>';
 
   const mesesHist=DB.historico.slice(-6);
   const labEvo=mesesHist.map(h=>h.nome?.substring(0,3)||'');
   const datEnt=mesesHist.map(h=>h.entradas||0);
   const datSai=mesesHist.map(h=>h.saidas||0);
   if(chartEvo)chartEvo.destroy();
-  const ctxEvo=document.getElementById('chartEvolucao').getContext('2d');
-  chartEvo=new Chart(ctxEvo,{type:'bar',data:{labels:labEvo,datasets:[
+  const ctxEvo=document.getElementById('chartEvolucao')?.getContext('2d');
+  if(ctxEvo)chartEvo=new Chart(ctxEvo,{type:'bar',data:{labels:labEvo,datasets:[
     {label:'Entradas',data:datEnt,backgroundColor:'rgba(16,185,129,0.7)',borderRadius:6},
     {label:'Saídas',  data:datSai,backgroundColor:'rgba(239,68,68,0.7)', borderRadius:6},
   ]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}});
@@ -1510,12 +841,12 @@ function renderDashboard(){
   const catData=Object.values(catMap);
   const catColors=['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1'];
   if(chartDesp)chartDesp.destroy();
-  const ctxDesp=document.getElementById('chartDespesas').getContext('2d');
-  chartDesp=new Chart(ctxDesp,{type:'doughnut',data:{labels:catLabels,datasets:[{data:catData,backgroundColor:catColors,borderWidth:2}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}}});
+  const ctxDesp=document.getElementById('chartDespesas')?.getContext('2d');
+  if(ctxDesp)chartDesp=new Chart(ctxDesp,{type:'doughnut',data:{labels:catLabels,datasets:[{data:catData,backgroundColor:catColors,borderWidth:2}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}}});
 }
 
 // ============================================================
-// CULTOS — COM CORREÇÕES #2 E #3
+// CULTOS
 // ============================================================
 function renderCultos(){
   const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
@@ -1529,25 +860,25 @@ function renderCultos(){
   document.getElementById('qtdCultosLabel').textContent=`${cultos.length} culto${cultos.length!==1?'s':''}`;
 
   const tbody=document.getElementById('tabelaCultos');
-  if(!cultos.length){tbody.innerHTML='<tr><td colspan="8" class="py-8 text-center text-gray-400"><i class="fas fa-bible text-4xl mb-3 block text-gray-300"></i>Nenhum culto encontrado</td></tr>';
+  if(!cultos.length){tbody.innerHTML='<tr><td colspan="8" class="empty-state"><i class="fas fa-bible"></i><br>Nenhum culto encontrado</td></tr>';
   }else{
     tbody.innerHTML=cultos.map(c=>{
       const total=c.totalArrecadado||((c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0));
       const canEdit=temPermissao('podeEditar');
-      return`<tr class="table-row border-b text-sm">
+      return`<tr class="table-row">
         <td class="p-2 font-medium text-gray-800">${fmtDate(c.data)}</td>
-        <td class="p-2"><span class="badge-blue px-2 py-0.5 rounded-full text-xs font-semibold">${escapeHtml(c.tipo||'Regular')}</span></td>
+        <td class="p-2"><span class="badge-blue">${escapeHtml(c.tipo||'Regular')}</span></td>
         <td class="p-2 hidden md:table-cell text-gray-600">${escapeHtml(c.pregador||c.pastor||'—')}</td>
         <td class="p-2 text-center text-gray-700">${c.presentes||0}</td>
         <td class="p-2 text-green-700 font-semibold">${fmt(c.totalDizimos)}</td>
         <td class="p-2 text-blue-700 font-semibold">${fmt(c.totalOfertas)}</td>
         <td class="p-2 text-purple-700 font-bold">${fmt(total)}</td>
         <td class="p-2">
-          <div class="flex gap-1">
-            <button onclick="verCulto('${c.id}')" class="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-xs flex items-center justify-center" title="Ver REFC"><i class="fas fa-eye"></i></button>
-            <button onclick="imprimirCulto('${c.id}')" class="w-7 h-7 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs flex items-center justify-center" title="Imprimir REFC"><i class="fas fa-print"></i></button>
-            ${canEdit?`<button onclick="editarCulto('${c.id}')" class="w-7 h-7 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 text-xs flex items-center justify-center" title="Editar"><i class="fas fa-pen"></i></button>`:''}
-            ${canEdit?`<button onclick="excluirCulto('${c.id}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs flex items-center justify-center" title="Excluir"><i class="fas fa-trash"></i></button>`:''}
+          <div style="display:flex;gap:6px">
+            <button onclick="verCulto('${c.id}')" class="w-7 h-7" style="background:#dbeafe;color:#1e40af;border:none;border-radius:8px;cursor:pointer" title="Ver REFC"><i class="fas fa-eye"></i></button>
+            <button onclick="imprimirCulto('${c.id}')" class="w-7 h-7" style="background:#f3f4f6;color:#4b5563;border:none;border-radius:8px;cursor:pointer" title="Imprimir REFC"><i class="fas fa-print"></i></button>
+            ${canEdit?`<button onclick="editarCulto('${c.id}')" class="w-7 h-7" style="background:#fef3c7;color:#92400e;border:none;border-radius:8px;cursor:pointer" title="Editar"><i class="fas fa-pen"></i></button>`:''}
+            ${canEdit?`<button onclick="excluirCulto('${c.id}')" class="w-7 h-7" style="background:#fee2e2;color:#991b1b;border:none;border-radius:8px;cursor:pointer" title="Excluir"><i class="fas fa-trash"></i></button>`:''}
           </div>
         </td>
       </tr>`;
@@ -1675,19 +1006,10 @@ async function salvarCulto(e){
   if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
 
   const dataVal=document.getElementById('c-data').value;
-  if(!dataVal){
-    showNotification('⚠️ Informe a data do culto.','warning');
-    document.getElementById('c-data').focus();
-    return;
-  }
+  if(!dataVal){showNotification('⚠️ Informe a data do culto.','warning');document.getElementById('c-data').focus();return;}
   const dataDigitada=new Date(dataVal+'T00:00:00');
-  const hoje=new Date();
-  hoje.setHours(0,0,0,0);
-  if(dataDigitada>hoje){
-    showNotification('⚠️ A data do culto não pode ser futura.','warning');
-    document.getElementById('c-data').focus();
-    return;
-  }
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  if(dataDigitada>hoje){showNotification('⚠️ A data do culto não pode ser futura.','warning');document.getElementById('c-data').focus();return;}
 
   setBtnLoading('btnSalvarCulto',true);
   const id=document.getElementById('c-id').value;
@@ -1747,10 +1069,8 @@ async function sincronizarEntradas(culto){
   const outras   =culto.outras         ||0;
   const totalSemMissoes=totalDiz+totalOf+especiais+outras;
   if(totalSemMissoes<=0)return;
-
   const mk=culto.data.substring(0,7);
   DB.entradas=DB.entradas.filter(e=>e.cultoId!==culto.id);
-
   const entrada={cultoId:culto.id,data:culto.data,descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo||'Regular'}`,valor:totalSemMissoes,origem:'culto',mes:mk};
   const saved=await apiSave('entradas',entrada);
   DB.entradas.push({...entrada,id:saved?.id||`local-${Date.now()}`});
@@ -1885,8 +1205,7 @@ function verCulto(id){
 
 let _cultoAtualId=null;
 function whatsAppCultoAtual(){
-  const c=DB.cultos.find(x=>document.getElementById('printArea')?.innerHTML?.includes(String(x.id)))||
-          DB.cultos.find(x=>String(x.id)===_cultoAtualId);
+  const c=DB.cultos.find(x=>String(x.id)===_cultoAtualId);
   if(!c)return;
   const cfg=DB.config||{};
   const total=(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0);
@@ -1896,7 +1215,6 @@ function whatsAppCultoAtual(){
   window.open(url,'_blank');
 }
 
-// ⬇️ CORREÇÃO #3: NOVA FUNÇÃO imprimirCulto(id)
 function imprimirCulto(id){
   const c = DB.cultos.find(x => String(x.id) === String(id));
   if(!c){ showNotification('⚠️ Culto não encontrado.','warning'); return; }
@@ -1929,7 +1247,6 @@ function imprimirCulto(id){
     .total-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
     .footer{text-align:center;font-size:11px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:12px;margin-top:16px}
     .footer strong{color:#1e3a5f}
-    .auto-tag{font-size:9px;padding:0 4px;border-radius:3px}
   </style></head><body>
 
   <div class="header">
@@ -2038,3 +1355,343 @@ function imprimirCulto(id){
   w.document.write(html);
   w.document.close();
 }
+
+// ============================================================
+// ENTRADAS
+// ============================================================
+function renderEntradas(){
+  const mk=document.getElementById('filtroEntradaMes')?.value||GLOBAL_MONTH;
+  const busca=(document.getElementById('buscaEntrada')?.value||'').toLowerCase();
+  let ent=getEntradasMes(mk);
+  if(busca)ent=ent.filter(e=>(e.descricao||'').toLowerCase().includes(busca));
+  ent.sort((a,b)=>b.data.localeCompare(a.data));
+  const tbody=document.getElementById('tabelaEntradas');
+  if(!ent.length){tbody.innerHTML='<tr><td colspan="4" class="empty-state">Nenhuma entrada</td></tr>';return;}
+  tbody.innerHTML=ent.map(e=>`
+    <tr class="table-row">
+      <td>${fmtDate(e.data)}</td>
+      <td>${escapeHtml(e.descricao||'—')}</td>
+      <td style="font-weight:700;color:#10b981">${fmt(e.valor)}</td>
+      <td>
+        <button onclick="excluirEntrada('${e.id}')" class="w-7 h-7" style="background:#fee2e2;color:#991b1b;border:none;border-radius:8px;cursor:pointer"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+
+async function salvarEntrada(e){
+  e.preventDefault();
+  if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
+  const obj={
+    id:document.getElementById('e-id').value||'',
+    data:document.getElementById('e-data').value,
+    descricao:document.getElementById('e-descricao').value,
+    valor:parseFloat(document.getElementById('e-valor').value)||0,
+    origem:'manual'
+  };
+  setBtnLoading('btnSalvarEntrada',true);
+  try{
+    const saved=await apiSave('entradas',obj);
+    if(obj.id)DB.entradas=DB.entradas.map(x=>String(x.id)===String(obj.id)?{...obj,id:saved.id}:x);
+    else DB.entradas.push({...obj,id:saved.id});
+    DB.saveLocal();
+    closeModal('modalNovaEntrada');
+    document.getElementById('formEntrada').reset();
+    setGlobalMonth(obj.data.substring(0,7));
+    renderEntradas();
+    showNotification('✅ Entrada salva!','success');
+  }catch(err){showNotification('❌ Erro ao salvar entrada','error');}
+  finally{setBtnLoading('btnSalvarEntrada',false,'Salvar');}
+}
+
+async function excluirEntrada(id){
+  if(!confirm('Excluir esta entrada?'))return;
+  try{
+    await apiDelete('entradas',id);
+    DB.entradas=DB.entradas.filter(e=>String(e.id)!==String(id));
+    DB.saveLocal();renderEntradas();renderDashboard();
+    showNotification('🗑️ Entrada excluída','info');
+  }catch(err){showNotification('❌ Erro ao excluir','error');}
+}
+
+// ============================================================
+// DESPESAS
+// ============================================================
+function filtrarDespesas(){
+  const mk=document.getElementById('filtroDespesaMes')?.value||GLOBAL_MONTH;
+  const cat=document.getElementById('filtroCat')?.value||'';
+  const busca=(document.getElementById('buscaDespesa')?.value||'').toLowerCase();
+  let desp=getDespesasMes(mk);
+  if(cat)desp=desp.filter(d=>d.categoria===cat);
+  if(busca)desp=desp.filter(d=>(d.descricao||'').toLowerCase().includes(busca)||(d.categoria||'').toLowerCase().includes(busca));
+  desp.sort((a,b)=>b.data.localeCompare(a.data));
+  const tbody=document.getElementById('tabelaDespesas');
+  if(!desp.length){tbody.innerHTML='<tr><td colspan="5" class="empty-state">Nenhuma despesa</td></tr>';return;}
+  tbody.innerHTML=desp.map(d=>`
+    <tr class="table-row">
+      <td>${fmtDate(d.data)}</td>
+      <td><span class="badge-yellow">${escapeHtml(d.categoria)}</span></td>
+      <td>${escapeHtml(d.descricao)}</td>
+      <td style="font-weight:700;color:#ef4444">${fmt(d.valor)}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button onclick="abrirAlterarDespesa('${d.id}')" class="w-7 h-7" style="background:#fef3c7;color:#92400e;border:none;border-radius:8px;cursor:pointer"><i class="fas fa-pen"></i></button>
+          <button onclick="excluirDespesa('${d.id}')" class="w-7 h-7" style="background:#fee2e2;color:#991b1b;border:none;border-radius:8px;cursor:pointer"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function abrirAlterarDespesa(id){
+  const d=DB.despesas.find(x=>String(x.id)===String(id));if(!d)return;
+  document.getElementById('alt-d-id').value=d.id;
+  document.getElementById('alt-d-data').value=d.data;
+  document.getElementById('alt-d-categoria').value=d.categoria;
+  document.getElementById('alt-d-descricao').value=d.descricao;
+  document.getElementById('alt-d-valor').value=d.valor;
+  openModal('modalAlterarDespesa');
+}
+
+async function salvarDespesa(e){
+  e.preventDefault();
+  if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
+  const obj={
+    id:document.getElementById('d-id').value||'',
+    data:document.getElementById('d-data').value,
+    categoria:document.getElementById('d-categoria').value,
+    descricao:document.getElementById('d-descricao').value,
+    valor:parseFloat(document.getElementById('d-valor').value)||0
+  };
+  setBtnLoading('btnSalvarDespesa',true);
+  try{
+    const saved=await apiSave('despesas',obj);
+    if(obj.id)DB.despesas=DB.despesas.map(x=>String(x.id)===String(obj.id)?{...obj,id:saved.id}:x);
+    else DB.despesas.push({...obj,id:saved.id});
+    DB.saveLocal();
+    closeModal('modalNovaDespesa');
+    document.getElementById('formDespesa').reset();
+    setGlobalMonth(obj.data.substring(0,7));
+    filtrarDespesas();
+    showNotification('✅ Despesa salva!','success');
+  }catch(err){showNotification('❌ Erro ao salvar despesa','error');}
+  finally{setBtnLoading('btnSalvarDespesa',false,'Salvar');}
+}
+
+async function salvarAlteracaoDespesa(e){
+  e.preventDefault();
+  const obj={
+    id:document.getElementById('alt-d-id').value,
+    data:document.getElementById('alt-d-data').value,
+    categoria:document.getElementById('alt-d-categoria').value,
+    descricao:document.getElementById('alt-d-descricao').value,
+    valor:parseFloat(document.getElementById('alt-d-valor').value)||0
+  };
+  setBtnLoading('btnSalvarAlteracao',true);
+  try{
+    const saved=await apiSave('despesas',obj);
+    DB.despesas=DB.despesas.map(x=>String(x.id)===String(obj.id)?{...obj,id:saved.id}:x);
+    DB.saveLocal();
+    closeModal('modalAlterarDespesa');
+    filtrarDespesas();
+    showNotification('✅ Despesa alterada!','success');
+  }catch(err){showNotification('❌ Erro ao alterar','error');}
+  finally{setBtnLoading('btnSalvarAlteracao',false,'Salvar');}
+}
+
+async function excluirDespesa(id){
+  if(!confirm('Excluir esta despesa?'))return;
+  try{
+    await apiDelete('despesas',id);
+    DB.despesas=DB.despesas.filter(d=>String(d.id)!==String(id));
+    DB.saveLocal();filtrarDespesas();renderDashboard();
+    showNotification('🗑️ Despesa excluída','info');
+  }catch(err){showNotification('❌ Erro ao excluir','error');}
+}
+
+// ============================================================
+// DISTRIBUIÇÕES
+// ============================================================
+function renderDistribuicoesMes(){
+  const mk=GLOBAL_MONTH;
+  const ent=sum(getEntradasMes(mk),e=>e.valor);
+  const cultos=getCultosMes(mk);
+  const missoes=sum(cultos,c=>c.missoes||0);
+  const ced=ent*0.044;
+  const cnd=ent*0.085;
+  const regional=ent*0.04;
+  const missoesEst=missoes*0.5;
+  const missoesNac=missoes*0.5;
+
+  const destino=[{label:'CED',valor:ced,info:'4,4% das entradas'},{label:'CND',valor:cnd,info:'8,5% das entradas'},{label:'Taxa Regional',valor:regional,info:'4% das entradas'},{label:'Missões Estaduais',valor:missoesEst,info:'50% das missões'},{label:'Missões Nacionais',valor:missoesNac,info:'50% das missões'}];
+  document.getElementById('distribuicoesContent').innerHTML=`
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      ${destino.map(d=>`<div class="card">
+        <div class="card-title">${d.label}</div>
+        <div class="card-value">${fmt(d.valor)}</div>
+        <div class="card-sub">${d.info}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="section-title">Total a Repassar</div>
+      <div class="card-value">${fmt(ced+cnd+regional+missoesEst+missoesNac)}</div>
+    </div>`;
+}
+
+// ============================================================
+// DIZIMISTAS
+// ============================================================
+function renderRelatorioDizimistas(){
+  const mk=document.getElementById('filtroDizimistaMes')?.value||GLOBAL_MONTH;
+  const cultos=getCultosMes(mk);
+  const mapa={};
+  cultos.forEach(c=>{
+    (c.dizimistas||[]).forEach(d=>{
+      if(!d.nome||d.valor<=0)return;
+      if(!mapa[d.nome])mapa[d.nome]={nome:d.nome,valor:0,formas:{}};
+      mapa[d.nome].valor+=d.valor;
+      mapa[d.nome].formas[d.forma||'dinheiro']=(mapa[d.nome].formas[d.forma||'dinheiro']||0)+d.valor;
+    });
+  });
+  const lista=Object.values(mapa).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const total=sum(lista,l=>l.valor);
+  const el=document.getElementById('dizimistasContent');
+  if(!lista.length){el.innerHTML='<div class="empty-state">Nenhum dizimista neste mês</div>';return;}
+  el.innerHTML=`
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Total de Dízimos</div>
+      <div class="card-value text-green-600">${fmt(total)}</div>
+      <div class="card-sub">${lista.length} dizimista(s)</div>
+    </div>
+    <table class="table">
+      <thead><tr><th>Dizimista</th><th>Forma</th><th style="text-align:right">Valor</th></tr></thead>
+      <tbody>${lista.map(d=>{
+        const formas=Object.entries(d.formas).map(([f,v])=>`${f==='pix'?'📲 PIX':'💵 Dinheiro'}: ${fmt(v)}`).join('<br>');
+        return`<tr><td>${escapeHtml(d.nome)}</td><td style="font-size:12px">${formas}</td><td style="text-align:right;font-weight:700">${fmt(d.valor)}</td></tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+function compartilharDizimistasWhatsApp(){
+  const mk=document.getElementById('filtroDizimistaMes')?.value||GLOBAL_MONTH;
+  const cultos=getCultosMes(mk);
+  const mapa={};
+  cultos.forEach(c=>{
+    (c.dizimistas||[]).forEach(d=>{
+      if(!d.nome||d.valor<=0)return;
+      if(!mapa[d.nome])mapa[d.nome]=0;
+      mapa[d.nome]+=d.valor;
+    });
+  });
+  const txt=`*Relatório de Dizimistas — ${monthLabelShort(mk)}*\n\n${Object.entries(mapa).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,v])=>`• ${n}: ${fmt(v)}`).join('\n')}\n\n*Total: ${fmt(sum(Object.values(mapa)))}*`;
+  const num=(DB.config.whatsapp||'').replace(/\D/g,'');
+  const url=num?`https://wa.me/55${num}?text=${encodeURIComponent(txt)}`:`https://wa.me/?text=${encodeURIComponent(txt)}`;
+  window.open(url,'_blank');
+}
+
+// ============================================================
+// RELATÓRIOS
+// ============================================================
+function renderRelatorios(){
+  document.getElementById('relatorioMes').value=GLOBAL_MONTH;
+  gerarRelatorio();
+}
+
+function gerarRelatorio(){
+  const mk=document.getElementById('relatorioMes').value||GLOBAL_MONTH;
+  const ent=sum(getEntradasMes(mk),e=>e.valor);
+  const said=sum(getDespesasMes(mk),d=>d.valor);
+  const cultos=getCultosMes(mk);
+  const diz=sum(cultos,c=>c.totalDizimos||0);
+  const of=sum(cultos,c=>c.totalOfertas||0);
+  const mis=sum(cultos,c=>c.missoes||0);
+  const saldo=ent-said;
+  document.getElementById('relatorioMensalContent').innerHTML=`
+    <div class="grid">
+      <div class="card"><div class="card-title">Entradas</div><div class="card-value text-green-600">${fmt(ent)}</div></div>
+      <div class="card"><div class="card-title">Saídas</div><div class="card-value text-red-600">${fmt(said)}</div></div>
+      <div class="card"><div class="card-title">Saldo</div><div class="card-value">${fmt(saldo)}</div></div>
+      <div class="card"><div class="card-title">Dízimos</div><div class="card-value text-green-600">${fmt(diz)}</div></div>
+      <div class="card"><div class="card-title">Ofertas</div><div class="card-value text-blue-600">${fmt(of)}</div></div>
+      <div class="card"><div class="card-title">Missões</div><div class="card-value text-yellow-600">${fmt(mis)}</div></div>
+    </div>`;
+}
+
+function imprimirRelatorioMensal(){
+  window.print();
+}
+
+function whatsAppRelatorioMensal(){
+  const mk=document.getElementById('relatorioMes').value||GLOBAL_MONTH;
+  const ent=sum(getEntradasMes(mk),e=>e.valor);
+  const said=sum(getDespesasMes(mk),d=>d.valor);
+  const saldo=ent-said;
+  const txt=`*Relatório Mensal — ${monthLabelShort(mk)}*\nEntradas: ${fmt(ent)}\nSaídas: ${fmt(said)}\nSaldo: ${fmt(saldo)}`;
+  const num=(DB.config.whatsapp||'').replace(/\D/g,'');
+  const url=num?`https://wa.me/55${num}?text=${encodeURIComponent(txt)}`:`https://wa.me/?text=${encodeURIComponent(txt)}`;
+  window.open(url,'_blank');
+}
+
+// ============================================================
+// HISTÓRICO
+// ============================================================
+function renderHistorico(){
+  const anos=[...new Set(DB.historico.map(h=>h.ano))].sort();
+  if(!anos.length){document.getElementById('historicoContent').innerHTML='<div class="empty-state">Sem histórico registrado</div>';return;}
+  const html=anos.map(ano=>{
+    const meses=DB.historico.filter(h=>h.ano===ano).sort((a,b)=>a.mes-b.mes);
+    return`<div class="card" style="margin-bottom:16px">
+      <div class="section-title">${ano}</div>
+      <table class="table">
+        <thead><tr><th>Mês</th><th>Entradas</th><th>Saídas</th><th>Saldo Final</th></tr></thead>
+        <tbody>${meses.map(h=>`<tr>
+          <td>${monthLabelShort(`${h.ano}-${String(h.mes).padStart(2,'0')}`)}</td>
+          <td style="color:#10b981;font-weight:700">${fmt(h.entradas||0)}</td>
+          <td style="color:#ef4444;font-weight:700">${fmt(h.saidas||0)}</td>
+          <td style="font-weight:800">${fmt(h.saldoFinal||0)}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+  document.getElementById('historicoContent').innerHTML=html;
+}
+
+// ============================================================
+// CONFIGURAÇÕES
+// ============================================================
+function renderConfiguracoes(){
+  document.getElementById('cfg-nome').value=DB.config.nomeIgreja||'';
+  document.getElementById('cfg-endereco').value=DB.config.endereco||'';
+  document.getElementById('cfg-pastor').value=DB.config.pastor||'';
+  document.getElementById('cfg-tesoureiro').value=DB.config.tesoureiro||'';
+  document.getElementById('cfg-whatsapp').value=DB.config.whatsapp||'';
+  renderCategoriaSelects();
+  renderListaCategoriasCfg();
+}
+
+function salvarConfiguracoes(){
+  DB.config={
+    nomeIgreja:document.getElementById('cfg-nome').value,
+    endereco:document.getElementById('cfg-endereco').value,
+    pastor:document.getElementById('cfg-pastor').value,
+    tesoureiro:document.getElementById('cfg-tesoureiro').value,
+    whatsapp:document.getElementById('cfg-whatsapp').value
+  };
+  DB.saveLocal();
+  showNotification('✅ Configurações salvas!','success');
+}
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+async function inicializarSistema(){
+  DB.loadLocal();
+  buildGlobalMonthOptions();
+  ['filtroEntradaMes','filtroDespesaMes','filtroCultoMes','filtroDizimistaMes','relatorioMes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=GLOBAL_MONTH;});
+  renderCategoriaSelects();
+  await sincronizarTudo(true);
+  showPage('dashboard');
+}
+
+document.addEventListener('DOMContentLoaded',inicializarSistema);
+</script>
+</body>
+</html>
