@@ -1069,6 +1069,7 @@ async function apiDelete(sheet, id) {
 // ============================================================
 // SESSÃO / LOGIN
 // ============================================================
+
 // ============================================================
 // SESSÃO / LOGIN
 // ============================================================
@@ -1119,6 +1120,7 @@ function limparSessao() {
   localStorage.removeItem(SESSION_KEY);
   SESSAO = null;
 }
+
 
 function toggleSenha() {
   const i=document.getElementById('loginPass'),icon=document.getElementById('togglePassIcon'),show=i.type==='password';
@@ -1292,6 +1294,7 @@ function aplicarPermissoesUI() {
     console.log(`${temPerm ? '✅' : '❌'} ${id}: ${temPerm ? 'VISÍVEL' : 'OCULTO'}`);
   });
 }
+
 
 // ============================================================
 // DB LOCAL
@@ -1781,6 +1784,17 @@ function renderCultos(){
   document.getElementById('tot-missoes').textContent    =fmt(sum(todos,c=>c.missoes||0));
   document.getElementById('tot-cultos-total').textContent=fmt(sum(todos,c=>(c.totalDizimos||0)+(c.totalOfertas||0)));
 }
+  function renderCultos(){
+  const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
+  const filtroMes=document.getElementById('filtroCultoMes')?.value||GLOBAL_MONTH;
+  let cultos=[...DB.cultos].filter(c=>(c.data||'').startsWith(filtroMes));
+  
+  // ... resto do código ...
+  
+  // [ADICIONE ESTA LINHA NO FINAL]
+  aplicarPermissoesUI();
+}
+
 
 function openNovoCulto(){
   if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
