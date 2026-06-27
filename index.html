@@ -1223,6 +1223,16 @@ function entrarNoSistema() {
   document.getElementById('loginScreen').classList.remove('active');
   document.getElementById('appRoot').style.display='block';
   aplicarPermissoesUI();
+  // [DEBUG TEMPORÁRIO]
+window.debugPermissoes = function() {
+  console.log('=== DEBUG PERMISSÕES ===');
+  console.log('SESSAO:', SESSAO);
+  console.log('temPermissao("podeLancar"):', temPermissao('podeLancar'));
+  console.log('Botão existe?', !!document.getElementById('btnNovoCulto'));
+  console.log('Display atual:', document.getElementById('btnNovoCulto')?.style.display);
+  console.log('PERMISSOES config:', PERMISSOES);
+};
+
   inicializarSistema();
 }
 
