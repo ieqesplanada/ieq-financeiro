@@ -1238,21 +1238,49 @@ function logout() {
 }
 
 function aplicarPermissoesUI() {
-  if(!SESSAO)return;
-  const{nome,permissao}=SESSAO;
-  document.getElementById('sidebarUserNome').textContent=nome;
-  const pL={admin:'Admin',tesoureiro:'Tesoureiro',visualizador:'Visualizador'};
-  const pC={admin:'perm-admin',tesoureiro:'perm-tesoureiro',visualizador:'perm-visualizador'};
-  document.getElementById('sidebarUserPerm').innerHTML=
-    `<span class="perm-badge ${pC[permissao]||'perm-visualizador'}">
-       <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'eye'} text-xs"></i>
-       ${pL[permissao]||permissao}</span>`;
-  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.style.display=v?'':'none';};
-  sv('btnNovoCulto', temPermissao('podeLancar'));
-  sv('btnNovaEntrada', temPermissao('podeLancar'));
-  sv('btnNovaDespesa', temPermissao('podeLancar'));
-  sv('cardUsuarios', temPermissao('podeConfig'));
-  sv('cardCategorias', temPermissao('podeConfig'));
+  console.log('🔧 Aplicando permissões UI...');
+  
+  if (!SESSAO) {
+    console.error('❌ SESSAO é null em aplicarPermissoesUI');
+    return;
+  }
+  
+  const {nome, permissao} = SESSAO;
+  console.log(`👤 Usuário: ${nome} | Permissão: ${permissao}`);
+  
+  document.getElementById('sidebarUserNome').textContent = nome;
+  
+  const pL = {admin:'Admin', tesoureiro:'Tesoureiro', visualizador:'Visualizador'};
+  const pC = {admin:'perm-admin', tesoureiro:'perm-tesoureiro', visualizador:'perm-visualizador'};
+  
+  document.getElementById('sidebarUserPerm').innerHTML = `
+    <span class="perm-badge ${pC[permissao]||'perm-visualizador'}">
+      <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'eye'} text-xs"></i>
+      ${pL[permissao]||permissao}
+    </span>
+  `;
+  
+  // Lista de elementos controlados por permissão
+  const controles = [
+    {id: 'btnNovoCulto',    permissao: 'podeLancar'},
+    {id: 'btnNovaEntrada',  permissao: 'podeLancar'},
+    {id: 'btnNovaDespesa',  permissao: 'podeLancar'},
+    {id: 'cardUsuarios',    permissao: 'podeConfig'},
+    {id: 'cardCategorias',  permissao: 'podeConfig'},
+  ];
+  
+  controles.forEach(({id, permissao: perm}) => {
+    const el = document.getElementById(id);
+    if (!el) {
+      console.warn(`⚠️ Elemento ${id} não encontrado no DOM`);
+      return;
+    }
+    
+    const temPerm = temPermissao(perm);
+    el.style.display = temPerm ? '' : 'none';
+    
+    console.log(`${temPerm ? '✅' : '❌'} ${id}: ${temPerm ? 'VISÍVEL' : 'OCULTO'}`);
+  });
 }
 
 // ============================================================
