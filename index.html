@@ -1795,63 +1795,203 @@ async function excluirCulto(id){
 
 function verCulto(id){
   const c=DB.cultos.find(x=>String(x.id)===String(id));if(!c)return;
+  _cultoAtualId=c.id;
   const cfg=DB.config||{};
   const totalGeral=(c.totalDizimos||0)+(c.totalOfertas||0)+(c.especiais||0)+(c.outras||0);
   const missoesEst=(c.missoes||0)*0.5;
   const missoesNac=(c.missoes||0)*0.5;
+  
+  // Prepara lista de dízimos
+  const dizimistasHTML=(c.dizimistas||[]).length?
+    (c.dizimistas||[]).map(d=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0">
+        <div>
+          <span style="font-weight:600;color:#1f2937">${escapeHtml(d.nome||'—')}</span>
+          <span style="margin-left:8px;font-size:11px;color:#6b7280;background:#f3f4f6;padding:2px 8px;border-radius:12px">${d.forma==='pix'?'📲 PIX':'💵 Dinheiro'}</span>
+        </div>
+        <span style="font-weight:700;color:#059669">${fmt(d.valor)}</span>
+      </div>
+    `).join('')
+    :'<p style="color:#9ca3af;font-size:13px;text-align:center;padding:12px 0">Nenhum dizimista registrado</p>';
+
+  // Prepara lista de ofertas
+  const ofertasHTML=(c.ofertas||[]).length?
+    (c.ofertas||[]).map(o=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0">
+        <div>
+          <span style="font-weight:600;color:#1f2937">${escapeHtml(o.nome||'Oferta')}</span>
+          <span style="margin-left:8px;font-size:11px;color:#6b7280;background:#f3f4f6;padding:2px 8px;border-radius:12px">${o.forma==='pix'?'📲 PIX':'💵 Dinheiro'}</span>
+        </div>
+        <span style="font-weight:700;color:#2563eb">${fmt(o.valor)}</span>
+      </div>
+    `).join('')
+    :'<p style="color:#9ca3af;font-size:13px;text-align:center;padding:12px 0">Nenhuma oferta registrada</p>';
+
   document.getElementById('printArea').innerHTML=`
-  <div style="font-family:'Segoe UI',sans-serif;padding:16px;max-width:600px;margin:auto">
-    <div style="text-align:center;border-bottom:2px solid #1e3a5f;padding-bottom:16px;margin-bottom:16px">
-      <p style="color:#1e3a5f;font-weight:700;font-size:18px;">${escapeHtml(cfg.nomeIgreja||'IEQ Esplanada')}</p>
-      <p style="color:#555;font-size:13px">${escapeHtml(cfg.endereco||'')}</p>
-      <p style="color:#c8a951;font-weight:700;font-size:15px;margin-top:6px">RELATÓRIO DE CULTO (REFC)</p>
-      <p style="color:#555;font-size:12px">${fmtDate(c.data)} • ${c.horario||''} • ${escapeHtml(c.tipo||'')}</p>
+  <div style="font-family:'Segoe UI',sans-serif;padding:20px;max-width:700px;margin:auto;color:#1f2937">
+    
+    <!-- CABEÇALHO -->
+    <div style="text-align:center;border-bottom:3px solid #1e3a5f;padding-bottom:20px;margin-bottom:24px">
+      <h1 style="color:#1e3a5f;font-weight:800;font-size:22px;margin:0 0 6px 0">${escapeHtml(cfg.nomeIgreja||'IEQ Esplanada')}</h1>
+      <p style="color:#6b7280;font-size:13px;margin:0 0 12px 0">${escapeHtml(cfg.endereco||'')}</p>
+      <h2 style="color:#c8a951;font-weight:700;font-size:17px;margin:0 0 8px 0">RELATÓRIO DE CULTO (REFC)</h2>
+      <p style="color:#374151;font-size:14px;margin:0">
+        <strong>${fmtDate(c.data)}</strong> • ${c.horario||'19:30'} • ${escapeHtml(c.tipo||'Culto Regular')}
+      </p>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:13px">
-      <div><b>Pastor:</b> ${escapeHtml(c.pastor||'—')}</div>
-      <div><b>Pregador:</b> ${escapeHtml(c.pregador||'—')}</div>
-      <div><b>Presentes:</b> ${c.presentes||0}</div>
-      <div><b>Visitantes:</b> ${c.visitantes||0}</div>
-      <div><b>Crianças:</b> ${c.criancas||0}</div>
-      <div><b>Curas:</b> ${c.cura||0}</div>
+
+    <!-- INFORMAÇÕES DO CULTO -->
+    <div style="background:#f9fafb;border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid #e5e7eb">
+      <h3 style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 12px 0;border-bottom:1px solid #e5e7eb;padding-bottom:6px">
+        <i class="fas fa-info-circle" style="color:#3b82f6;margin-right:6px"></i>Informações do Culto
+      </h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+        <div><strong style="color:#6b7280">Pastor:</strong> <span style="color:#1f2937">${escapeHtml(c.pastor||'—')}</span></div>
+        <div><strong style="color:#6b7280">Pregador:</strong> <span style="color:#1f2937">${escapeHtml(c.pregador||'—')}</span></div>
+        <div><strong style="color:#6b7280">Presentes:</strong> <span style="color:#1f2937;font-weight:600">${c.presentes||0}</span></div>
+        <div><strong style="color:#6b7280">Visitantes:</strong> <span style="color:#1f2937;font-weight:600">${c.visitantes||0}</span></div>
+        <div><strong style="color:#6b7280">Crianças:</strong> <span style="color:#1f2937;font-weight:600">${c.criancas||0}</span></div>
+        <div><strong style="color:#6b7280">Test. de Cura:</strong> <span style="color:#1f2937;font-weight:600">${c.cura||0}</span></div>
+      </div>
     </div>
-    ${(c.dizimistas||[]).length?`
-    <div style="margin-bottom:12px">
-      <p style="font-weight:700;color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:13px">DÍZIMOS — ${fmt(c.totalDizimos)}</p>
-      ${(c.dizimistas||[]).map(d=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>${escapeHtml(d.nome||'—')} <span style="color:#888">(${d.forma||'dinheiro'})</span></span><b>${fmt(d.valor)}</b></div>`).join('')}
-    </div>`:''}
-    ${(c.ofertas||[]).length?`
-    <div style="margin-bottom:12px">
-      <p style="font-weight:700;color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:13px">OFERTAS — ${fmt(c.totalOfertas)}</p>
-      ${(c.ofertas||[]).map(o=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>${escapeHtml(o.nome||'—')} <span style="color:#888">(${o.forma||'dinheiro'})</span></span><b>${fmt(o.valor)}</b></div>`).join('')}
-    </div>`:''}
-    <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Dízimos:</span><b>${fmt(c.totalDizimos)}</b></div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Ofertas:</span><b>${fmt(c.totalOfertas)}</b></div>
-      ${(c.especiais||0)>0?`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Especiais:</span><b>${fmt(c.especiais)}</b></div>`:''}
-      ${(c.outras||0)>0?`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Outras:</span><b>${fmt(c.outras)}</b></div>`:''}
+
+    <!-- DÍZIMOS -->
+    <div style="background:#d1fae5;border-radius:12px;padding:16px;margin-bottom:20px;border:2px solid #6ee7b7">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="font-size:13px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:0.5px;margin:0">
+          <i class="fas fa-hand-holding-usd" style="margin-right:6px"></i>Dízimos
+        </h3>
+        <span style="background:#059669;color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">
+          Total: ${fmt(c.totalDizimos||0)}
+        </span>
+      </div>
+      ${dizimistasHTML}
+    </div>
+
+    <!-- OFERTAS GERAIS -->
+    <div style="background:#dbeafe;border-radius:12px;padding:16px;margin-bottom:20px;border:2px solid #93c5fd">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="font-size:13px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:0.5px;margin:0">
+          <i class="fas fa-donate" style="margin-right:6px"></i>Ofertas Gerais
+        </h3>
+        <span style="background:#2563eb;color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">
+          Total: ${fmt(c.totalOfertas||0)}
+        </span>
+      </div>
+      ${ofertasHTML}
+    </div>
+
+    <!-- OUTRAS ARRECADAÇÕES -->
+    <div style="background:#fef3c7;border-radius:12px;padding:16px;margin-bottom:20px;border:2px solid #fde68a">
+      <h3 style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 12px 0;border-bottom:1px solid #fde68a;padding-bottom:6px">
+        <i class="fas fa-coins" style="color:#f59e0b;margin-right:6px"></i>Outras Arrecadações
+      </h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+        <div style="display:flex;justify-content:space-between;padding:8px;background:white;border-radius:8px">
+          <span style="color:#92400e;font-weight:600">Ofertas Missões:</span>
+          <span style="font-weight:700;color:#0f766e">${fmt(c.missoes||0)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px;background:white;border-radius:8px">
+          <span style="color:#92400e;font-weight:600">Ofertas Especiais:</span>
+          <span style="font-weight:700;color:#92400e">${fmt(c.especiais||0)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px;background:white;border-radius:8px">
+          <span style="color:#92400e;font-weight:600">Outras Entradas:</span>
+          <span style="font-weight:700;color:#92400e">${fmt(c.outras||0)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:12px;background:#059669;border-radius:8px">
+          <span style="color:white;font-weight:700;font-size:11px">TOTAL (sem Missões):</span>
+          <span style="color:white;font-weight:800;font-size:15px">${fmt(totalGeral)}</span>
+        </div>
+      </div>
       ${(c.missoes||0)>0?`
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#0f766e"><span>Missões:</span><b>${fmt(c.missoes)}</b></div>
-      <div style="font-size:11px;color:#0f766e;margin-bottom:4px;padding-left:8px">→ Est. 50%: ${fmt(missoesEst)} | Nac. 50%: ${fmt(missoesNac)}</div>`:''}
-      <div style="display:flex;justify-content:space-between;border-top:1px solid #e5e7eb;padding-top:6px;margin-top:6px;font-size:14px"><span><b>TOTAL (sem Missões):</b></span><b style="color:#1e3a5f">${fmt(totalGeral)}</b></div>
+      <div style="margin-top:12px;padding:10px;background:#ccfbf1;border-radius:8px;border:1px solid #5eead4">
+        <p style="margin:0 0 6px 0;font-size:12px;color:#0f766e;font-weight:600">
+          <i class="fas fa-info-circle" style="margin-right:4px"></i>Distribuição Missões:
+        </p>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#0f766e">
+          <span>→ Estadual 50%: <strong>${fmt(missoesEst)}</strong></span>
+          <span>→ Nacional 50%: <strong>${fmt(missoesNac)}</strong></span>
+        </div>
+      </div>`:''}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;font-size:13px">
-      <div style="background:#d1fae5;border-radius:8px;padding:10px;text-align:center">
-        <p style="color:#065f46;font-weight:700;font-size:11px">CAIXA LOCAL</p>
-        <p style="color:#065f46;font-weight:800;font-size:16px">${fmt(c.caixaLocal)}</p>
+
+    <!-- RESUMO FINANCEIRO -->
+    <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:20px;border:2px solid #e2e8f0">
+      <h3 style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 12px 0">
+        <i class="fas fa-chart-line" style="color:#6366f1;margin-right:6px"></i>Resumo Financeiro
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
+        <div style="display:flex;justify-content:space-between;padding:8px;background:white;border-radius:6px">
+          <span style="color:#475569">Dízimos:</span>
+          <strong style="color:#059669">${fmt(c.totalDizimos||0)}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px;background:white;border-radius:6px">
+          <span style="color:#475569">Ofertas:</span>
+          <strong style="color:#2563eb">${fmt(c.totalOfertas||0)}</strong>
+        </div>
+        ${(c.especiais||0)>0?`
+        <div style="display:flex;justify-content:space-between;padding:8px;background:white;border-radius:6px">
+          <span style="color:#475569">Especiais:</span>
+          <strong style="color:#d97706">${fmt(c.especiais)}</strong>
+        </div>`:''}
+        ${(c.outras||0)>0?`
+        <div style="display:flex;justify-content:space-between;padding:8px;background:white;border-radius:6px">
+          <span style="color:#475569">Outras:</span>
+          <strong style="color:#d97706">${fmt(c.outras)}</strong>
+        </div>`:''}
+        ${(c.missoes||0)>0?`
+        <div style="display:flex;justify-content:space-between;padding:8px;background:#ecfdf5;border-radius:6px;border:1px solid #6ee7b7">
+          <span style="color:#065f46;font-weight:600">Missões:</span>
+          <strong style="color:#059669">${fmt(c.missoes)}</strong>
+        </div>`:''}
+        <div style="display:flex;justify-content:space-between;padding:12px;background:#1e3a5f;border-radius:8px;margin-top:4px">
+          <span style="color:white;font-weight:700;font-size:15px">TOTAL (sem Missões):</span>
+          <span style="color:#fbbf24;font-weight:800;font-size:18px">${fmt(totalGeral)}</span>
+        </div>
       </div>
-      <div style="background:#dbeafe;border-radius:8px;padding:10px;text-align:center">
-        <p style="color:#1e40af;font-weight:700;font-size:11px">CONTA CORRENTE (PIX)</p>
-        <p style="color:#1e40af;font-weight:800;font-size:16px">${fmt(c.contaCorrente)}</p>
+    </div>
+
+    <!-- DESTINO DA ARRECADAÇÃO -->
+    <div style="background:#ede9fe;border-radius:12px;padding:16px;margin-bottom:20px;border:2px solid #c4b5fd">
+      <h3 style="font-size:12px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 12px 0">
+        <i class="fas fa-exchange-alt" style="margin-right:6px"></i>Destino da Arrecadação
+      </h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="text-align:center;padding:14px;background:#d1fae5;border-radius:10px;border:2px solid #6ee7b7">
+          <p style="margin:0 0 6px 0;color:#065f46;font-weight:700;font-size:11px">CAIXA LOCAL — DINHEIRO</p>
+          <p style="margin:0;color:#065f46;font-weight:800;font-size:20px">${fmt(c.caixaLocal||0)}</p>
+          <p style="margin:4px 0 0 0;font-size:10px;color:#059669;background:#ecfdf5;padding:2px 8px;border-radius:12px;display:inline-block">AUTO</p>
+        </div>
+        <div style="text-align:center;padding:14px;background:#dbeafe;border-radius:10px;border:2px solid #93c5fd">
+          <p style="margin:0 0 6px 0;color:#1e40af;font-weight:700;font-size:11px">CONTA CORRENTE — PIX</p>
+          <p style="margin:0;color:#1e40af;font-weight:800;font-size:20px">${fmt(c.contaCorrente||0)}</p>
+          <p style="margin:4px 0 0 0;font-size:10px;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:12px;display:inline-block">AUTO</p>
+        </div>
       </div>
     </div>
-    ${c.observacoes?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;font-size:12px"><b>Obs:</b> ${escapeHtml(c.observacoes)}</div>`:''}
-    <div style="margin-top:24px;text-align:center;font-size:11px;color:#888;border-top:1px solid #e5e7eb;padding-top:12px">
-      Pastor: ${escapeHtml(cfg.pastor||'Danilo de Oliveira Falcão')} | Tesoureiro: ${escapeHtml(cfg.tesoureiro||'Danilo Falcão')}
+
+    <!-- OBSERVAÇÕES -->
+    ${c.observacoes?`
+    <div style="background:#fffbeb;border:2px solid #fde68a;border-radius:12px;padding:14px;margin-bottom:20px">
+      <h3 style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px 0">
+        <i class="fas fa-sticky-note" style="margin-right:6px"></i>Observações
+      </h3>
+      <p style="margin:0;font-size:13px;color:#78350f;line-height:1.6">${escapeHtml(c.observacoes)}</p>
+    </div>`:''}
+
+    <!-- RODAPÉ -->
+    <div style="margin-top:32px;text-align:center;font-size:11px;color:#9ca3af;border-top:2px solid #e5e7eb;padding-top:16px">
+      <p style="margin:0 0 4px 0"><strong>Pastor:</strong> ${escapeHtml(cfg.pastor||'Danilo de Oliveira Falcão')}</p>
+      <p style="margin:0"><strong>Tesoureiro:</strong> ${escapeHtml(cfg.tesoureiro||'Danilo Falcão')}</p>
+      <p style="margin:8px 0 0 0;color:#d1d5db;font-size:10px">Sistema Financeiro IEQ — Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</p>
     </div>
+
   </div>`;
+  
   openModal('modalVerCulto');
 }
+
 
 let _cultoAtualId=null;
 function whatsAppCultoAtual(){
