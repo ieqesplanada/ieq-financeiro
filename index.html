@@ -1493,21 +1493,54 @@ async function apiUpdate(sheet, id, data) {
   // =========================
   // BOOTSTRAP / INICIALIZAÇÃO
   // =========================
+
+  function esconderLoading() {
+  document.getElementById('loadingOverlay')?.classList.add('hidden');
+}
+
   let _initController=null;
-  async function inicializarSistema(){
-    _initController?.abort();
-    _initController=new AbortController();
-    try{
-      preencherSeletorMeses?.();
-      const sel=document.getElementById('globalMonthSelector');
-      if(sel){ sel.value=GLOBAL_MONTH; sel.addEventListener('change',changeGlobalMonth); }
-      DB.loadLocal();
-      renderTudo();
-      setSyncStatus(true);
-      try{ await DB.carregarDoServidor(_initController.signal); renderTudo(); }
-      catch(e){ if(e.name!=='AbortError') setSyncStatus(false); }
-    }catch(err){ console.error('Erro init',err); setSyncStatus(false); }
+  async function inicializarSistema() {
+  _initController?.abort();
+  _initController = new AbortController();
+
+  try {
+    if (typeof preencherSeletorMeses === 'function') {
+      preencherSeletorMeses();
+    }
+
+    const sel = document.getElementById('globalMonthSelector');
+
+    if (sel) {
+      sel.value = GLOBAL_MONTH;
+      sel.removeEventListener('change', changeGlobalMonth);
+      sel.addEventListener('change', changeGlobalMonth);
+    }
+
+    DB.loadLocal();
+    renderTudo();
+    setSyncStatus(true);
+
+    try {
+      if (typeof DB.carregarDoServidor === 'function') {
+        await DB.carregarDoServidor();
+        renderTudo();
+        setSyncStatus(true);
+      } else {
+        console.warn('DB.carregarDoServidor não existe.');
+        setSyncStatus(false);
+      }
+    } catch (e) {
+      console.error('Erro ao carregar dados do servidor:', e);
+      setSyncStatus(false);
+    }
+
+  } catch (err) {
+    console.error('Erro na inicialização:', err);
+    setSyncStatus(false);
+  } finally {
+    esconderLoading();
   }
+}
 
   document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('formCulto')?.addEventListener('submit',salvarCulto);
