@@ -251,8 +251,12 @@
           <span class="text-gray-600 text-xs">Sincronizado</span>
         </div>
         <button onclick="sincronizarTudo()" title="Sincronizar" class="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition text-sm">
-          <i class="fas fa-sync-alt"></i>
-        </button>
+  <i class="fas fa-sync-alt"></i>
+</button>
+<button onclick="sincronizarLimpandoExcluidos()" title="Limpar registros excluídos em outro dispositivo" class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition text-sm" style="font-size:11px">
+  <i class="fas fa-broom"></i>
+</button>
+
         <select class="input-field text-xs sm:text-sm" style="width:auto;min-width:135px;max-width:170px"
                 id="globalMonthSelector" onchange="changeGlobalMonth()"></select>
       </div>
@@ -574,6 +578,8 @@
           <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês com dados reais</p>
           <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
           <button class="btn-primary w-full text-sm" onclick="gerarRelatorio()"><i class="fas fa-print mr-2"></i> Imprimir Relatório</button>
+<button class="btn-whatsapp w-full text-sm mt-2" onclick="whatsAppRelatorioMensal()"><i class="fab fa-whatsapp mr-2"></i> Enviar por WhatsApp</button>
+
         </div>
         <div class="card p-4">
           <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
@@ -1322,6 +1328,9 @@ function closeSidebar(){
 // ============================================================
 // SINCRONIZAÇÃO COMPLETA
 // ============================================================
+// ============================================================
+// SINCRONIZAÇÃO COMPLETA
+// ============================================================
 async function sincronizarTudo(silent=false){
   if(!silent)mostrarLoading(true,'Sincronizando dados...','Buscando dados do servidor...');
   try{
@@ -1329,7 +1338,6 @@ async function sincronizarTudo(silent=false){
     if(cultosR.length>0)   DB.cultos   =cultosR.map(normalizarCulto);
     if(entradasR.length>0) DB.entradas =entradasR.map(normalizarEntrada);
     if(despesasR.length>0){
-
       const ids=new Set(despesasR.map(d=>String(d.id)));
       DB.despesas=[
         ...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),
@@ -1355,6 +1363,65 @@ async function sincronizarTudo(silent=false){
     if(!silent)showNotification('⚠️ Erro ao sincronizar. Usando dados locais.','warning');
   }finally{
     if(!silent)mostrarLoading(false);
+  }
+}
+
+// [NOVO] Sincroniza e remove do cache o que foi excluído em outro dispositivo
+async function sincronizarLimpandoExcluidos(){
+  mostrarLoading(true,'Limpando registros excluídos...','Consultando servidor...');
+  try{
+    const[cultosR,entradasR,despesasR]=await Promise.all([apiGet('cultos'),apiGet('entradas'),apiGet('despesas')]);
+    const idsCultos   =new Set((cultosR  ||[]).map(c=>String(c.id)));
+    const idsEntradas =new Set((entradasR||[]).map(e=>String(e.id)));
+    const idsDespesas =new Set((despesasR||[]).map(d=>String(d.id)));
+    let removidos=0;
+
+    const antCultos=DB.cultos.length;
+    DB.cultos=cultosR.length>0
+      ? cultosR.map(normalizarCulto)
+      : DB.cultos.filter(c=>!c.id||String(c.id).startsWith('local-')||idsCultos.has(String(c.id)));
+
+    const antEntradas=DB.entradas.length;
+    DB.entradas=entradasR.length>0
+      ? entradasR.map(normalizarEntrada)
+      : DB.entradas.filter(e=>!e.id||e.origem==='local'||idsEntradas.has(String(e.id)));
+
+    const antDespesas=DB.despesas.length;
+    if(despesasR.length>0){
+      const ids=new Set(despesasR.map(d=>String(d.id)));
+      DB.despesas=[
+        ...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),
+        ...despesasR.map(normalizarDespesa)
+      ];
+    } else {
+      DB.despesas=DB.despesas.filter(d=>d._fixed||!d.id||idsDespesas.has(String(d.id)));
+    }
+
+    removidos=(antCultos-DB.cultos.length)+(antEntradas-DB.entradas.length)+(antDespesas-DB.despesas.length);
+    if(removidos<0)removidos=0;
+
+    DB.saveLocal();
+    buildGlobalMonthOptions();
+    const p=document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard';
+    if(p==='dashboard')     renderDashboard();
+    if(p==='culto')         renderCultos();
+    if(p==='entradas')      renderEntradas();
+    if(p==='despesas')      filtrarDespesas();
+    if(p==='distribuicoes') renderDistribuicoesMes();
+    if(p==='dizimistas')    renderRelatorioDizimistas();
+    if(p==='historico')     renderHistorico();
+    if(p==='configuracoes') renderConfiguracoes();
+    showNotification(
+      removidos>0
+        ? `🧹 ${removidos} registro(s) excluído(s) em outro dispositivo foram removidos.`
+        : '✅ Cache sincronizado! Nenhum registro órfão encontrado.',
+      removidos>0?'info':'success'
+    );
+  }catch(err){
+    console.error('Sync limpar error:',err);
+    showNotification('⚠️ Erro ao sincronizar. Verifique sua conexão.','warning');
+  }finally{
+    mostrarLoading(false);
   }
 }
 
@@ -1569,7 +1636,6 @@ function adicionarDizimista(nome='',valor='',forma='dinheiro'){
     <select class="forma-pag diz-forma">
       <option value="dinheiro" ${forma==='dinheiro'?'selected':''}>💵 Dinheiro</option>
       <option value="pix"      ${forma==='pix'?'selected':''}>📲 PIX</option>
-      <option value="cheque"   ${forma==='cheque'?'selected':''}>📝 Cheque</option>
     </select>
     <button type="button" class="btn-remove" onclick="this.parentElement.remove();calcTotalCulto()">×</button>`;
   document.getElementById('listaDizimistas').appendChild(div);
@@ -1585,7 +1651,6 @@ function adicionarOferta(nome='',valor='',forma='dinheiro'){
     <select class="forma-pag of-forma">
       <option value="dinheiro" ${forma==='dinheiro'?'selected':''}>💵 Dinheiro</option>
       <option value="pix"      ${forma==='pix'?'selected':''}>📲 PIX</option>
-      <option value="cheque"   ${forma==='cheque'?'selected':''}>📝 Cheque</option>
     </select>
     <button type="button" class="btn-remove" onclick="this.parentElement.remove();calcTotalCulto()">×</button>`;
   document.getElementById('listaOfertas').appendChild(div);
@@ -1622,6 +1687,23 @@ function calcTotalCulto(){
 async function salvarCulto(e){
   e.preventDefault();
   if(!temPermissao('podeLancar')){showNotification('🔒 Sem permissão.','error');return;}
+
+  // [NOVO] Validação de data
+  const dataVal=document.getElementById('c-data').value;
+  if(!dataVal){
+    showNotification('⚠️ Informe a data do culto.','warning');
+    document.getElementById('c-data').focus();
+    return;
+  }
+  const dataDigitada=new Date(dataVal+'T00:00:00');
+  const hoje=new Date();
+  hoje.setHours(0,0,0,0);
+  if(dataDigitada>hoje){
+    showNotification('⚠️ A data do culto não pode ser futura.','warning');
+    document.getElementById('c-data').focus();
+    return;
+  }
+
   setBtnLoading('btnSalvarCulto',true);
   const id=document.getElementById('c-id').value;
   const dizimistas=Array.from(document.querySelectorAll('#listaDizimistas .dizimista-row')).map(r=>({
@@ -1642,7 +1724,7 @@ async function salvarCulto(e){
   const totalArrecadado=totalDizimos+totalOfertas+especiais+outras;
   const culto={
     id:id||`local-${Date.now()}`,
-    data:document.getElementById('c-data').value,
+    data:dataVal,
     horario:document.getElementById('c-horario').value,
     pastor:document.getElementById('c-pastor').value,
     pregador:document.getElementById('c-pregador').value,
@@ -2251,6 +2333,56 @@ function exportarCultosExcelFake(){
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cultos.csv';a.click();
   showNotification('✅ CSV exportado!','success');
+}
+function exportarCultosExcelFake(){
+  const ini=document.getElementById('relCultoIni').value;
+  const fim=document.getElementById('relCultoFim').value;
+  let cultos=DB.cultos;
+  if(ini)cultos=cultos.filter(c=>c.data>=ini+'-01');
+  if(fim)cultos=cultos.filter(c=>c.data<=fim+'-31');
+  let csv='Data,Tipo,Pregador,Presentes,Dizimos,Ofertas,Missoes,Total\n';
+  cultos.forEach(c=>csv+=`"${c.data}","${c.tipo||''}","${c.pregador||''}",${c.presentes||0},${c.totalDizimos||0},${c.totalOfertas||0},${c.missoes||0},${(c.totalDizimos||0)+(c.totalOfertas||0)}\n`);
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cultos.csv';a.click();
+  showNotification('✅ CSV exportado!','success');
+}
+
+function whatsAppRelatorioMensal(){
+  const mk=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
+  const h=getHistoricoRow(mk);
+  const entMes=sum(getEntradasMes(mk),e=>e.valor);
+  const despMes=sum(getDespesasMes(mk),d=>d.valor);
+  const totalEnt=h?.entradas??entMes;
+  const totalSaid=h?.saidas??despMes;
+  const saldoAnt=h?.saldoAnt??0;
+  const saldoFin=h?.saldoFinal??(saldoAnt+totalEnt-totalSaid);
+  const cultosMes=getCultosMes(mk);
+  const totalMissoes=sum(cultosMes,c=>c.missoes||0);
+  const cfg=DB.config||{};
+
+  const catMap={};
+  getDespesasMes(mk).forEach(d=>catMap[d.categoria]=(catMap[d.categoria]||0)+d.valor);
+  const despCats=Object.entries(catMap).map(([k,v])=>`  • ${k}: ${fmt(v)}`).join('\n');
+
+  let txt=`*📊 RELATÓRIO FINANCEIRO — ${monthLabel(mk).toUpperCase()}*\n`;
+  txt+=`*${cfg.nomeIgreja||'IEQ Esplanada'}*\n\n`;
+  txt+=`💰 Saldo Anterior: ${fmt(saldoAnt)}\n`;
+  txt+=`📈 Total Entradas: ${fmt(totalEnt)}\n`;
+  txt+=`📉 Total Saídas: ${fmt(totalSaid)}\n`;
+  txt+=`✅ *Saldo Final: ${fmt(saldoFin)}*\n\n`;
+  txt+=`🌍 Missões do mês: ${fmt(totalMissoes)}\n`;
+  txt+=`  → Est. 50%: ${fmt(totalMissoes*0.5)}\n`;
+  txt+=`  → Nac. 50%: ${fmt(totalMissoes*0.5)}\n\n`;
+  txt+=`📋 Distribuições:\n`;
+  txt+=`  • CED (4,4%): ${fmt(totalEnt*0.044)}\n`;
+  txt+=`  • CND (8,5%): ${fmt(totalEnt*0.085)}\n`;
+  txt+=`  • Taxa Regional (4%): ${fmt(totalEnt*0.04)}\n\n`;
+  if(despCats){txt+=`📦 Despesas por categoria:\n${despCats}\n\n`;}
+  txt+=`_Pastor: ${cfg.pastor||'Danilo de Oliveira Falcão'} | Tesoureiro: ${cfg.tesoureiro||'Danilo Falcão'}_`;
+
+  const num=(cfg.whatsapp||'').replace(/\D/g,'');
+  const url=num?`https://wa.me/55${num}?text=${encodeURIComponent(txt)}`:`https://wa.me/?text=${encodeURIComponent(txt)}`;
+  window.open(url,'_blank');
 }
 
 // ============================================================
