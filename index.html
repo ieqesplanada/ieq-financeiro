@@ -112,12 +112,10 @@
     .diz-rank-3 { background: linear-gradient(135deg,#fef9ef,#fde8c8); border-left: 4px solid #f97316; }
     .login-check-msg { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 14px; font-size: 12px; margin-bottom: 12px; display: none; align-items: center; gap: 8px; }
     .login-check-msg.active { display: flex; }
-   @media print {
-  @page { margin: 1.5cm; size: A4; }
-  
-  /* ESCONDE TUDO EXCETO A ÁREA DE IMPRESSÃO */
-  body > *:not(#printArea) {
-    display: none !important;
+  @media print {
+  @page { 
+    margin: 1.5cm; 
+    size: A4; 
   }
   
   body {
@@ -127,6 +125,85 @@
     margin: 0;
     padding: 0;
   }
+  
+  /* ESCONDE TUDO EXCETO O MODAL ATIVO */
+  body > *:not(.modal-overlay) {
+    display: none !important;
+  }
+  
+  /* GARANTE QUE APENAS O MODAL ATIVO SEJA IMPRESSO */
+  .modal-overlay:not(.active) {
+    display: none !important;
+  }
+  
+  .modal-overlay.active {
+    display: block !important;
+    position: static !important;
+    background: white !important;
+    padding: 0 !important;
+    inset: auto !important;
+  }
+  
+  /* REMOVE O FUNDO ESCURO E ESTRUTURA DO MODAL */
+  .modal-overlay.active > div {
+    box-shadow: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* ESCONDE O CABEÇALHO DO MODAL (azul com botões) */
+  .modal-overlay.active .bg-gradient-to-r {
+    display: none !important;
+  }
+  
+  /* ESCONDE TODOS OS BOTÕES */
+  .modal-overlay.active button,
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-whatsapp,
+  .btn-logout {
+    display: none !important;
+  }
+  
+  /* GARANTE QUE O PRINTAREA OCUPE TUDO */
+  #printArea {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* AJUSTES DE LAYOUT */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+    page-break-inside: avoid;
+  }
+  
+  table {
+    font-size: 11px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th {
+    background: #1e3a5f !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  td, th {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+  }
+}
+
   
   /* GARANTE QUE SÓ O REFC SEJA IMPRESSO */
   #printArea {
