@@ -1004,17 +1004,6 @@ function showPage(page){
   if(page==='configuracoes') renderConfiguracoes();
 }
 
-    <script>
-  if(page==='culto')         renderCultos();
-  if(page==='entradas')      renderEntradas();
-  if(page==='despesas')      filtrarDespesas();
-  if(page==='distribuicoes') renderDistribuicoesMes();
-  if(page==='dizimistas')    renderRelatorioDizimistas();
-  if(page==='relatorios')    renderRelatorios();
-  if(page==='historico')     renderHistorico();
-  if(page==='configuracoes') renderConfiguracoes();
-}
-
 function toggleSidebar(){
   const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');
   s.classList.toggle('open');o.classList.toggle('active');
