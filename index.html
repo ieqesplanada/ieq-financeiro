@@ -1758,26 +1758,19 @@ async function salvarCulto(e){
 async function sincronizarEntradas(culto){
   const totalDiz =culto.totalDizimos   ||0;
   const totalOf  =culto.totalOfertas   ||0;
-  const missoes  =culto.missoes        ||0;
   const especiais=culto.especiais      ||0;
   const outras   =culto.outras         ||0;
   const totalSemMissoes=totalDiz+totalOf+especiais+outras;
-  if(totalSemMissoes<=0&&missoes<=0)return;
+  if(totalSemMissoes<=0)return;
 
   const mk=culto.data.substring(0,7);
   DB.entradas=DB.entradas.filter(e=>e.cultoId!==culto.id);
 
-  const entradasParaSalvar=[];
-  if(totalSemMissoes>0)
-    entradasParaSalvar.push({cultoId:culto.id,data:culto.data,descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo||'Regular'}`,valor:totalSemMissoes,origem:'culto',mes:mk});
-  if(missoes>0)
-    entradasParaSalvar.push({cultoId:culto.id,data:culto.data,descricao:`Missões — ${fmtDate(culto.data)}`,valor:missoes,origem:'missoes',mes:mk});
-
-  for(const en of entradasParaSalvar){
-    const saved=await apiSave('entradas',en);
-    DB.entradas.push({...en,id:saved?.id||`local-${Date.now()}`});
-  }
+  const entrada={cultoId:culto.id,data:culto.data,descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo||'Regular'}`,valor:totalSemMissoes,origem:'culto',mes:mk};
+  const saved=await apiSave('entradas',entrada);
+  DB.entradas.push({...entrada,id:saved?.id||`local-${Date.now()}`});
 }
+
 
 async function excluirCulto(id){
   if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
