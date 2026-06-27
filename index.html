@@ -1325,11 +1325,11 @@ function closeSidebar(){
 async function sincronizarTudo(silent=false){
   if(!silent)mostrarLoading(true,'Sincronizando dados...','Buscando dados do servidor...');
   try{
-    const[cultosR,entra
     const[cultosR,entradasR,despesasR]=await Promise.all([apiGet('cultos'),apiGet('entradas'),apiGet('despesas')]);
     if(cultosR.length>0)   DB.cultos   =cultosR.map(normalizarCulto);
     if(entradasR.length>0) DB.entradas =entradasR.map(normalizarEntrada);
     if(despesasR.length>0){
+
       const ids=new Set(despesasR.map(d=>String(d.id)));
       DB.despesas=[
         ...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),
