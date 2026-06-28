@@ -2063,6 +2063,9 @@
   // ============================================================
   // CATEGORIAS DE DESPESAS
   // ============================================================
+   // ============================================================
+  // CATEGORIAS DE DESPESAS (CORRIGIDO)
+  // ============================================================
   const CATEGORIAS_PADRAO = [
     { nome:'ENERGIA', icone:'⚡' },
     { nome:'AGUA', icone:'💧' },
@@ -2079,8 +2082,10 @@
   ];
 
   function getCategoriasDespesas() {
-    if (!DB.config.categoriasDespesas || !DB.config.categoriasDespesas.length) {
-      DB.config.categoriasDespesas = [...CATEGORIAS_PADRAO];
+    // Garante que sempre retorna um array válido
+    if (!DB.config) DB.config = {};
+    if (!Array.isArray(DB.config.categoriasDespesas) || DB.config.categoriasDespesas.length === 0) {
+      DB.config.categoriasDespesas = CATEGORIAS_PADRAO.map(c => ({...c}));
     }
     return DB.config.categoriasDespesas;
   }
@@ -2095,12 +2100,16 @@
     localStorage.setItem('ieq_config', JSON.stringify(DB.config));
   }
 
-   function renderCategoriasDespesas() {
+  function renderCategoriasDespesas() {
     const container = document.getElementById('listaCategoriasDespesas');
-    if (!container) return;
+    if (!container) {
+      console.warn('⚠️ container listaCategoriasDespesas não encontrado');
+      return;
+    }
     const cats = getCategoriasDespesas();
     const podeEd = temPermissao('podeEditar');
     const podeEx = temPermissao('podeExcluir');
+    
     container.innerHTML = cats.map((cat, i) => `
       <span class="inline-flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1.5 text-sm">
         <span>${cat.icone || '📌'}</span>
@@ -2109,34 +2118,138 @@
         ${podeEx ? `<button onclick="excluirCategoria(${i})" class="text-red-500 hover:text-red-700 ml-0.5" title="Excluir"><i class="fas fa-times text-xs"></i></button>` : ''}
       </span>
     `).join('');
+    
     const contador = document.getElementById('contadorCategorias');
     if (contador) contador.textContent = `${cats.length} categoria(s)`;
     atualizarSelectsCategoria();
   }
-// ============================================================
-// TOGGLE CATEGORIAS DE DESPESAS
-// ============================================================
-  
+
   function atualizarSelectsCategoria() {
     const cats = getCategoriasDespesas();
-    const opts = cats.map(c => `<option>${escapeHtml(c.nome)}</option>`).join('');
+    const opts = cats.map(c => `<option value="${escapeHtml(c.nome)}">${c.icone || '📌'} ${escapeHtml(c.nome)}</option>`).join('');
+    
+    // Atualiza TODOS os selects de categoria
     const selectsConfig = [
-      { id: 'd-categoria', temVazio: true },
-      { id: 'alt-d-categoria', temVazio: true },
-      { id: 'filtroCat', temVazio: false, vazioLabel: 'Todas as categorias' },
+      { id: 'd-categoria',      temVazio: true,  vazioLabel: 'Selecione...' },
+      { id: 'alt-d-categoria',  temVazio: true,  vazioLabel: 'Selecione...' },
+      { id: 'filtroCat',        temVazio: false, vazioLabel: 'Todas as categorias' },
     ];
+    
     selectsConfig.forEach(sc => {
       const sel = document.getElementById(sc.id);
       if (!sel) return;
-      const val = sel.value;
-      if (!sc.temVazio) {
-        sel.innerHTML = `<option value="">${sc.vazioLabel}</option>` + opts;
-      } else {
-        sel.innerHTML = '<option value="">Selecione...</option>' + opts;
+      const currentVal = sel.value;
+      sel.innerHTML = sc.temVazio 
+        ? `<option value="">${sc.vazioLabel}</option>` + opts 
+        : `<option value="">${sc.vazioLabel}</option>` + opts;
+      // Restaura o valor selecionado se ainda existir
+      if (currentVal && [...sel.options].some(o => o.value === currentVal)) {
+        sel.value = currentVal;
       }
-      if (val) sel.value = val;
     });
   }
+
+  function abrirNovaCategoria() {
+    if (!temPermissao('podeLancar')) { showNotification('🔒 Sem permissão.','error'); return; }
+    document.getElementById('cat-id').value = '';
+    document.getElementById('cat-nome').value = '';
+    document.getElementById('cat-icone').value = '';
+    document.getElementById('catModalTitulo').textContent = 'Nova Categoria';
+    document.getElementById('modalCategoria').classList.add('active');
+  }
+
+  function editarCategoria(idx) {
+    if (!temPermissao('podeEditar')) { showNotification('🔒 Sem permissão para editar.','error'); return; }
+    const cats = getCategoriasDespesas();
+    if (idx < 0 || idx >= cats.length) return;
+    const cat = cats[idx];
+    document.getElementById('cat-id').value = idx;
+    document.getElementById('cat-nome').value = cat.nome;
+    document.getElementById('cat-icone').value = cat.icone || '';
+    document.getElementById('catModalTitulo').textContent = 'Editar Categoria';
+    document.getElementById('modalCategoria').classList.add('active');
+  }
+
+  function salvarCategoria(e) {
+    e.preventDefault();
+    const nome = document.getElementById('cat-nome').value.trim().toUpperCase();
+    const icone = document.getElementById('cat-icone').value.trim();
+    const idxVal = document.getElementById('cat-id').value;
+    if (!nome) { showNotification('⚠️ Informe o nome da categoria.','warning'); return; }
+    
+    const cats = getCategoriasDespesas();
+    if (idxVal !== '') {
+      const i = parseInt(idxVal);
+      if (i >= 0 && i < cats.length) {
+        // Verifica duplicata (exceto se for a mesma posição)
+        const dup = cats.findIndex((c, j) => c.nome === nome && j !== i);
+        if (dup !== -1) {
+          showNotification('⚠️ Já existe uma categoria com este nome.','warning');
+          return;
+        }
+        cats[i].nome = nome;
+        cats[i].icone = icone;
+      }
+    } else {
+      if (cats.some(c => c.nome === nome)) {
+        showNotification('⚠️ Categoria já existe.','warning');
+        return;
+      }
+      cats.push({ nome, icone });
+    }
+    
+    DB.config.categoriasDespesas = cats;
+    salvarCategoriasDespesas();
+    closeModal('modalCategoria');
+    renderCategoriasDespesas();
+    filtrarDespesas(); // Atualiza a tabela também
+    showNotification('✅ Categoria salva!','success');
+  }
+
+  function excluirCategoria(idx) {
+    if (!temPermissao('podeExcluir')) { showNotification('🔒 Sem permissão.','error'); return; }
+    const cats = getCategoriasDespesas();
+    if (idx < 0 || idx >= cats.length) return;
+    const cat = cats[idx];
+    if (!confirm(`Excluir a categoria "${cat.nome}"? As despesas existentes permanecerão com esta categoria.`)) return;
+    cats.splice(idx, 1);
+    DB.config.categoriasDespesas = cats;
+    salvarCategoriasDespesas();
+    renderCategoriasDespesas();
+    filtrarDespesas(); // Atualiza a tabela também
+    showNotification('🗑️ Categoria removida.','info');
+  }
+
+  // ============================================================
+  // TOGGLE CATEGORIAS DE DESPESAS
+  // ============================================================
+  let _categoriasVisiveis = true;
+
+  function toggleCategoriasDespesas() {
+    const body = document.getElementById('categoriasDespesasBody');
+    const icon = document.getElementById('iconeToggleCategorias');
+    if (!body || !icon) return;
+    _categoriasVisiveis = !_categoriasVisiveis;
+    if (_categoriasVisiveis) {
+      body.style.maxHeight = '500px';
+      body.style.opacity = '1';
+      icon.style.transform = 'rotate(0deg)';
+    } else {
+      body.style.maxHeight = '0px';
+      body.style.opacity = '0';
+      icon.style.transform = 'rotate(-90deg)';
+    }
+    localStorage.setItem('ieq_categorias_visiveis', _categoriasVisiveis ? '1' : '0');
+  }
+
+  function restaurarToggleCategorias() {
+    const visiveis = localStorage.getItem('ieq_categorias_visiveis');
+    if (visiveis === '0') {
+      _categoriasVisiveis = true; // inverte, pois atualmente está visível
+      toggleCategoriasDespesas(); // colapsa
+    }
+  }
+
 
   function abrirNovaCategoria() {
     if (!temPermissao('podeLancar')) { showNotification('🔒 Sem permissão.','error'); return; }
