@@ -364,20 +364,21 @@
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-                  <div class="grid grid-cols-2 gap-3">
-              <div><label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label><input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão"></div>
-              <div><label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label><input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão"></div>
-            </div>
-            <div><label class="text-sm text-gray-600 mb-1 block">WhatsApp da Igreja <span class="text-xs text-gray-400">(com DDD)</span></label><input type="text" id="cfg-whatsapp" class="input-field text-sm" placeholder="(16) 99999-9999"></div>
-
-          <p class="text-lg sm:text-2xl font-bold text-gray-800" id="kpi-saldo-ant">R$ 0,00</p>
-          <p class="text-xs text-gray-500 mt-1" id="kpi-saldo-ant-sub">—</p>
-        </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div class="card p-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-gray-500 text-xs font-medium">Total Entradas</span>
-            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-arrow-down text-green-600 text-xs"></i></div>
-          </div>
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-500 text-xs font-medium">Saldo Anterior</span>
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-wallet text-blue-600 text-xs"></i>
+                </div>
+            </div>
+            <p class="text-lg sm:text-2xl font-bold text-gray-800" id="kpi-saldo-ant">R$ 0,00</p>
+            <p class="text-xs text-gray-500 mt-1" id="kpi-saldo-ant-sub">—</p>
+        </div>
+        <!-- ... outros cards KPI ... -->
+    </div>
+    <!-- resto do dashboard -->
+</div>
           <p class="text-lg sm:text-2xl font-bold text-green-600" id="kpi-entradas">R$ 0,00</p>
           <p class="text-xs text-green-500 mt-1" id="kpi-entradas-var">—</p>
         </div>
