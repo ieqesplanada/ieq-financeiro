@@ -601,22 +601,31 @@
     </div>
 
     <!-- RELATÓRIOS -->
+        <!-- RELATÓRIOS -->
     <div class="page" id="page-relatorios">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card p-4">
           <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-file-pdf text-red-600"></i> Relatório Mensal</h3>
           <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês</p>
           <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
-          <button class="btn-primary w-full text-sm" onclick="gerarRelatorio()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+          <div class="flex gap-2">
+            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorio()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+            <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
         </div>
         <div class="card p-4">
           <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
           <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
+          <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
+          <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
           <div class="grid grid-cols-2 gap-2 mb-3">
             <input type="month" class="input-field text-sm" id="relCultoIni">
             <input type="month" class="input-field text-sm" id="relCultoFim">
           </div>
-          <button class="btn-secondary w-full text-sm" onclick="exportarCultosExcelFake()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
+          <div class="flex gap-2">
+            <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
+            <button class="btn-whatsapp text-sm" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
         </div>
         <div class="card p-4 md:col-span-2">
           <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-chart-bar text-purple-600"></i> Análise Comparativa 2026</h3>
@@ -624,6 +633,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- HISTÓRICO -->
     <div class="page" id="page-historico">
@@ -1181,7 +1191,15 @@
   // UTILITÁRIOS
   // ============================================================
   const fmt     = v=>(parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const fmtDate = d=>d?new Date(d+'T00:00:00').toLocaleDateString('pt-BR'):'-';
+  const fmtDate = d => {
+  if (!d) return '-';
+  const parts = String(d).split('-');
+  if (parts.length === 3) {
+    const [y, m, day] = parts.map(Number);
+    return new Date(y, m - 1, day).toLocaleDateString('pt-BR');
+  }
+  return '-';
+};
 
   function monthKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
   function monthLabel(mk){
@@ -2331,18 +2349,66 @@
   // ============================================================
   // RELATÓRIOS
   // ============================================================
-  function renderRelatorios(){
-    const sel=document.getElementById('relatorioMesSelect');
-    if(sel){
-      const keys=DB.historico.map(h=>`${h.ano}-${String(h.mes).padStart(2,'0')}`).reverse();
-      sel.innerHTML=keys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('');
-      sel.value=GLOBAL_MONTH;
+    function renderRelatorios(){
+    const sel = document.getElementById('relatorioMesSelect');
+    if (sel) {
+      const now = new Date();
+      const keys = [];
+      for (let i = 12; i >= 0; i--) {
+        keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
+      }
+      keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
+      sel.innerHTML = keys.map(k => `<option value="${k}" ${k === GLOBAL_MONTH ? 'selected' : ''}>${monthLabel(k)}</option>`).join('');
     }
-    document.getElementById('relCultoIni').value=GLOBAL_MONTH;
-    document.getElementById('relCultoFim').value=GLOBAL_MONTH;
-    const ctx=document.getElementById('chartComparativo'); if(chartComp)chartComp.destroy();
-    chartComp=new Chart(ctx,{type:'line',data:{labels:DB.historico.map(h=>h.nome),datasets:[{label:'Saldo Final',data:DB.historico.map(h=>h.saldoFinal),borderColor:'#1e3a5f',backgroundColor:'rgba(30,58,95,0.1)',tension:0.4,fill:true,borderWidth:3,pointRadius:5,pointBackgroundColor:'#c8a951'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR'),font:{size:10}}}}}});
+
+    // Seletor de mês único para relatório de cultos
+    const selCulto = document.getElementById('relCultoMesSelect');
+    if (selCulto) {
+      const now = new Date();
+      const keysC = [];
+      for (let i = 12; i >= 0; i--) {
+        keysC.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
+      }
+      keysC.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
+      selCulto.innerHTML = `<option value="">-- Intervalo abaixo --</option>` + keysC.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
+    }
+
+    document.getElementById('relCultoIni').value = GLOBAL_MONTH;
+    document.getElementById('relCultoFim').value = GLOBAL_MONTH;
+
+    const ctx = document.getElementById('chartComparativo');
+    if (chartComp) chartComp.destroy();
+    chartComp = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: DB.historico.map(h => h.nome),
+        datasets: [{
+          label: 'Saldo Final',
+          data: DB.historico.map(h => h.saldoFinal),
+          borderColor: '#1e3a5f',
+          backgroundColor: 'rgba(30,58,95,0.1)',
+          tension: 0.4,
+          fill: true,
+          borderWidth: 3,
+          pointRadius: 5,
+          pointBackgroundColor: '#c8a951'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            ticks: {
+              callback: v => 'R$' + v.toLocaleString('pt-BR'),
+              font: { size: 10 }
+            }
+          }
+        }
+      }
+    });
   }
+
 
   function gerarRelatorio(){
     const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
@@ -2362,7 +2428,125 @@
       <script>window.print();<\/script></body></html>`);
     w.document.close();
   }
-  function exportarCultosExcelFake(){showNotification('ℹ️ Exportação Excel ainda não implementada.','info');}
+    function exportarCultosExcel() {
+    const mesSelect = document.getElementById('relCultoMesSelect')?.value;
+    let lista;
+    let periodoLabel;
+    if (mesSelect) {
+      lista = DB.cultos.filter(c => (c.data || '').startsWith(mesSelect));
+      periodoLabel = monthLabel(mesSelect);
+    } else {
+      const ini = document.getElementById('relCultoIni')?.value || GLOBAL_MONTH;
+      const fim = document.getElementById('relCultoFim')?.value || GLOBAL_MONTH;
+      lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= fim + '-31');
+      periodoLabel = monthLabel(ini) + ' a ' + monthLabel(fim);
+    }
+    if (!lista.length) {
+      showNotification('⚠️ Nenhum culto no período.', 'warning');
+      return;
+    }
+    const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
+    const rows = lista.map(c => [
+      fmtDate(c.data),
+      c.tipo || '',
+      c.pregador || c.pastor || '',
+      c.presentes || 0,
+      (parseFloat(c.totalDizimos) || 0).toFixed(2).replace('.', ','),
+      (parseFloat(c.totalOfertas) || 0).toFixed(2).replace('.', ','),
+      (parseFloat(c.missoes) || 0).toFixed(2).replace('.', ','),
+      (parseFloat(c.totalArrecadado) || 0).toFixed(2).replace('.', ',')
+    ]);
+    let csv = 'Data;Tipo;Pregador;Presentes;Dízimos;Ofertas;Missões;Total\n';
+    csv += rows.map(r => r.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cultos_' + periodoLabel.replace(/\s+/g, '_') + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotification('✅ Exportado com sucesso!', 'success');
+  }
+
+
+    // ============================================================
+  // WHATSAPP SHARING
+  // ============================================================
+  function compartilharWhatsApp(texto) {
+    const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(texto);
+    window.open(url, '_blank');
+  }
+
+  function compartilharRelatorioMensal() {
+    const ms = document.getElementById('relatorioMesSelect')?.value || GLOBAL_MONTH;
+    const entMes = sum(getEntradasMes(ms), e => e.valor);
+    const saiMes = sum(getDespesasMes(ms), d => d.valor);
+    const h = getHistoricoRow(ms);
+    const prev = getHistoricoRow(prevMonthKey(ms));
+    const saldoAnt = h?.saldoAnt ?? (prev?.saldoFinal ?? 0);
+    const saldoFinal = h?.saldoFinal ?? (saldoAnt + entMes - saiMes);
+    const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
+
+    const texto = '\uD83D\uDCCA *' + nomeIgreja + ' - Relatório Mensal*\n'
+      + '\uD83D\uDCC5 *Mês:* ' + monthLabel(ms) + '\n\n'
+      + '\uD83D\uDCB0 *Saldo Anterior:* ' + fmt(saldoAnt) + '\n'
+      + '\uD83D\uDCE5 *Total Entradas:* ' + fmt(h?.entradas??entMes) + '\n'
+      + '\uD83D\uDCE4 *Total Saídas:* ' + fmt(h?.saidas??saiMes) + '\n'
+      + '\uD83D\uDCB5 *Saldo Final:* ' + fmt(saldoFinal) + '\n\n'
+      + '\u2728 Gerado pelo Sistema Financeiro IEQ';
+
+    compartilharWhatsApp(texto);
+  }
+
+  function compartilharCultosWhatsApp() {
+    const mesSelect = document.getElementById('relCultoMesSelect')?.value;
+    let lista;
+    if (mesSelect) {
+      lista = DB.cultos.filter(c => (c.data || '').startsWith(mesSelect));
+    } else {
+      const ini = document.getElementById('relCultoIni')?.value || GLOBAL_MONTH;
+      const fim = document.getElementById('relCultoFim')?.value || GLOBAL_MONTH;
+      lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= fim + '-31');
+    }
+    const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
+
+    if (!lista.length) {
+      showNotification('⚠️ Nenhum culto encontrado no período.', 'warning');
+      return;
+    }
+
+    let texto = '\uD83D\uDCCB *' + nomeIgreja + ' - Relatório de Cultos*\n';
+    if (mesSelect) {
+      texto += '\uD83D\uDCC5 *Mês:* ' + monthLabel(mesSelect) + '\n';
+    } else {
+      texto += '\uD83D\uDCC5 *Período:* ' + monthLabel(document.getElementById('relCultoIni')?.value || GLOBAL_MONTH)
+        + ' a ' + monthLabel(document.getElementById('relCultoFim')?.value || GLOBAL_MONTH) + '\n';
+    }
+    texto += '\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n\n';
+
+    let totDiz = 0, totOf = 0, totMis = 0, totGeral = 0;
+    lista.forEach(c => {
+      const diz = parseFloat(c.totalDizimos) || 0;
+      const of = parseFloat(c.totalOfertas) || 0;
+      const mis = parseFloat(c.missoes) || 0;
+      const geral = parseFloat(c.totalArrecadado) || 0;
+      totDiz += diz; totOf += of; totMis += mis; totGeral += geral;
+      texto += '\uD83D\uDDD3 ' + fmtDate(c.data) + ' | ' + (c.tipo || 'Culto') + '\n'
+        + '   \uD83D\uDC65 Presentes: ' + (c.presentes || 0)
+        + ' | \uD83D\uDCB0 Díz: ' + fmt(diz)
+        + ' | \uD83C\uDF81 Of: ' + fmt(of) + '\n\n';
+    });
+
+    texto += '\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n';
+    texto += '\uD83D\uDCCA *TOTAIS (' + lista.length + ' cultos):*\n';
+    texto += '\uD83D\uDCB0 Dízimos: ' + fmt(totDiz) + '\n';
+    texto += '\uD83C\uDF81 Ofertas: ' + fmt(totOf) + '\n';
+    texto += '\uD83C\uDF0D Missões: ' + fmt(totMis) + '\n';
+    texto += '\uD83D\uDCB5 Total Geral: ' + fmt(totGeral) + '\n\n';
+    texto += '\u2728 Gerado pelo Sistema Financeiro IEQ';
+
+    compartilharWhatsApp(texto);
+  }
 
   function escapeHtml(str){ return String(str??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;"); }
 
