@@ -1542,8 +1542,11 @@
     const saiMes=sum(getDespesasMes(GLOBAL_MONTH),d=>d.valor);
     const saldoAnt=h?.saldoAnt??(prev?.saldoFinal??0);
     const saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
-    document.getElementById('kpi-saldo-ant')?.textContent    =fmt(saldoAnt);
-    document.getElementById('kpi-saldo-ant-sub')?.textContent=prev?`Transferido de ${prev.nome}`:'—';
+    const elSaldoAnt = document.getElementById('kpi-saldo-ant');
+    if (elSaldoAnt) elSaldoAnt.textContent = fmt(saldoAnt);
+    const elSaldoAntSub = document.getElementById('kpi-saldo-ant-sub');
+    if (elSaldoAntSub) elSaldoAntSub.textContent = prev ? `Transferido de ${prev.nome}` : '—';
+
     document.getElementById('kpi-entradas').textContent     =fmt(h?.entradas??entMes);
     document.getElementById('kpi-saidas').textContent       =fmt(h?.saidas??saiMes);
     document.getElementById('kpi-saldo').textContent        =fmt(saldoFinal);
