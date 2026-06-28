@@ -562,6 +562,7 @@
     </div>
 
     <!-- DESPESAS -->
+       <!-- DESPESAS -->
     <div class="page" id="page-despesas">
       <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p class="text-gray-500 text-sm">Gerencie todas as saídas financeiras do mês</p>
@@ -571,22 +572,33 @@
         <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
           <div class="flex items-center gap-2"><i class="fas fa-calendar text-gray-400 text-sm"></i><label class="text-sm text-gray-600 font-medium whitespace-nowrap">Mês:</label></div>
           <input type="month" id="filtroDespesaMes" class="input-field text-sm sm:w-44" onchange="filtrarDespesas()">
-                <select class="input-field text-sm sm:w-auto" id="filtroCat" onchange="filtrarDespesas()">
-        <option value="">Todas as categorias</option>
-        ...
-      </select>
-                <div class="card p-4 mb-4" id="cardCategoriasDespesas">
-      <div class="flex items-center justify-between mb-3">
-        ...
-      </div>
-      <div id="categoriasDespesasBody" ...>
-        <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
-      </div>
-    </div>
-</div>
+          <select class="input-field text-sm sm:w-auto" id="filtroCat" onchange="filtrarDespesas()">
+            <option value="">Todas as categorias</option>
+          </select>
         </div>
-      <div class="card p-4">
+      </div>
 
+      <div class="card p-4 mb-4" id="cardCategoriasDespesas">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-semibold text-gray-700 text-sm flex items-center gap-2">
+            <i class="fas fa-tags text-orange-500"></i> Categorias
+            <span class="text-xs text-gray-400 font-normal" id="contadorCategorias">0 categoria(s)</span>
+          </h4>
+          <div class="flex items-center gap-2">
+            <button onclick="abrirNovaCategoria()" class="text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-2 py-1 rounded-lg font-medium transition">
+              <i class="fas fa-plus mr-1"></i> Nova
+            </button>
+            <button onclick="toggleCategoriasDespesas()" class="text-gray-400 hover:text-gray-600 p-1 transition">
+              <i class="fas fa-chevron-down text-sm" id="iconeToggleCategorias"></i>
+            </button>
+          </div>
+        </div>
+        <div id="categoriasDespesasBody" style="max-height:500px;overflow:hidden;transition:all 0.3s ease">
+          <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <div class="card p-4">
         <div class="overflow-x-auto">
           <table class="w-full" style="min-width:500px">
             <thead><tr class="text-left text-xs text-gray-500 border-b">
