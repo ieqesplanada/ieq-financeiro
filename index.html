@@ -577,19 +577,21 @@
             <option>CONTADOR</option><option>TAXA REGIONAL</option><option>COMBUSTIVEL</option>
             <option>PREBENDA</option><option>PAPELARIA</option><option>DARF</option><option>MATERIAL</option><option>OUTROS</option>
         </select>
-          <div class="card p-4 mb-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-bold text-gray-800 text-sm"><i class="fas fa-tags text-orange-600"></i> Cadastro de Categorias</h3>
-          <button class="btn-primary text-xs flex items-center gap-1 py-1.5 px-3" id="btnNovaCategoria" onclick="abrirNovaCategoria()"><i class="fas fa-plus"></i> Nova</button>
-        </div>
-        <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
-      </div>
-          <div class="flex gap-2 items-center">
-            <button class="btn-secondary text-sm" onclick="limparFiltrosDespesas()"><i class="fas fa-times mr-1"></i> Todos</button>
-            <span class="text-sm text-gray-500 flex items-center ml-auto sm:ml-2">Total: <strong class="ml-1" id="totalDespesasFiltro">R$ 0,00</strong></span>
-          </div>
-        </div>
-      </div>
+          <div class="card p-4 mb-4" id="cardCategoriasDespesas">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2 cursor-pointer select-none" onclick="toggleCategoriasDespesas()" id="tituloCategoriasDespesas">
+      <i class="fas fa-tags text-orange-600"></i> Cadastro de Categorias
+      <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform duration-200" id="iconeToggleCategorias"></i>
+    </h3>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full" id="contadorCategorias"></span>
+      <button class="btn-primary text-xs flex items-center gap-1 py-1.5 px-3" id="btnNovaCategoria" onclick="abrirNovaCategoria()"><i class="fas fa-plus"></i> Nova</button>
+    </div>
+  </div>
+  <div id="categoriasDespesasBody" class="transition-all duration-300 overflow-hidden" style="max-height:500px">
+    <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
+  </div>
+</div>
       <div class="card p-4">
         <div class="overflow-x-auto">
           <table class="w-full" style="min-width:500px">
@@ -1269,7 +1271,7 @@
   const fmt     = v=>(parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const fmtDate = d => {
   if (!d) return '-';
-  const dateStr = String(d).split('T')[0]; // Remove parte do horário (ex: 2026-05-10T00:00:00.000Z)
+  const dateStr = String(d).split('T')[0];
   const parts = dateStr.split('-');
   if (parts.length === 3) {
     const [y, m, day] = parts.map(Number);
@@ -1279,7 +1281,6 @@
   }
   return '-';
 };
-
 
   function monthKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
   function monthLabel(mk){
@@ -1387,7 +1388,7 @@
     if(window.innerWidth<1024) closeSidebar();
     if(page==='dashboard')    renderDashboard();
     if(page==='culto')        renderCultos();
-    if(page==='despesas')     { filtrarDespesas(); renderCategoriasDespesas(); }
+    if(page==='despesas')     { filtrarDespesas(); renderCategoriasDespesas(); restaurarToggleCategorias(); }
     if(page==='entradas')     renderEntradas();
     if(page==='historico')    renderHistorico();
     if(page==='relatorios')   renderRelatorios();
@@ -2088,7 +2089,7 @@
     localStorage.setItem('ieq_config', JSON.stringify(DB.config));
   }
 
-  function renderCategoriasDespesas() {
+ function renderCategoriasDespesas() {
     const container = document.getElementById('listaCategoriasDespesas');
     if (!container) return;
     const cats = getCategoriasDespesas();
@@ -2101,10 +2102,48 @@
         ${podeEd ? `<button onclick="editarCategoria(${i})" class="text-yellow-600 hover:text-yellow-800 ml-1" title="Editar"><i class="fas fa-pen text-xs"></i></button>` : ''}
         ${podeEx ? `<button onclick="excluirCategoria(${i})" class="text-red-500 hover:text-red-700 ml-0.5" title="Excluir"><i class="fas fa-times text-xs"></i></button>` : ''}
       </span>
-`).join('');
+    `).join('');
+    
+    // Atualiza contador
+    const contador = document.getElementById('contadorCategorias');
+    if (contador) contador.textContent = `${cats.length} categoria(s)`;
+    
     atualizarSelectsCategoria();
   }
+// ============================================================
+// TOGGLE CATEGORIAS DE DESPESAS
+// ============================================================
+let _categoriasVisiveis = true;
 
+function toggleCategoriasDespesas() {
+  const body = document.getElementById('categoriasDespesasBody');
+  const icon = document.getElementById('iconeToggleCategorias');
+  if (!body || !icon) return;
+  
+  _categoriasVisiveis = !_categoriasVisiveis;
+  
+  if (_categoriasVisiveis) {
+    body.style.maxHeight = '500px';
+    body.style.opacity = '1';
+    icon.style.transform = 'rotate(0deg)';
+  } else {
+    body.style.maxHeight = '0px';
+    body.style.opacity = '0';
+    icon.style.transform = 'rotate(-90deg)';
+  }
+  
+  // Salva preferência
+  localStorage.setItem('ieq_categorias_visiveis', _categoriasVisiveis ? '1' : '0');
+}
+
+function restaurarToggleCategorias() {
+  const visiveis = localStorage.getItem('ieq_categorias_visiveis');
+  if (visiveis === '0') {
+    _categoriasVisiveis = true; // força estado inicial como "visível" para toggle funcionar
+    toggleCategoriasDespesas(); // alterna para escondido
+  }
+}
+  
   function atualizarSelectsCategoria() {
     const cats = getCategoriasDespesas();
     const opts = cats.map(c => `<option>${escapeHtml(c.nome)}</option>`).join('');
