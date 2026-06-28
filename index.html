@@ -994,8 +994,7 @@
   const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const text = await resp.text(); // ← Lê como texto primeiro
-  // Se o retorno começar com <!DOCTYPE ou <html, é HTML de erro
+  const text = await resp.text();
   if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
     throw new Error('API retornou HTML (serviço indisponível)');
   }
@@ -1007,6 +1006,7 @@
     throw new Error('Resposta inválida da API: ' + e.message);
   }
 }
+
 
   async function apiSave(sheet, data) {
     const resp = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'save',sheet,data}) });
@@ -1477,21 +1477,24 @@
   // ============================================================
   async function inicializarSistema(){
     mostrarLoading(true); setSyncStatus('syncing');
+
+    // ⬇️ GARANTIA: esconde o loading em no máximo 6 segundos
     const safetyTimer = setTimeout(() => mostrarLoading(false), 6000);
+
     DB.loadLocal();
     if(DB.despesas.length===0) DB.despesas=[...DESPESAS_PADRAO];
     aplicarConfiguracoes();
     try {
-      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 5000));
-      const res=await Promise.race([
+      const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error('Timeout')), 5000));
+      const res = await Promise.race([
         Promise.allSettled([apiGet('cultos'),apiGet('despesas'),apiGet('entradas')]),
         timeout
       ]);
-      const[cR,dR,eR]=res;
+      const[cR,dR,eR] = res;
       if(cR.status==='fulfilled'&&cR.value.length>0) DB.cultos=cR.value.map(normalizarCulto);
       if(dR.status==='fulfilled'&&dR.value.length>0){
-        const ids=new Set(dR.value.map(d=>String(d.id)));
-        DB.despesas=[...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),...dR.value.map(normalizarDespesa)];
+        const ids = new Set(dR.value.map(d=>String(d.id)));
+        DB.despesas = [...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),...dR.value.map(normalizarDespesa)];
       }
       if(eR.status==='fulfilled'&&eR.value.length>0) DB.entradas=eR.value.map(normalizarEntrada);
       DB.saveLocal(); setSyncStatus('synced');
@@ -1500,8 +1503,9 @@
       setSyncStatus('error');
       showNotification('⚠️ Modo offline — dados locais','warning');
     } finally {
+      clearTimeout(safetyTimer);                    // ← cancela o timer de segurança
       buildGlobalMonthOptions(); setGlobalMonth(GLOBAL_MONTH);
-      renderRelatorios(); mostrarLoading(false);
+      renderRelatorios(); mostrarLoading(false);    // ← esconde o loading
     }
   }
 
