@@ -561,63 +561,109 @@
       </div>
     </div>
 
-    <!-- DESPESAS -->
        <!-- DESPESAS -->
-    <div class="page" id="page-despesas">
-      <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p class="text-gray-500 text-sm">Gerencie todas as saídas financeiras do mês</p>
-        <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" id="btnNovaDespesa" onclick="openModal('modalNovaDespesa')"><i class="fas fa-plus"></i> Nova Despesa</button>
-      </div>
-      <div class="card p-4 mb-4">
-        <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
-          <div class="flex items-center gap-2"><i class="fas fa-calendar text-gray-400 text-sm"></i><label class="text-sm text-gray-600 font-medium whitespace-nowrap">Mês:</label></div>
-          <input type="month" id="filtroDespesaMes" class="input-field text-sm sm:w-44" onchange="filtrarDespesas()">
-          <select class="input-field text-sm sm:w-auto" id="filtroCat" onchange="filtrarDespesas()">
-            <option value="">Todas as categorias</option>
-          </select>
-        </div>
-      </div>
+    <!-- DESPESAS -->
+<div class="page" id="page-despesas">
+  <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <p class="text-gray-500 text-sm">Gerencie todas as saídas financeiras do mês</p>
+    <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center"
+            id="btnNovaDespesa" onclick="abrirNovaDespesa()">
+      <i class="fas fa-plus"></i> Nova Despesa
+    </button>
+  </div>
 
-      <div class="card p-4 mb-4" id="cardCategoriasDespesas">
-        <div class="flex items-center justify-between mb-3">
-          <h4 class="font-semibold text-gray-700 text-sm flex items-center gap-2">
-            <i class="fas fa-tags text-orange-500"></i> Categorias
-            <span class="text-xs text-gray-400 font-normal" id="contadorCategorias">0 categoria(s)</span>
-          </h4>
-          <div class="flex items-center gap-2">
-            <button onclick="abrirNovaCategoria()" class="text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-2 py-1 rounded-lg font-medium transition">
-              <i class="fas fa-plus mr-1"></i> Nova
-            </button>
-            <button onclick="toggleCategoriasDespesas()" class="text-gray-400 hover:text-gray-600 p-1 transition">
-              <i class="fas fa-chevron-down text-sm" id="iconeToggleCategorias"></i>
-            </button>
-          </div>
-        </div>
-        <div id="categoriasDespesasBody" style="max-height:500px;overflow:hidden;transition:all 0.3s ease">
-          <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
-        </div>
+  <!-- FILTROS -->
+  <div class="card p-4 mb-4">
+    <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-calendar text-gray-400 text-sm"></i>
+        <label class="text-sm text-gray-600 font-medium whitespace-nowrap">Mês:</label>
       </div>
+      <input type="month" id="filtroDespesaMes" class="input-field text-sm sm:w-44"
+             onchange="filtrarDespesas()">
+      <select class="input-field text-sm sm:w-48" id="filtroCat" onchange="filtrarDespesas()">
+        <option value="">Todas as categorias</option>
+      </select>
+      <button class="btn-secondary text-sm" onclick="limparFiltrosDespesas()">
+        <i class="fas fa-times mr-1"></i> Todos
+      </button>
+      <span class="text-sm text-gray-500 flex items-center sm:ml-auto">
+        Total filtrado: <strong class="ml-1 text-red-600" id="totalDespesasFiltro">R$ 0,00</strong>
+      </span>
+    </div>
+  </div>
 
-      <div class="card p-4">
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:500px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b">
-              <th class="pb-2 font-semibold">Categoria</th>
-              <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
-              <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
-              <th class="pb-2 font-semibold text-right">Valor</th>
-              <th class="pb-2 font-semibold text-center">Ações</th>
-            </tr></thead>
-            <tbody id="tabelaDespesas"></tbody>
-            <tfoot><tr class="border-t-2">
-              <td colspan="3" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
-              <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
-              <td></td>
-            </tr></tfoot>
-          </table>
-        </div>
+  <!-- KPI CARDS -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+    <div class="card p-4 border-l-4 border-red-500">
+      <p class="text-xs text-gray-500">Despesas do Mês</p>
+      <p class="text-xl font-bold text-red-600" id="kpiDespesasMes">R$ 0,00</p>
+    </div>
+    <div class="card p-4 border-l-4 border-orange-500">
+      <p class="text-xs text-gray-500">Saldo (Entradas − Saídas)</p>
+      <p class="text-xl font-bold text-orange-600" id="kpiDespesasSaldoMes">R$ 0,00</p>
+    </div>
+    <div class="card p-4 border-l-4 border-purple-500">
+      <p class="text-xs text-gray-500">Total Registros</p>
+      <p class="text-xl font-bold text-purple-600" id="kpiQtdDespesas">0</p>
+    </div>
+  </div>
+
+  <!-- CATEGORIAS -->
+  <div class="card p-4 mb-4" id="cardCategoriasDespesas">
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="font-semibold text-gray-700 text-sm flex items-center gap-2">
+        <i class="fas fa-tags text-orange-500"></i> Categorias
+        <span class="text-xs text-gray-400 font-normal" id="contadorCategorias">0 categoria(s)</span>
+      </h4>
+      <div class="flex items-center gap-2">
+        <button onclick="abrirNovaCategoria()"
+                class="text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-2 py-1 rounded-lg font-medium transition">
+          <i class="fas fa-plus mr-1"></i> Nova
+        </button>
+        <button onclick="toggleCategoriasDespesas()"
+                class="text-gray-400 hover:text-gray-600 p-1 transition">
+          <i class="fas fa-chevron-down text-sm" id="iconeToggleCategorias"></i>
+        </button>
       </div>
     </div>
+    <div id="categoriasDespesasBody"
+         style="max-height:500px;overflow:hidden;transition:all 0.3s ease">
+      <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="card p-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+      <h3 class="font-bold text-gray-800 text-sm">Registro de Despesas</h3>
+      <input type="text" id="buscaDespesa" placeholder="Buscar descrição ou categoria..."
+             class="input-field text-sm sm:w-56" oninput="filtrarDespesas()">
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full" style="min-width:500px">
+        <thead>
+          <tr class="text-left text-xs text-gray-500 border-b">
+            <th class="pb-2 font-semibold">Categoria</th>
+            <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
+            <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
+            <th class="pb-2 font-semibold text-right">Valor</th>
+            <th class="pb-2 font-semibold text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaDespesas"></tbody>
+        <tfoot>
+          <tr class="border-t-2">
+            <td colspan="3" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
+            <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
 
     <!-- DISTRIBUIÇÕES -->
     <div class="page" id="page-distribuicoes">
@@ -2435,155 +2481,296 @@
   // ============================================================
   // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
   // ============================================================
-  const catIcons={'ENERGIA':'⚡','AGUA':'💧','CED':'🏛️','CND':'🌐','CONTADOR':'🧮','TAXA REGIONAL':'🏦','COMBUSTIVEL':'⛽','PREBENDA':'👤','PAPELARIA':'📄','DARF':'🧾','MATERIAL':'📦','OUTROS':'➕'};
+ // ============================================================
+// DESPESAS
+// ============================================================
 
-  function filtrarDespesas(){
-    const mes=document.getElementById('filtroDespesaMes')?.value||GLOBAL_MONTH;
-    const cat=document.getElementById('filtroCat')?.value||'';
-    renderDespesas(DB.despesas.filter(d=>{
-      const mM=mes?(d.data||'').startsWith(mes):true;
-      const mC=cat?d.categoria===cat:true;
-      return mM&&mC;
-    }));
+function abrirNovaDespesa() {
+  if (!temPermissao('podeLancar')) {
+    showNotification('🔒 Sem permissão para esta ação.', 'error');
+    return;
   }
-  function limparFiltrosDespesas(){
-    document.getElementById('filtroDespesaMes').value='';
-    document.getElementById('filtroCat').value='';
-    renderDespesas(DB.despesas);
-  }
+  document.getElementById('formDespesa').reset();
+  document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+  atualizarSelectsCategoria();
+  document.getElementById('modalNovaDespesa').classList.add('active');
+}
 
-  function renderDespesas(lista){
-     const seen = new Set();
-    lista = lista.filter(d => { const k = String(d.id); if(seen.has(k)) return false; seen.add(k); return true; });
-    if(!lista)lista=DB.despesas;
-    const tbody=document.getElementById('tabelaDespesas');
-    const podeEd=temPermissao('podeEditar');
-    const podeEx=temPermissao('podeExcluir');
-    if(!lista.length){
-      tbody.innerHTML=`<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">
-        <i class="fas fa-check-circle text-green-300 text-3xl block mb-2"></i>Nenhuma despesa encontrada</td></tr>`;
-    } else {
-      tbody.innerHTML=lista.map(d=>{
-        // CORREÇÃO 3: botão Alterar ao lado do Excluir
-        const altBtn = (!d._fixed && podeEd)
-          ? `<button onclick="abrirAlterarDespesa('${String(d.id).replaceAll("'","")}')"
-                class="w-7 h-7 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-xs inline-flex items-center justify-center"
-                title="Alterar"><i class="fas fa-pen"></i></button>`
-          : d._fixed
-            ? `<span class="w-7 h-7 inline-flex items-center justify-center"></span>`
-            : `<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-pen"></i></button>`;
-        const delBtn = (!d._fixed && podeEx)
-          ? `<button onclick="excluirDespesa('${String(d.id).replaceAll("'","")}')"
-                class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"
-                title="Excluir"><i class="fas fa-trash"></i></button>`
-          : d._fixed
-            ? `<span class="text-xs text-gray-300 w-7 h-7 inline-flex items-center justify-center" title="Registro fixo">🔒</span>`
-            : `<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
-        return `<tr class="table-row border-b border-gray-50">
-          <td class="py-2 text-sm"><span class="inline-flex items-center gap-1">
-                        <span>${getCatIcon(d.categoria)}</span>
+function filtrarDespesas() {
+  const mes    = document.getElementById('filtroDespesaMes')?.value || GLOBAL_MONTH;
+  const cat    = document.getElementById('filtroCat')?.value || '';
+  const busca  = (document.getElementById('buscaDespesa')?.value || '').toLowerCase();
 
-            <span class="font-medium text-gray-700">${escapeHtml(d.categoria||'')}</span>
-          </span></td>
-          <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">${escapeHtml(d.descricao||'')}</td>
-          <td class="py-2 text-sm text-gray-500 hidden md:table-cell">${fmtDate(d.data)}</td>
-          <td class="py-2 text-sm font-bold text-red-600 text-right">${fmt(d.valor)}</td>
+  const lista = DB.despesas.filter(d => {
+    const mM = mes    ? (d.data || '').startsWith(mes) : true;
+    const mC = cat    ? d.categoria === cat             : true;
+    const mB = busca
+      ? (d.categoria  || '').toLowerCase().includes(busca) ||
+        (d.descricao  || '').toLowerCase().includes(busca)
+      : true;
+    return mM && mC && mB;
+  });
+
+  renderDespesas(lista, mes);
+}
+
+function limparFiltrosDespesas() {
+  const el = document.getElementById('filtroDespesaMes');
+  if (el) el.value = '';
+  const ec = document.getElementById('filtroCat');
+  if (ec) ec.value = '';
+  const eb = document.getElementById('buscaDespesa');
+  if (eb) eb.value = '';
+  renderDespesas(DB.despesas, GLOBAL_MONTH);
+}
+
+function renderDespesas(lista, mes) {
+  if (!lista) lista = DB.despesas;
+  if (!mes)   mes   = document.getElementById('filtroDespesaMes')?.value || GLOBAL_MONTH;
+
+  const tbody  = document.getElementById('tabelaDespesas');
+  const podeEd = temPermissao('podeEditar');
+  const podeEx = temPermissao('podeExcluir');
+
+  if (!lista.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="py-8 text-center text-gray-400 text-sm">
+          <i class="fas fa-check-circle text-green-300 text-3xl block mb-2"></i>
+          Nenhuma despesa encontrada
+        </td>
+      </tr>`;
+  } else {
+    tbody.innerHTML = lista.map(d => {
+      const altBtn = d._fixed
+        ? `<span class="w-7 h-7 inline-flex items-center justify-center"></span>`
+        : podeEd
+          ? `<button onclick="abrirAlterarDespesa('${String(d.id).replace(/'/g, "")}')"
+                     class="w-7 h-7 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100
+                            text-xs inline-flex items-center justify-center"
+                     title="Alterar">
+               <i class="fas fa-pen"></i>
+             </button>`
+          : `<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs
+                            inline-flex items-center justify-center cursor-not-allowed"
+                     disabled title="Sem permissão">
+               <i class="fas fa-pen"></i>
+             </button>`;
+
+      const delBtn = d._fixed
+        ? `<span class="text-xs text-gray-300 w-7 h-7 inline-flex items-center justify-center"
+                title="Registro fixo">🔒</span>`
+        : podeEx
+          ? `<button onclick="excluirDespesa('${String(d.id).replace(/'/g, "")}')"
+                     class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100
+                            text-xs inline-flex items-center justify-center"
+                     title="Excluir">
+               <i class="fas fa-trash"></i>
+             </button>`
+          : `<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs
+                            inline-flex items-center justify-center cursor-not-allowed"
+                     disabled title="Sem permissão">
+               <i class="fas fa-trash"></i>
+             </button>`;
+
+      return `
+        <tr class="table-row border-b border-gray-50">
+          <td class="py-2 text-sm">
+            <span class="inline-flex items-center gap-1">
+              <span>${getCatIcon(d.categoria)}</span>
+              <span class="font-medium text-gray-700">${escapeHtml(d.categoria || '')}</span>
+            </span>
+          </td>
+          <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">
+            ${escapeHtml(d.descricao || '')}
+          </td>
+          <td class="py-2 text-sm text-gray-500 hidden md:table-cell">
+            ${fmtDate(d.data)}
+          </td>
+          <td class="py-2 text-sm font-bold text-red-600 text-right">
+            ${fmt(d.valor)}
+          </td>
           <td class="py-2 text-center">
             <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
           </td>
-                </tr>`;
-      }).join('');
-    }
-    const total=lista.reduce((s,d)=>s+d.valor,0);
-    document.getElementById('totalDespesas').textContent=fmt(total);
-    document.getElementById('totalDespesasFiltro').textContent=fmt(total);
+        </tr>`;
+    }).join('');
   }
 
-  // CORREÇÃO 3: abre modal de alteração com dados preenchidos
-  function abrirAlterarDespesa(id){
-    if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão para editar.','error');return;}
-    const d=DB.despesas.find(x=>String(x.id)===String(id));
-    if(!d){showNotification('❌ Despesa não encontrada.','error');return;}
-    if(d._fixed){showNotification('❌ Registro fixo não pode ser alterado.','error');return;}
-    document.getElementById('alt-d-id').value        =String(d.id);
-    document.getElementById('alt-d-categoria').value =d.categoria||'';
-    document.getElementById('alt-d-descricao').value =d.descricao||'';
-    document.getElementById('alt-d-valor').value     =d.valor||'';
-    document.getElementById('alt-d-data').value      =d.data||'';
-    document.getElementById('modalAlterarDespesa').classList.add('active');
+  const total = lista.reduce((s, d) => s + d.valor, 0);
+
+  // tfoot
+  const elTotal = document.getElementById('totalDespesas');
+  if (elTotal) elTotal.textContent = fmt(total);
+
+  // label filtro (corrigido — elemento agora existe no HTML)
+  const elFiltro = document.getElementById('totalDespesasFiltro');
+  if (elFiltro) elFiltro.textContent = fmt(total);
+
+  // KPI cards
+  const elKpiMes = document.getElementById('kpiDespesasMes');
+  if (elKpiMes) elKpiMes.textContent = fmt(total);
+
+  const elQtd = document.getElementById('kpiQtdDespesas');
+  if (elQtd) elQtd.textContent = lista.length;
+
+  const entMes = sum(getEntradasMes(mes), e => e.valor);
+  const elSaldo = document.getElementById('kpiDespesasSaldoMes');
+  if (elSaldo) {
+    const saldo = entMes - total;
+    elSaldo.textContent = fmt(saldo);
+    elSaldo.className = `text-xl font-bold ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`;
+  }
+}
+
+// Abre modal de alteração com dados preenchidos
+function abrirAlterarDespesa(id) {
+  if (!temPermissao('podeEditar')) {
+    showNotification('🔒 Sem permissão para editar.', 'error');
+    return;
+  }
+  const d = DB.despesas.find(x => String(x.id) === String(id));
+  if (!d)       { showNotification('❌ Despesa não encontrada.', 'error'); return; }
+  if (d._fixed) { showNotification('❌ Registro fixo não pode ser alterado.', 'error'); return; }
+
+  atualizarSelectsCategoria();
+  document.getElementById('alt-d-id').value        = String(d.id);
+  document.getElementById('alt-d-categoria').value = d.categoria  || '';
+  document.getElementById('alt-d-descricao').value = d.descricao  || '';
+  document.getElementById('alt-d-valor').value     = d.valor      || '';
+  document.getElementById('alt-d-data').value      = d.data       || new Date().toISOString().split('T')[0];
+  document.getElementById('modalAlterarDespesa').classList.add('active');
+}
+
+async function confirmarAlteracaoDespesa(e) {
+  e.preventDefault();
+  const id        = document.getElementById('alt-d-id').value;
+  const categoria = document.getElementById('alt-d-categoria').value;
+  const descricao = document.getElementById('alt-d-descricao').value.trim();
+  const valor     = parseFloat(document.getElementById('alt-d-valor').value);
+  const data      = document.getElementById('alt-d-data').value;
+
+  if (!categoria || !valor || valor <= 0) {
+    showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
+    return;
   }
 
-  async function confirmarAlteracaoDespesa(e){
-    e.preventDefault();
-    const id       =document.getElementById('alt-d-id').value;
-    const categoria=document.getElementById('alt-d-categoria').value;
-    const descricao=document.getElementById('alt-d-descricao').value;
-    const valor    =+document.getElementById('alt-d-valor').value;
-    const data     =document.getElementById('alt-d-data').value;
-    if(!categoria||!valor){showNotification('⚠️ Preencha categoria e valor.','warning');return;}
-    const btn=document.getElementById('btnConfirmarAlterarDespesa');
-    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
-    const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
-    if(idx===-1){showNotification('❌ Despesa não encontrada.','error');btn.disabled=false;btn.innerHTML='<i class="fas fa-save mr-2"></i>Salvar Alterações';return;}
-    const novasDespesa={...DB.despesas[idx],categoria,descricao,valor,data,atualizadoEm:new Date().toISOString()};
-    try{
-      // Tenta via API (delete + save ou update se disponível)
-      await apiDelete('despesas',id);
-      const r=await apiSave('despesas',novasDespesa);
-      DB.despesas[idx]={...novasDespesa,id:r.id};
-      DB.saveLocal(); setSyncStatus('synced');
-      showNotification('✅ Despesa alterada!','success');
-    }catch(err){
-      // Modo offline: altera localmente
-      DB.despesas[idx]=novasDespesa;
-      DB.saveLocal(); setSyncStatus('error');
-      showNotification('⚠️ Alteração salva localmente','warning');
-    }finally{
-      btn.disabled=false; btn.innerHTML='<i class="fas fa-save mr-2"></i>Salvar Alterações';
-      closeModal('modalAlterarDespesa');
-      filtrarDespesas(); renderDashboard();
-    }
+  const btn = document.getElementById('btnConfirmarAlterarDespesa');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
+
+  const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
+  if (idx === -1) {
+    showNotification('❌ Despesa não encontrada.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
+    return;
   }
 
-  async function salvarDespesa(e){
-    e.preventDefault();
-    const btn = document.getElementById('btnSalvarDespesa');
-    // ⬇️ TRAVA ANTI-DUPLO-CLIQUE: desabilita IMEDIATAMENTE
-    if (btn.disabled) return;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
+  const despesaAtualizada = {
+    ...DB.despesas[idx],
+    categoria,
+    descricao,
+    valor,
+    data,
+    atualizadoEm: new Date().toISOString()
+  };
 
-    const dd={
-      categoria:document.getElementById('d-categoria').value,
-      descricao:document.getElementById('d-descricao').value||document.getElementById('d-categoria').value,
-      valor:+document.getElementById('d-valor').value,
-      data:document.getElementById('d-data').value,
-      criadoEm:new Date().toISOString()
-    };
-    try{
-      const r=await apiSave('despesas',dd);
-      // ⬇️ ANTES de push, verifica se já existe com mesmo ID (evita duplicata)
-      if (!DB.despesas.some(d => String(d.id) === String(r.id))) {
-        DB.despesas.push({...dd,id:r.id});
-      }
-      DB.saveLocal();
-      closeModal('modalNovaDespesa'); document.getElementById('formDespesa').reset();
-      filtrarDespesas(); setSyncStatus('synced');
-      showNotification(`✅ Despesa de ${fmt(dd.valor)} salva!`,'success'); renderDashboard();
-    }catch(err){
-      const novoId = Date.now();
-      if (!DB.despesas.some(d => String(d.id) === String(novoId))) {
-        DB.despesas.push({...dd,id:novoId});
-      }
-      DB.saveLocal();
-      closeModal('modalNovaDespesa'); document.getElementById('formDespesa').reset();
-      filtrarDespesas(); setSyncStatus('error');
-      showNotification('⚠️ Despesa salva localmente','warning'); renderDashboard();
-    }finally{
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-save mr-2"></i> Registrar';
-    }
+  try {
+    // Usa apiUpdate se disponível (sem delete+save para não perder ID)
+    await apiUpdate('despesas', id, { categoria, descricao, valor, data,
+                                      atualizadoEm: despesaAtualizada.atualizadoEm });
+    DB.despesas[idx] = despesaAtualizada;
+    DB.saveLocal();
+    setSyncStatus('synced');
+    showNotification('✅ Despesa alterada!', 'success');
+  } catch (err) {
+    // Fallback offline
+    DB.despesas[idx] = despesaAtualizada;
+    DB.saveLocal();
+    setSyncStatus('error');
+    showNotification('⚠️ Alteração salva localmente', 'warning');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
+    closeModal('modalAlterarDespesa');
+    filtrarDespesas();
+    renderDashboard();
   }
+}
+
+async function salvarDespesa(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSalvarDespesa');
+  if (btn.disabled) return; // evita duplo envio
+
+  const dd = {
+    categoria:  document.getElementById('d-categoria').value,
+    descricao:  document.getElementById('d-descricao').value.trim(), // CORRIGIDO
+    valor:      parseFloat(document.getElementById('d-valor').value),
+    data:       document.getElementById('d-data').value,
+    criadoEm:   new Date().toISOString()
+  };
+
+  if (!dd.categoria || !dd.valor || dd.valor <= 0) {
+    showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
+    return;
+  }
+
+  setBtnLoading('btnSalvarDespesa', true, 'Registrar');
+  try {
+    const r = await apiSave('despesas', dd);
+    DB.despesas.push({ ...dd, id: r.id });
+    DB.saveLocal();
+    closeModal('modalNovaDespesa');
+    document.getElementById('formDespesa').reset();
+    document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+    filtrarDespesas();
+    setSyncStatus('synced');
+    showNotification(`✅ Despesa de ${fmt(dd.valor)} registrada!`, 'success');
+    renderDashboard();
+  } catch (err) {
+    DB.despesas.push({ ...dd, id: Date.now() });
+    DB.saveLocal();
+    closeModal('modalNovaDespesa');
+    document.getElementById('formDespesa').reset();
+    document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+    filtrarDespesas();
+    setSyncStatus('error');
+    showNotification('⚠️ Despesa salva localmente', 'warning');
+    renderDashboard();
+  } finally {
+    setBtnLoading('btnSalvarDespesa', false, 'Registrar');
+  }
+}
+
+async function excluirDespesa(id) {
+  if (!temPermissao('podeExcluir')) {
+    showNotification('🔒 Sem permissão.', 'error');
+    return;
+  }
+  if (!confirm('Excluir esta despesa?')) return;
+
+  const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
+  if (idx === -1) { showNotification('❌ Não encontrada.', 'error'); return; }
+  if (DB.despesas[idx]._fixed) { showNotification('❌ Registro fixo não pode ser excluído.', 'error'); return; }
+
+  setSyncStatus('syncing');
+  try {
+    await apiDelete('despesas', id);
+    DB.despesas.splice(idx, 1);
+    DB.saveLocal();
+    setSyncStatus('synced');
+    showNotification('🗑️ Despesa excluída', 'info');
+  } catch (err) {
+    DB.despesas.splice(idx, 1);
+    DB.saveLocal();
+    setSyncStatus('error');
+    showNotification('⚠️ Excluído localmente', 'warning');
+  }
+  filtrarDespesas();
+  renderDashboard();
+}
 
   async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
