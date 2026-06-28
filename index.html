@@ -2136,7 +2136,6 @@
     renderCategoriasDespesas();
     showNotification('🗑️ Categoria removida.','info');
   }
-
           </div>
         </td>
       </tr>`;
@@ -2350,6 +2349,7 @@
           </td>
         </tr>`;
       }).join('');
+      atualizarTotaisCultos(lista);
     }
     const total=lista.reduce((s,d)=>s+d.valor,0);
     document.getElementById('totalDespesas').textContent=fmt(total);
