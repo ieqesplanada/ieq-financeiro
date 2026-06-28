@@ -1477,6 +1477,7 @@
   // ============================================================
   async function inicializarSistema(){
     mostrarLoading(true); setSyncStatus('syncing');
+    const safetyTimer = setTimeout(() => mostrarLoading(false), 6000);
     DB.loadLocal();
     if(DB.despesas.length===0) DB.despesas=[...DESPESAS_PADRAO];
     aplicarConfiguracoes();
