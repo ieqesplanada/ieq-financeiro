@@ -2537,9 +2537,10 @@
 
   async function salvarDespesa(e){
     e.preventDefault();
+    const btn = document.getElementById('btnSalvarDespesa');
+    if (btn.disabled) return;  // ← NOVA LINHA: evita duplo envio
     const dd={
       categoria:document.getElementById('d-categoria').value,
-      descricao:document.getElementById('d-descricao').value||document.getElementById('d-categoria').value,
       valor:+document.getElementById('d-valor').value,
       data:document.getElementById('d-data').value,
       criadoEm:new Date().toISOString()
