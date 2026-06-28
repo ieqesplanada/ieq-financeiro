@@ -991,13 +991,23 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbyE5QwJN4tTxt-rm79nv_hFaLaY1D5uHkgMXfXjJt4P_vFYKNLFSJ8OYbPqjGJpVFzW/exec";
 
   async function apiGet(sheet) {
-    const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
+  const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const text = await resp.text(); // ← Lê como texto primeiro
+  // Se o retorno começar com <!DOCTYPE ou <html, é HTML de erro
+  if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
+    throw new Error('API retornou HTML (serviço indisponível)');
+  }
+  try {
+    const json = JSON.parse(text);
     if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
     return json.data || [];
+  } catch (e) {
+    throw new Error('Resposta inválida da API: ' + e.message);
   }
+}
+
   async function apiSave(sheet, data) {
     const resp = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'save',sheet,data}) });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
