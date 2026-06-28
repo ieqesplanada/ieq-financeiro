@@ -2093,7 +2093,7 @@
     localStorage.setItem('ieq_config', JSON.stringify(DB.config));
   }
 
- function renderCategoriasDespesas() {
+   function renderCategoriasDespesas() {
     const container = document.getElementById('listaCategoriasDespesas');
     if (!container) return;
     const cats = getCategoriasDespesas();
@@ -2107,6 +2107,10 @@
         ${podeEx ? `<button onclick="excluirCategoria(${i})" class="text-red-500 hover:text-red-700 ml-0.5" title="Excluir"><i class="fas fa-times text-xs"></i></button>` : ''}
       </span>
     `).join('');
+    const contador = document.getElementById('contadorCategorias');
+    if (contador) contador.textContent = `${cats.length} categoria(s)`;
+    atualizarSelectsCategoria();
+  }
     
     // Atualiza contador
     const contador = document.getElementById('contadorCategorias');
@@ -2228,6 +2232,35 @@ function restaurarToggleCategorias() {
     salvarCategoriasDespesas();
     renderCategoriasDespesas();
     showNotification('🗑️ Categoria removida.','info');
+  }
+    // ============================================================
+  // TOGGLE CATEGORIAS DE DESPESAS
+  // ============================================================
+  let _categoriasVisiveis = true;
+
+  function toggleCategoriasDespesas() {
+    const body = document.getElementById('categoriasDespesasBody');
+    const icon = document.getElementById('iconeToggleCategorias');
+    if (!body || !icon) return;
+    _categoriasVisiveis = !_categoriasVisiveis;
+    if (_categoriasVisiveis) {
+      body.style.maxHeight = '500px';
+      body.style.opacity = '1';
+      icon.style.transform = 'rotate(0deg)';
+    } else {
+      body.style.maxHeight = '0px';
+      body.style.opacity = '0';
+      icon.style.transform = 'rotate(-90deg)';
+    }
+    localStorage.setItem('ieq_categorias_visiveis', _categoriasVisiveis ? '1' : '0');
+  }
+
+  function restaurarToggleCategorias() {
+    const visiveis = localStorage.getItem('ieq_categorias_visiveis');
+    if (visiveis === '0') {
+      _categoriasVisiveis = true;
+      toggleCategoriasDespesas();
+    }
   }
   
   // CORREÇÃO 1: totais corretos — missões acumulado separado, Total = diz+of (sem missões)
