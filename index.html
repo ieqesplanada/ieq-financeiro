@@ -1232,6 +1232,16 @@
   // ============================================================
   // UTILITÁRIOS
   // ============================================================
+ function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
   const fmt     = v=>(parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const fmtDate = d => {
   if (!d) return '-';
