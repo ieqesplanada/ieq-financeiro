@@ -1394,7 +1394,15 @@
     if(window.innerWidth<1024) closeSidebar();
     if(page==='dashboard')    renderDashboard();
     if(page==='culto')        renderCultos();
-    if(page==='despesas')     { filtrarDespesas(); renderCategoriasDespesas(); restaurarToggleCategorias(); }
+    if(page==='despesas')     {
+  _categoriasVisiveis = true;  // ← GARANTE visibilidade
+  const body = document.getElementById('categoriasDespesasBody');
+  if (body) { body.style.maxHeight = '500px'; body.style.opacity = '1'; }
+  const icon = document.getElementById('iconeToggleCategorias');
+  if (icon) icon.style.transform = 'rotate(0deg)';
+  filtrarDespesas(); renderCategoriasDespesas();
+}
+
     if(page==='entradas')     renderEntradas();
     if(page==='historico')    renderHistorico();
     if(page==='relatorios')   renderRelatorios();
@@ -2070,7 +2078,7 @@
   const CATEGORIAS_PADRAO = [
     { nome:'ENERGIA', icone:'⚡' },
     { nome:'AGUA', icone:'💧' },
-    { nome:'CED', icone:'️' },
+    { nome:'CED', icone:'🏛️' },
     { nome:'CND', icone:'🌐' },
     { nome:'CONTADOR', icone:'🧮' },
     { nome:'TAXA REGIONAL', icone:'🏦' },
@@ -2445,6 +2453,8 @@
   }
 
   function renderDespesas(lista){
+     const seen = new Set();
+    lista = lista.filter(d => { const k = String(d.id); if(seen.has(k)) return false; seen.add(k); return true; });
     if(!lista)lista=DB.despesas;
     const tbody=document.getElementById('tabelaDespesas');
     const podeEd=temPermissao('podeEditar');
@@ -2538,23 +2548,41 @@
   async function salvarDespesa(e){
     e.preventDefault();
     const btn = document.getElementById('btnSalvarDespesa');
-    if (btn.disabled) return;  // ← NOVA LINHA: evita duplo envio
+    // ⬇️ TRAVA ANTI-DUPLO-CLIQUE: desabilita IMEDIATAMENTE
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
+
     const dd={
       categoria:document.getElementById('d-categoria').value,
+      descricao:document.getElementById('d-descricao').value||document.getElementById('d-categoria').value,
       valor:+document.getElementById('d-valor').value,
       data:document.getElementById('d-data').value,
       criadoEm:new Date().toISOString()
     };
-    setBtnLoading('btnSalvarDespesa',true,'Registrar');
     try{
-      const r=await apiSave('despesas',dd); DB.despesas.push({...dd,id:r.id}); DB.saveLocal();
+      const r=await apiSave('despesas',dd);
+      // ⬇️ ANTES de push, verifica se já existe com mesmo ID (evita duplicata)
+      if (!DB.despesas.some(d => String(d.id) === String(r.id))) {
+        DB.despesas.push({...dd,id:r.id});
+      }
+      DB.saveLocal();
       closeModal('modalNovaDespesa'); document.getElementById('formDespesa').reset();
-      filtrarDespesas(); setSyncStatus('synced'); showNotification(`✅ Despesa de ${fmt(dd.valor)} salva!`,'success'); renderDashboard();
+      filtrarDespesas(); setSyncStatus('synced');
+      showNotification(`✅ Despesa de ${fmt(dd.valor)} salva!`,'success'); renderDashboard();
     }catch(err){
-      DB.despesas.push({...dd,id:Date.now()}); DB.saveLocal();
+      const novoId = Date.now();
+      if (!DB.despesas.some(d => String(d.id) === String(novoId))) {
+        DB.despesas.push({...dd,id:novoId});
+      }
+      DB.saveLocal();
       closeModal('modalNovaDespesa'); document.getElementById('formDespesa').reset();
-      filtrarDespesas(); setSyncStatus('error'); showNotification('⚠️ Despesa salva localmente','warning'); renderDashboard();
-    }finally{setBtnLoading('btnSalvarDespesa',false,'Registrar');}
+      filtrarDespesas(); setSyncStatus('error');
+      showNotification('⚠️ Despesa salva localmente','warning'); renderDashboard();
+    }finally{
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save mr-2"></i> Registrar';
+    }
   }
 
   async function excluirDespesa(id){
