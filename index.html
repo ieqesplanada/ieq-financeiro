@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IEQ Esplanada — Sistema Financeiro</title>
+  <title>IEQ Esplanada — Sistema Financeiro - Desenvolvido por: Danilo Falcão</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -588,11 +588,14 @@
             <button class="btn-primary text-xs flex items-center gap-1 py-1.5 px-3" id="btnNovaCategoria" onclick="abrirNovaCategoria()"><i class="fas fa-plus"></i> Nova</button>
           </div>
         </div>
+                
         <div id="categoriasDespesasBody" style="max-height:500px;overflow:hidden;transition:max-height 0.35s ease,opacity 0.3s ease">
           <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
         </div>
       </div>
 </div>
+      </div>
+      
       <div class="card p-4">
         <div class="overflow-x-auto">
           <table class="w-full" style="min-width:500px">
@@ -2111,35 +2114,6 @@
 // ============================================================
 // TOGGLE CATEGORIAS DE DESPESAS
 // ============================================================
-
-function toggleCategoriasDespesas() {
-  const body = document.getElementById('categoriasDespesasBody');
-  const icon = document.getElementById('iconeToggleCategorias');
-  if (!body || !icon) return;
-  
-  _categoriasVisiveis = !_categoriasVisiveis;
-  
-  if (_categoriasVisiveis) {
-    body.style.maxHeight = '500px';
-    body.style.opacity = '1';
-    icon.style.transform = 'rotate(0deg)';
-  } else {
-    body.style.maxHeight = '0px';
-    body.style.opacity = '0';
-    icon.style.transform = 'rotate(-90deg)';
-  }
-  
-  // Salva preferência
-  localStorage.setItem('ieq_categorias_visiveis', _categoriasVisiveis ? '1' : '0');
-}
-
-function restaurarToggleCategorias() {
-  const visiveis = localStorage.getItem('ieq_categorias_visiveis');
-  if (visiveis === '0') {
-    _categoriasVisiveis = true; // força estado inicial como "visível" para toggle funcionar
-    toggleCategoriasDespesas(); // alterna para escondido
-  }
-}
   
   function atualizarSelectsCategoria() {
     const cats = getCategoriasDespesas();
