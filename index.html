@@ -577,17 +577,21 @@
             <option>CONTADOR</option><option>TAXA REGIONAL</option><option>COMBUSTIVEL</option>
             <option>PREBENDA</option><option>PAPELARIA</option><option>DARF</option><option>MATERIAL</option><option>OUTROS</option>
         </select>
-          <div class="card p-4 mb-4" id="cardCategoriasDespesas">
-  <div class="flex items-center justify-between mb-3">
-    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2 cursor-pointer select-none" onclick="toggleCategoriasDespesas()" id="tituloCategoriasDespesas">
-      <i class="fas fa-tags text-orange-600"></i> Cadastro de Categorias
-      <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform duration-200" id="iconeToggleCategorias"></i>
-    </h3>
-    <div class="flex items-center gap-2">
-      <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full" id="contadorCategorias"></span>
-      <button class="btn-primary text-xs flex items-center gap-1 py-1.5 px-3" id="btnNovaCategoria" onclick="abrirNovaCategoria()"><i class="fas fa-plus"></i> Nova</button>
-    </div>
-  </div>
+                    <div class="card p-4 mb-4" id="cardCategoriasDespesas">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2 cursor-pointer select-none" onclick="toggleCategoriasDespesas()" id="tituloCategoriasDespesas">
+            <i class="fas fa-tags text-orange-600"></i> Categorias
+            <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform duration-200" id="iconeToggleCategorias"></i>
+          </h3>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full" id="contadorCategorias"></span>
+            <button class="btn-primary text-xs flex items-center gap-1 py-1.5 px-3" id="btnNovaCategoria" onclick="abrirNovaCategoria()"><i class="fas fa-plus"></i> Nova</button>
+          </div>
+        </div>
+        <div id="categoriasDespesasBody" style="max-height:500px;overflow:hidden;transition:max-height 0.35s ease,opacity 0.3s ease">
+          <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
   <div id="categoriasDespesasBody" class="transition-all duration-300 overflow-hidden" style="max-height:500px">
     <div id="listaCategoriasDespesas" class="flex flex-wrap gap-2"></div>
   </div>
