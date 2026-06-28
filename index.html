@@ -206,12 +206,15 @@
       background: linear-gradient(135deg, #f59e0b, #d97706);
     }
 
-    @media print {
+       @media print {
       body * { visibility: hidden; }
       #printArea, #printArea * { visibility: visible; }
       #printArea { position: absolute; left: 0; top: 0; width: 100%; }
     }
+    .btn-whatsapp { background: #25D366; color: white; padding: 10px 16px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; font-size: 16px; }
+    .btn-whatsapp:hover { background: #20bd5a; transform: translateY(-1px); }
   </style>
+
 </head>
 <body class="min-h-screen">
 
