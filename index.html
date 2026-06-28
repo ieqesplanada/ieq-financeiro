@@ -363,8 +363,16 @@
   <div class="p-3 sm:p-6 flex-1">
 
     <!-- DASHBOARD -->
-   <div class="page active"
+   <div class="page active" id="page-dashboard">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div class="card p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-xs font-medium">Total Entradas</span>
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-arrow-down text-green-600 text-xs"></i></div>
+          </div>
           <p class="text-lg sm:text-2xl font-bold text-green-600" id="kpi-entradas">R$ 0,00</p>
+          <p class="text-xs text-green-500 mt-1" id="kpi-entradas-var">—</p>
+        </div>
           <p class="text-xs text-green-500 mt-1" id="kpi-entradas-var">—</p>
         </div>
         <div class="card p-4">
@@ -2122,13 +2130,7 @@
     renderCategoriasDespesas();
     showNotification('🗑️ Categoria removida.','info');
   }
-          </div>
-        </td>
-      </tr>`;
-    ).join('');
-    atualizarTotaisCultos(lista);
-  }
-
+  
   // CORREÇÃO 1: totais corretos — missões acumulado separado, Total = diz+of (sem missões)
   function atualizarTotaisCultos(lista){
     const t=lista.reduce((a,c)=>({
@@ -2333,10 +2335,11 @@
           <td class="py-2 text-center">
             <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
           </td>
-        </tr>`;
+                </tr>`;
       }).join('');
-      atualizarTotaisCultos(lista);
     }
+    const total=lista.reduce((s,d)=>s+d.valor,0);
+
     const total=lista.reduce((s,d)=>s+d.valor,0);
     document.getElementById('totalDespesas').textContent=fmt(total);
     document.getElementById('totalDespesasFiltro').textContent=fmt(total);
