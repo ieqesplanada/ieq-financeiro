@@ -2323,31 +2323,7 @@
   // ============================================================
   let _categoriasVisiveis = true;
 
-  function toggleCategoriasDespesas() {
-    const body = document.getElementById('categoriasDespesasBody');
-    const icon = document.getElementById('iconeToggleCategorias');
-    if (!body || !icon) return;
-    _categoriasVisiveis = !_categoriasVisiveis;
-    if (_categoriasVisiveis) {
-      body.style.maxHeight = '500px';
-      body.style.opacity = '1';
-      icon.style.transform = 'rotate(0deg)';
-    } else {
-      body.style.maxHeight = '0px';
-      body.style.opacity = '0';
-      icon.style.transform = 'rotate(-90deg)';
-    }
-    localStorage.setItem('ieq_categorias_visiveis', _categoriasVisiveis ? '1' : '0');
-  }
 
-  function restaurarToggleCategorias() {
-    const visiveis = localStorage.getItem('ieq_categorias_visiveis');
-    if (visiveis === '0') {
-      _categoriasVisiveis = true;
-      toggleCategoriasDespesas();
-    }
-  }
-  
   // CORREÇÃO 1: totais corretos — missões acumulado separado, Total = diz+of (sem missões)
   function atualizarTotaisCultos(lista){
     const t=lista.reduce((a,c)=>({
