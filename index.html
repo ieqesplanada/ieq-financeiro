@@ -1481,7 +1481,7 @@
     if(DB.despesas.length===0) DB.despesas=[...DESPESAS_PADRAO];
     aplicarConfiguracoes();
     try {
-      const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout')),8000));
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 5000));
       const res=await Promise.race([
         Promise.allSettled([apiGet('cultos'),apiGet('despesas'),apiGet('entradas')]),
         timeout
