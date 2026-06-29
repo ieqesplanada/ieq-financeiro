@@ -3161,7 +3161,7 @@ async function excluirDespesa(id) {
         <td class="p-2 text-sm">${h.ceia}</td>
         <td class="p-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.entradas>=h.saidas?'badge-green':'badge-red'}">${h.entradas>=h.saidas?'✓ Superávit':'⚠ Déficit'}</span></td>
       </tr>`).join('');
-    const ctx = document.getElementById('chartSaldos');
+   const ctx = document.getElementById('chartSaldos');
 if (charts.saldos) charts.saldos.destroy();
 charts.saldos = new Chart(ctx, {
   type: 'bar',
@@ -3179,7 +3179,6 @@ charts.saldos = new Chart(ctx, {
     scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
   }
 });
-
 
   // ============================================================
   // RELATÓRIOS
