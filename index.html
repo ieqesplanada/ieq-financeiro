@@ -2418,7 +2418,6 @@ function criarLinhaOferta(nome='', valor='', forma='Caixa') {
     const podeEd=temPermissao('podeEditar'), podeEx=temPermissao('podeExcluir');
     tbody.innerHTML = lista.map(c => {
       const idx = DB.cultos.findIndex(x => String(x.id) === String(c.id));
-      const idx=DB.cultos.indexOf(c);
       const isPrim=primDom&&c.data===primDom;
       const ceiaTag=isPrim?`<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">🍞 Ceia</span>`:'';
       const editBtn=podeEd
