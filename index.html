@@ -3212,37 +3212,31 @@ charts.saldos = new Chart(ctx, {
     document.getElementById('relCultoFim').value = GLOBAL_MONTH;
 
     const ctx = document.getElementById('chartComparativo');
-    if (charts.comparativo) charts.comparativo.destroy();
-charts.comparativo = new Chart(ctx, { ... });
-      type: 'line',
-      data: {
-        labels: DB.historico.map(h => h.nome),
-        datasets: [{
-          label: 'Saldo Final',
-          data: DB.historico.map(h => h.saldoFinal),
-          borderColor: '#1e3a5f',
-          backgroundColor: 'rgba(30,58,95,0.1)',
-          tension: 0.4,
-          fill: true,
-          borderWidth: 3,
-          pointRadius: 5,
-          pointBackgroundColor: '#c8a951'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            ticks: {
-              callback: v => 'R$' + v.toLocaleString('pt-BR'),
-              font: { size: 10 }
-            }
-          }
-        }
+if (charts.comparativo) charts.comparativo.destroy();
+charts.comparativo = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: DB.historico.map(h => h.nome),
+      datasets: [{
+        label: 'Saldo Final',
+        data: DB.historico.map(h => h.saldoFinal),
+        borderColor: '#1e3a5f',
+        backgroundColor: 'rgba(30,58,95,0.1)',
+        tension: 0.4,
+        fill: true,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointBackgroundColor: '#c8a951'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } }
       }
-    });
-  }
+    }
+  });
 
 
   function gerarRelatorio(){
