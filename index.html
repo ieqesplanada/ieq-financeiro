@@ -1999,6 +1999,10 @@ window.addEventListener('offline', () => {
     if (charts.despesas) charts.despesas.destroy();
     const cats = {};
     getDespesasMes(GLOBAL_MONTH).forEach(d => { cats[d.categoria] = (cats[d.categoria] || 0) + d.valor; });
+    if (!Object.keys(cats).length) {
+      charts.despesas = new Chart(ctx, { type: 'doughnut', data: { labels: ['Sem dados'], datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }] }, options: { plugins: { legend: { display: false } } } });
+    }
+ } 
     
     const entries = Object.entries(cats);
     if (!entries.length) {
