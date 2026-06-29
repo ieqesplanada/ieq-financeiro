@@ -790,15 +790,22 @@
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Informações da Igreja</h3>
           <p class="text-xs text-gray-400 mb-4">Aparecerá nos relatórios e no cabeçalho.</p>
           <div class="space-y-3">
-            <div><label class="text-sm text-gray-600 mb-1 block">Nome da Igreja</label><input type="text" id="cfg-nome-igreja" class="input-field text-sm" placeholder="Ex: IEQ Esplanada" value="IEQ Esplanada"></div>
-            <div><label class="text-sm text-gray-600 mb-1 block">Endereço</label><input type="text" id="cfg-endereco" class="input-field text-sm" placeholder="Endereço completo"></div>
-            <div class="grid grid-cols-2 gap-3">
-              <div><label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label><input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão"></div>
-              <div><label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label><input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão"></div>
-            </div>
-          </div>
-          <button class="btn-primary w-full mt-4 text-sm" onclick="salvarConfiguracoes()"><i class="fas fa-save mr-2"></i> Salvar Configurações</button>
-        </div>
+  <div><label class="text-sm text-gray-600 mb-1 block">Nome da Igreja</label><input type="text" id="cfg-nome-igreja" class="input-field text-sm" placeholder="Ex: IEQ Esplanada" value="IEQ Esplanada"></div>
+  <div><label class="text-sm text-gray-600 mb-1 block">Endereço</label><input type="text" id="cfg-endereco" class="input-field text-sm" placeholder="Endereço completo"></div>
+  <div class="grid grid-cols-2 gap-3">
+    <div><label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label><input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão"></div>
+    <div><label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label><input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão"></div>
+  </div>
+  <!-- ✅ CAMPO NOVO: WhatsApp -->
+  <div>
+    <label class="text-sm text-gray-600 mb-1 block">
+      <i class="fab fa-whatsapp text-green-500 mr-1"></i> WhatsApp (com DDD)
+    </label>
+    <input type="text" id="cfg-whatsapp" class="input-field text-sm" placeholder="Ex: 16999999999">
+    <p class="text-xs text-gray-400 mt-1">Usado para envio de relatórios via WhatsApp</p>
+  </div>
+</div>
+
 
         <div class="card p-5" id="cardUsuarios">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-users-cog text-purple-600"></i> Usuários do Sistema</h3>
