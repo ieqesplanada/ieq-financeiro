@@ -1657,8 +1657,8 @@ async function apiDeleteSeguro(sheet, id) {
 
   const safetyTimer = setTimeout(() => mostrarLoading(false), 8000);
 
-  DB.loadLocal();
-  if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
+    DB.loadLocal();
+  if (DB.despesas.length === 0) DB.despesas = DESPESAS_PADRAO.map(d => ({ ...d }));
   aplicarConfiguracoes();
   atualizarBadgeSync(); // mostra fila pendente imediatamente
 
