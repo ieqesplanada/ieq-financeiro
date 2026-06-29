@@ -1993,24 +1993,15 @@ window.addEventListener('offline', () => {
       }
     });
   }
-
- function renderChartDespesasMes(){
+  
+  function renderChartDespesasMes(){
     const ctx = document.getElementById('chartDespesas');
     if (charts.despesas) charts.despesas.destroy();
     const cats = {};
     getDespesasMes(GLOBAL_MONTH).forEach(d => { cats[d.categoria] = (cats[d.categoria] || 0) + d.valor; });
-    if (!Object.keys(cats).length) {
-      charts.despesas = new Chart(ctx, { type: 'doughnut', data: { labels: ['Sem dados'], datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }] }, options: { plugins: { legend: { display: false } } } });
-    }
- } 
-    
     const entries = Object.entries(cats);
     if (!entries.length) {
-      charts.despesas = new Chart(ctx, { 
-        type: 'doughnut', 
-        data: { labels: ['Sem dados'], datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }] }, 
-        options: { plugins: { legend: { display: false } } } 
-      });
+      charts.despesas = new Chart(ctx, { type: 'doughnut', data: { labels: ['Sem dados'], datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }] }, options: { plugins: { legend: { display: false } } } });
     } else {
       charts.despesas = new Chart(ctx, {
         type: 'doughnut',
@@ -2021,13 +2012,10 @@ window.addEventListener('offline', () => {
             backgroundColor: ['#ef4444','#f59e0b','#3b82f6','#10b981','#8b5cf6','#ec4899','#14b8a6','#f97316']
           }]
         },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
-        }
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
       });
     }
-  }  // ← ESTE } É O QUE ESTAVA FALTANDO
+  }
 
 
   // ============================================================
