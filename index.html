@@ -3199,7 +3199,7 @@ charts.saldos = new Chart(ctx, {
   // ============================================================
   // RELATÓRIOS
   // ============================================================
-    function renderRelatorios(){
+       function renderRelatorios(){
     const sel = document.getElementById('relatorioMesSelect');
     if (sel) {
       const now = new Date();
@@ -3211,7 +3211,6 @@ charts.saldos = new Chart(ctx, {
       sel.innerHTML = keys.map(k => `<option value="${k}" ${k === GLOBAL_MONTH ? 'selected' : ''}>${monthLabel(k)}</option>`).join('');
     }
 
-    // Seletor de mês único para relatório de cultos
     const selCulto = document.getElementById('relCultoMesSelect');
     if (selCulto) {
       const now = new Date();
@@ -3244,7 +3243,6 @@ charts.comparativo = new Chart(ctx, {
         pointBackgroundColor: '#c8a951'
       }]
     },
-}
     options: {
       responsive: true,
       plugins: { legend: { display: false } },
@@ -3254,6 +3252,7 @@ charts.comparativo = new Chart(ctx, {
     }
   });
   }
+
 
   function gerarRelatorio(){
     const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
