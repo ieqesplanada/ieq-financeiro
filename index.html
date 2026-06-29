@@ -1974,7 +1974,8 @@ window.addEventListener('offline', () => {
   }
 
   function renderChartEvolucao(){
-    const ctx=document.getElementById('chartEvolucao'); if(chartEv)chartEv.destroy();
+    if (charts.evolucao) charts.evolucao.destroy();
+    charts.evolucao = new Chart(ctx, { ... });
     chartEv=new Chart(ctx,{type:'line',data:{labels:DB.historico.map(h=>h.nome),datasets:[
       {label:'Entradas',data:DB.historico.map(h=>h.entradas),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',tension:0.4,fill:true,borderWidth:2},
       {label:'Saídas',  data:DB.historico.map(h=>h.saidas),  borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)', tension:0.4,fill:true,borderWidth:2},
