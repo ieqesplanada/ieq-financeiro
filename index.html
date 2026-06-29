@@ -1681,6 +1681,21 @@ async function apiDeleteSeguro(sheet, id) {
     if (eR.status === 'fulfilled' && eR.value.length > 0)
       DB.entradas = eR.value.map(normalizarEntrada);
 
+    // Busca categorias da sheet config
+try {
+  const configRows = await apiGet('config');
+  const catRow = configRows.find(r => r.id === 'categoriasDespesas');
+  if (catRow && catRow.valor) {
+    const cats = JSON.parse(catRow.valor);
+    if (Array.isArray(cats) && cats.length > 0) {
+      DB.config.categoriasDespesas = cats;
+      localStorage.setItem('ieq_config', JSON.stringify(DB.config));
+    }
+  }
+} catch (err) {
+  // sem config remota, mantém local
+}
+
     DB.saveLocal();
     setSyncStatus('synced');
     _ultimaSync = Date.now();
@@ -1814,6 +1829,21 @@ async function sincronizarTudo(silencioso = false) {
     if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
       DB.entradas = entradasBrutos.map(normalizarEntrada);
     }
+
+    // Busca categorias da sheet config
+try {
+  const configRows = await apiGet('config');
+  const catRow = configRows.find(r => r.id === 'categoriasDespesas');
+  if (catRow && catRow.valor) {
+    const cats = JSON.parse(catRow.valor);
+    if (Array.isArray(cats) && cats.length > 0) {
+      DB.config.categoriasDespesas = cats;
+      localStorage.setItem('ieq_config', JSON.stringify(DB.config));
+    }
+  }
+} catch (err) {
+  // sem config remota, mantém local
+}
 
     DB.saveLocal();
     setSyncStatus('synced');
