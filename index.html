@@ -1240,27 +1240,68 @@ async function apiDeleteSeguro(sheet, id) {
     document.getElementById('loginPass').classList.remove('erro');
   }
 
-  async function efetuarLogin(e) {
-    e.preventDefault();
-    limparErroLogin();
-    const login = document.getElementById('loginUser').value.trim();
-    const senha = document.getElementById('loginPass').value;
-    const lembrar = document.getElementById('lembrarUser').checked;
-    const btn = document.getElementById('btnLogin');
-    if (!login || !senha) { mostrarErroLogin('Preencha usuário e senha.'); return; }
-    if (lembrar) localStorage.setItem('ieq_lembrar_user', login);
-    else localStorage.removeItem('ieq_lembrar_user');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
-    try {
-      const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&senha=${encodeURIComponent(senha)}`;
-      const resp = await fetch(url);
-      const json = await resp.json();
-      if (json.ok) { salvarSessao({ nome: json.nome, permissao: json.permissao }); entrarNoSistema(); }
-      else { mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.'); document.getElementById('loginPass').value = ''; document.getElementById('loginPass').focus(); }
-    } catch (err) { mostrarErroLogin('Erro de conexão. Verifique sua internet.'); }
-    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar'; }
+ async function efetuarLogin(e) {
+  e.preventDefault();
+  limparErroLogin();
+
+  const login = document.getElementById('loginUser').value.trim();
+  const senha = document.getElementById('loginPass').value;
+  const lembrar = document.getElementById('lembrarUser').checked;
+  const btn = document.getElementById('btnLogin');
+
+  if (!login || !senha) {
+    mostrarErroLogin('Preencha usuário e senha.');
+    return;
   }
+
+  if (lembrar) {
+    localStorage.setItem('ieq_lembrar_user', login);
+  } else {
+    localStorage.removeItem('ieq_lembrar_user');
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
+
+  try {
+    // ✅ CORREÇÃO: envia login e senha pelo corpo da requisição POST
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'login',
+        login: login,
+        senha: senha
+      })
+    });
+
+    if (!resp.ok) {
+      throw new Error(`Erro HTTP ${resp.status}`);
+    }
+
+    const json = await resp.json();
+
+    if (json.ok) {
+      salvarSessao({
+        nome: json.nome,
+        permissao: json.permissao
+      });
+      entrarNoSistema();
+    } else {
+      mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.');
+      document.getElementById('loginPass').value = '';
+      document.getElementById('loginPass').focus();
+    }
+  } catch (err) {
+    console.error('Erro no login:', err);
+    mostrarErroLogin('Erro de conexão. Verifique sua internet ou tente novamente.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar';
+  }
+}
 
   function entrarNoSistema() {
     document.getElementById('loginScreen').classList.remove('active');
