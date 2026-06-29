@@ -1431,9 +1431,16 @@ async function apiDeleteSeguro(sheet, id) {
 
   function getPrimeiroDomingoDoMes(mk){
     const[y,m]=mk.split('-').map(Number);
-    for(let d=1;d<=7;d++) if(new Date(y,m-1,d).getDay()===0) return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    // Encontra o 1º domingo (dia 1-7) e soma 7 para obter o 2º domingo
+    for(let d=1;d<=7;d++){
+      if(new Date(y,m-1,d).getDay()===0){
+        const segundo = d + 7;
+        return `${y}-${String(m).padStart(2,'0')}-${String(segundo).padStart(2,'0')}`;
+      }
+    }
     return null;
-  }
+}
+
   function getPresentesCeia(mk){
     const segundoDom=getSegundoDomingoDoMes(mk);
     if(!segundoDom) return {presentes:0,data:null,encontrado:false};
