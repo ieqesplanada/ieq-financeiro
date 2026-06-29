@@ -1407,6 +1407,10 @@ async function apiDeleteSeguro(sheet, id) {
   }
   return '-';
 };
+  function gerarIdTmp() {
+  return 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+}
+
 
   function monthKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
   function monthLabel(mk){
