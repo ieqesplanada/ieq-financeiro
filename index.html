@@ -1427,18 +1427,19 @@ async function apiDeleteSeguro(sheet, id) {
     return null;
   }
   function getPresentesCeia(mk){
-    const prim=getPrimeiroDomingoDoMes(mk);
-    if(!prim) return {presentes:0,data:null,encontrado:false};
+    const segundoDom=getSegundoDomingoDoMes(mk);
+    if(!segundoDom) return {presentes:0,data:null,encontrado:false};
     const cultos=getCultosMes(mk);
-    if(!cultos.length) return {presentes:0,data:prim,encontrado:false};
-    const exato=cultos.find(c=>c.data===prim);
+    if(!cultos.length) return {presentes:0,data:segundoDom,encontrado:false};
+    const exato=cultos.find(c=>c.data===segundoDom);
     if(exato) return {presentes:exato.presentes||0,data:exato.data,encontrado:true};
-    const cands=cultos.filter(c=>{ const d=parseInt((c.data||'').split('-')[2]||'99'); return d>=1&&d<=7; });
-    if(!cands.length) return {presentes:0,data:prim,encontrado:false};
-    const tp=new Date(prim+'T00:00:00').getTime();
+    // Tenta cultos entre dia 8 e 14 (segundo domingo sempre cai nesse intervalo)
+    const cands=cultos.filter(c=>{ const d=parseInt((c.data||'').split('-')[2]||'99'); return d>=8&&d<=14; });
+    if(!cands.length) return {presentes:0,data:segundoDom,encontrado:false};
+    const tp=new Date(segundoDom+'T00:00:00').getTime();
     cands.sort((a,b)=>Math.abs(new Date(a.data+'T00:00:00').getTime()-tp)-Math.abs(new Date(b.data+'T00:00:00').getTime()-tp));
     return {presentes:cands[0].presentes||0,data:cands[0].data,encontrado:true};
-  }
+}
 
   let GLOBAL_MONTH = monthKeyFromDate(new Date());
 
