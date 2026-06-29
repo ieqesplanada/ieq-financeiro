@@ -3191,8 +3191,8 @@ async function excluirDespesa(id) {
     document.getElementById('relCultoFim').value = GLOBAL_MONTH;
 
     const ctx = document.getElementById('chartComparativo');
-    if (chartComp) chartComp.destroy();
-    chartComp = new Chart(ctx, {
+    if (charts.comparativo) charts.comparativo.destroy();
+charts.comparativo = new Chart(ctx, { ... });
       type: 'line',
       data: {
         labels: DB.historico.map(h => h.nome),
