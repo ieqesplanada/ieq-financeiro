@@ -1380,7 +1380,15 @@ async function apiDeleteSeguro(sheet, id) {
       observacoes: c.observacoes || '',
     };
   }
-  function normalizarDespesa(d){ return {...d, valor:parseFloat(d.valor)||0}; }
+  function normalizarDespesa(d){
+  // Garante que a data fique no formato yyyy-mm-dd para o input[type=date]
+  let dataNormalizada = (d.data || '');
+  if (dataNormalizada && dataNormalizada.includes('T')) {
+    dataNormalizada = dataNormalizada.split('T')[0];
+  }
+  return {...d, valor:parseFloat(d.valor)||0, data: dataNormalizada};
+}
+
   function normalizarEntrada(e){ return {...e, valor:parseFloat(e.valor)||0}; }
   function parseJsonSafe(v,f){ if(Array.isArray(v))return v; try{return JSON.parse(v)||f;}catch{return f;} }
 
@@ -2945,17 +2953,19 @@ function abrirAlterarDespesa(id) {
   document.getElementById('alt-d-categoria').value = d.categoria  || '';
   document.getElementById('alt-d-descricao').value = d.descricao  || '';
   document.getElementById('alt-d-valor').value     = d.valor      || '';
-  document.getElementById('alt-d-data').value      = d.data       || new Date().toISOString().split('T')[0];
+  // Garante formato yyyy-mm-dd para o input date
+  let dataVal = (d.data || '').split('T')[0];
+  document.getElementById('alt-d-data').value      = dataVal || new Date().toISOString().split('T')[0];
   document.getElementById('modalAlterarDespesa').classList.add('active');
 }
 
 async function confirmarAlteracaoDespesa(e) {
   e.preventDefault();
-  const id        = document.getElementById('alt-d-id').value;
+  const idDespesa = document.getElementById('alt-d-id').value;
   const categoria = document.getElementById('alt-d-categoria').value;
   const descricao = document.getElementById('alt-d-descricao').value.trim();
   const valor     = parseFloat(document.getElementById('alt-d-valor').value);
-  const data      = document.getElementById('alt-d-data').value;
+  const dataDesp  = document.getElementById('alt-d-data').value; // data da despesa
 
   if (!categoria || !valor || valor <= 0) {
     showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
@@ -2966,7 +2976,7 @@ async function confirmarAlteracaoDespesa(e) {
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
 
-  const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
+  const idx = DB.despesas.findIndex(d => String(d.id) === String(idDespesa));
   if (idx === -1) {
     showNotification('❌ Despesa não encontrada.', 'error');
     btn.disabled = false;
@@ -2979,20 +2989,24 @@ async function confirmarAlteracaoDespesa(e) {
     categoria,
     descricao,
     valor,
-    data,
+    data: dataDesp,
     atualizadoEm: new Date().toISOString()
   };
 
   try {
-    // Usa apiUpdate se disponível (sem delete+save para não perder ID)
-    await apiUpdate('despesas', id, { categoria, descricao, valor, data,
-                                      atualizadoEm: despesaAtualizada.atualizadoEm });
+    // ATENÇÃO: o campo "data" (data da despesa) é enviado como "dataDespesa" para evitar conflito
+    await apiUpdate('despesas', idDespesa, {
+      categoria,
+      descricao,
+      valor,
+      data: dataDesp,
+      atualizadoEm: despesaAtualizada.atualizadoEm
+    });
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
     setSyncStatus('synced');
     showNotification('✅ Despesa alterada!', 'success');
   } catch (err) {
-    // Fallback offline
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
     setSyncStatus('error');
@@ -3005,6 +3019,7 @@ async function confirmarAlteracaoDespesa(e) {
     renderDashboard();
   }
 }
+
 
 async function salvarDespesa(e) {
   e.preventDefault();
