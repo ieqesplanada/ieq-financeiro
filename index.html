@@ -363,16 +363,28 @@
           <div class="w-2 h-2 bg-green-400 rounded-full sync-pulse"></div>
           <span class="text-gray-600 text-xs">Sincronizado</span>
         </div>
-        <button onclick="sincronizarTudo()" title="Sincronizar" class="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition text-sm">
-          <i class="fas fa-sync-alt"></i>
-        </button>
-        <select class="input-field text-xs sm:text-sm" style="width:auto;min-width:135px;max-width:170px"
-                id="globalMonthSelector" onchange="changeGlobalMonth()"></select>
-      </div>
-    </div>
-  </header>
+        <button onclick="sincronizarTudo(false)" title="Sincronizar agora"
+        class="relative p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition text-sm"
+        id="btnSync">
+  <i class="fas fa-sync-alt"></i>
+  <!-- Badge de itens pendentes -->
+  <span id="syncBadge"
+        style="display:none"
+        class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs
+               font-bold rounded-full flex items-center justify-center leading-none">
+    0
+  </span>
+</button>
 
-  <div class="p-3 sm:p-6 flex-1">
+<!-- Info última sync (visível só em telas médias+) -->
+<div class="hidden md:flex flex-col items-end" id="syncStatus">
+  <div class="flex items-center gap-1.5">
+    <div class="w-2 h-2 bg-green-400 rounded-full sync-pulse"></div>
+    <span class="text-gray-600 text-xs">Sincronizado</span>
+  </div>
+  <span class="text-gray-400 text-xs" id="ultimaSyncLabel">—</span>
+</div>
+
 
     <!-- DASHBOARD -->
    <div class="page active" id="page-dashboard">
@@ -1066,48 +1078,85 @@
   // ============================================================
   // API
   // ============================================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbyE5QwJN4tTxt-rm79nv_hFaLaY1D5uHkgMXfXjJt4P_vFYKNLFSJ8OYbPqjGJpVFzW/exec";
+  // ============================================================
+// API — com fallback para fila offline
+// ============================================================
+const API_URL = "https://script.google.com/macros/s/AKfycbyE5QwJN4tTxt-rm79nv_hFaLaY1D5uHkgMXfXjJt4P_vFYKNLFSJ8OYbPqjGJpVFzW/exec";
 
-  async function apiGet(sheet) {
+async function apiGet(sheet) {
   const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const text = await resp.text();
-  if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
+  if (text.trim().startsWith('<!') || text.trim().startsWith('<html'))
     throw new Error('API retornou HTML (serviço indisponível)');
-  }
+  const json = JSON.parse(text);
+  if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
+  return json.data || [];
+}
+
+async function apiSave(sheet, data) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'save', sheet, data })
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const json = await resp.json();
+  if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
+  return json.data;
+}
+
+async function apiUpdate(sheet, id, data) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'update', sheet, id, data })
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const json = await resp.json();
+  if (!json.ok) throw new Error(json.error || 'Erro ao atualizar');
+  return json.data;
+}
+
+async function apiDelete(sheet, id) {
+  const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const json = await resp.json();
+  if (!json.ok) throw new Error(json.error || 'Erro ao excluir');
+  return json.data;
+}
+
+// ── Versões seguras (com fila offline automática) ─────────────
+async function apiSaveSeguro(sheet, data) {
   try {
-    const json = JSON.parse(text);
-    if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
-    return json.data || [];
-  } catch (e) {
-    throw new Error('Resposta inválida da API: ' + e.message);
+    return await apiSave(sheet, data);
+  } catch (err) {
+    const opId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    enfileirarOperacao({ action: 'save', sheet, data: { ...data, _tmpId: opId }, id: opId });
+    return { id: opId, _offline: true };
   }
 }
 
+async function apiUpdateSeguro(sheet, id, data) {
+  try {
+    return await apiUpdate(sheet, id, data);
+  } catch (err) {
+    enfileirarOperacao({ action: 'update', sheet, id, data });
+    throw err; // deixa o chamador tratar visualmente
+  }
+}
 
-  async function apiSave(sheet, data) {
-    const resp = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'save',sheet,data}) });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
-    return json.data;
+async function apiDeleteSeguro(sheet, id) {
+  try {
+    return await apiDelete(sheet, id);
+  } catch (err) {
+    enfileirarOperacao({ action: 'delete', sheet, id, data: { id } });
+    throw err;
   }
-  async function apiUpdate(sheet, id, data) {
-    const resp = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'update',sheet,id,data}) });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro ao atualizar');
-    return json.data;
-  }
-  async function apiDelete(sheet, id) {
-    const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Erro ao excluir');
-    return json.data;
-  }
+}
+
 
   // ============================================================
   // SESSÃO / LOGIN
@@ -1574,52 +1623,245 @@
   // ============================================================
   // INICIALIZAÇÃO
   // ============================================================
-  async function inicializarSistema(){
-    mostrarLoading(true); setSyncStatus('syncing');
+  async function inicializarSistema() {
+  mostrarLoading(true);
+  setSyncStatus('syncing');
 
-    // ⬇️ GARANTIA: esconde o loading em no máximo 6 segundos
-    const safetyTimer = setTimeout(() => mostrarLoading(false), 6000);
+  const safetyTimer = setTimeout(() => mostrarLoading(false), 8000);
 
-    DB.loadLocal();
-    if(DB.despesas.length===0) DB.despesas=[...DESPESAS_PADRAO];
-    aplicarConfiguracoes();
+  DB.loadLocal();
+  if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
+  aplicarConfiguracoes();
+  atualizarBadgeSync(); // mostra fila pendente imediatamente
+
+  try {
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 6000));
+
+    const res = await Promise.race([
+      Promise.allSettled([apiGet('cultos'), apiGet('despesas'), apiGet('entradas')]),
+      timeout
+    ]);
+
+    const [cR, dR, eR] = res;
+
+    // Sheets substitui local (fonte de verdade)
+    if (cR.status === 'fulfilled' && cR.value.length > 0)
+      DB.cultos = cR.value.map(normalizarCulto);
+
+    if (dR.status === 'fulfilled' && dR.value.length > 0) {
+      const idsSheets = new Set(dR.value.map(d => String(d.id)));
+      DB.despesas = [
+        ...DESPESAS_PADRAO.filter(d => !idsSheets.has(String(d.id))),
+        ...dR.value.map(normalizarDespesa)
+      ];
+    }
+
+    if (eR.status === 'fulfilled' && eR.value.length > 0)
+      DB.entradas = eR.value.map(normalizarEntrada);
+
+    DB.saveLocal();
+    setSyncStatus('synced');
+    _ultimaSync = Date.now();
+    localStorage.setItem('ieq_ultima_sync', _ultimaSync);
+    showNotification('✅ Dados sincronizados!', 'success');
+
+    // Processa fila offline que ficou pendente
+    const { enviados } = await processarFilaOffline();
+    if (enviados > 0)
+      showNotification(`📤 ${enviados} operação(ões) offline sincronizada(s)!`, 'success');
+
+  } catch (err) {
+    setSyncStatus('error');
+    showNotification('⚠️ Modo offline — dados locais carregados', 'warning');
+  } finally {
+    clearTimeout(safetyTimer);
+    buildGlobalMonthOptions();
+    setGlobalMonth(GLOBAL_MONTH);
+    renderRelatorios();
+    mostrarLoading(false);
+    atualizarBadgeSync();
+    atualizarInfoUltimaSync();
+    iniciarSyncAutomatico(); // ← inicia o timer de 5 min
+  }
+}
+
+
+  // ============================================================
+// SYNC ENGINE — Sheets como fonte de verdade
+// ============================================================
+
+const SYNC_INTERVAL_MS  = 5 * 60 * 1000; // 5 minutos
+const OFFLINE_QUEUE_KEY = 'ieq_offline_queue';
+
+let _syncTimer      = null;
+let _syncEmAndamento = false;
+
+// ── Fila offline ─────────────────────────────────────────────
+function getFilaOffline() {
+  try { return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); }
+  catch { return []; }
+}
+function salvarFilaOffline(fila) {
+  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(fila));
+  atualizarBadgeSync();
+}
+function enfileirarOperacao(op) {
+  // op = { id, action:'save'|'update'|'delete', sheet, data, timestamp }
+  const fila = getFilaOffline();
+  // Se já existe delete do mesmo ID, descarta operações anteriores dele
+  if (op.action === 'delete') {
+    const novaFila = fila.filter(o => !(o.sheet === op.sheet && String(o.data?.id) === String(op.id)));
+    novaFila.push({ ...op, timestamp: Date.now() });
+    salvarFilaOffline(novaFila);
+    return;
+  }
+  // Evita duplicar save do mesmo ID temporário
+  const existe = fila.findIndex(o => o.sheet === op.sheet &&
+                                     String(o.data?.id) === String(op.data?.id) &&
+                                     o.action === op.action);
+  if (existe !== -1) fila[existe] = { ...op, timestamp: Date.now() };
+  else               fila.push({ ...op, timestamp: Date.now() });
+  salvarFilaOffline(fila);
+}
+
+function atualizarBadgeSync() {
+  const fila = getFilaOffline();
+  const badge = document.getElementById('syncBadge');
+  if (!badge) return;
+  if (fila.length > 0) {
+    badge.textContent = fila.length;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ── Processar fila offline ────────────────────────────────────
+async function processarFilaOffline() {
+  const fila = getFilaOffline();
+  if (!fila.length) return { enviados: 0, erros: 0 };
+  let enviados = 0, erros = 0;
+  const filaRestante = [];
+  for (const op of fila) {
     try {
-      const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error('Timeout')), 5000));
-      const res = await Promise.race([
-        Promise.allSettled([apiGet('cultos'),apiGet('despesas'),apiGet('entradas')]),
-        timeout
-      ]);
-      const[cR,dR,eR] = res;
-      if(cR.status==='fulfilled'&&cR.value.length>0) DB.cultos=cR.value.map(normalizarCulto);
-      if(dR.status==='fulfilled'&&dR.value.length>0){
-        const ids = new Set(dR.value.map(d=>String(d.id)));
-        DB.despesas = [...DESPESAS_PADRAO.filter(d=>!ids.has(String(d.id))),...dR.value.map(normalizarDespesa)];
-      }
-      if(eR.status==='fulfilled'&&eR.value.length>0) DB.entradas=eR.value.map(normalizarEntrada);
-      DB.saveLocal(); setSyncStatus('synced');
-      showNotification('✅ Dados sincronizados!','success');
-    } catch(err){
-      setSyncStatus('error');
-      showNotification('⚠️ Modo offline — dados locais','warning');
-    } finally {
-      clearTimeout(safetyTimer);                    // ← cancela o timer de segurança
-      buildGlobalMonthOptions(); setGlobalMonth(GLOBAL_MONTH);
-      renderRelatorios(); mostrarLoading(false);    // ← esconde o loading
+      if      (op.action === 'save')   await apiSave(op.sheet, op.data);
+      else if (op.action === 'update') await apiUpdate(op.sheet, op.id, op.data);
+      else if (op.action === 'delete') await apiDelete(op.sheet, op.id);
+      enviados++;
+    } catch (err) {
+      erros++;
+      filaRestante.push(op); // mantém na fila para tentar depois
     }
   }
+  salvarFilaOffline(filaRestante);
+  return { enviados, erros };
+}
 
-  async function sincronizarTudo(){
-    setSyncStatus('syncing'); showNotification('🔄 Sincronizando...','info');
-    try {
-      const[c,d,e]=await Promise.all([apiGet('cultos'),apiGet('despesas'),apiGet('entradas')]);
-      if(c.length>0) DB.cultos=c.map(normalizarCulto);
-      if(e.length>0) DB.entradas=e.map(normalizarEntrada);
-      const ids=new Set(d.map(x=>String(x.id)));
-      DB.despesas=[...DESPESAS_PADRAO.filter(x=>!ids.has(String(x.id))),...d.map(normalizarDespesa)];
-      DB.saveLocal(); setSyncStatus('synced'); showNotification('✅ Sincronizado!','success');
-      showPage(document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard');
-    } catch(err){ setSyncStatus('error'); showNotification('❌ Erro: '+err.message,'error'); }
+// ── Sincronização principal ───────────────────────────────────
+async function sincronizarTudo(silencioso = false) {
+  if (_syncEmAndamento) return;
+  _syncEmAndamento = true;
+  setSyncStatus('syncing');
+  if (!silencioso) showNotification('🔄 Sincronizando com Google Sheets...', 'info');
+
+  try {
+    // 1. Tenta enviar fila offline primeiro
+    const { enviados, erros: errosFila } = await processarFilaOffline();
+    if (enviados > 0 && !silencioso)
+      showNotification(`📤 ${enviados} operação(ões) offline enviada(s)`, 'info');
+
+    // 2. Busca tudo do Sheets (fonte de verdade)
+    const [cultosBrutos, despesasBrutos, entradasBrutos] = await Promise.all([
+      apiGet('cultos'),
+      apiGet('despesas'),
+      apiGet('entradas')
+    ]);
+
+    // 3. Sheets substitui local — ele é a fonte de verdade
+    if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
+      DB.cultos = cultosBrutos.map(normalizarCulto);
+    }
+
+    if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
+      // Mantém registros fixos (_fixed) que não existem no Sheets
+      const idsSheets = new Set(despesasBrutos.map(d => String(d.id)));
+      const fixosNaoEnviados = DESPESAS_PADRAO.filter(d => !idsSheets.has(String(d.id)));
+      DB.despesas = [...fixosNaoEnviados, ...despesasBrutos.map(normalizarDespesa)];
+    }
+
+    if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
+      DB.entradas = entradasBrutos.map(normalizarEntrada);
+    }
+
+    DB.saveLocal();
+    setSyncStatus('synced');
+    _ultimaSync = Date.now();
+    localStorage.setItem('ieq_ultima_sync', _ultimaSync);
+
+    if (!silencioso)
+      showNotification('✅ Sincronizado! Dados atualizados do Sheets.', 'success');
+
+    // 4. Re-renderiza a página ativa
+    _reRenderPaginaAtiva();
+
+    // Avisa se ainda há itens com erro na fila
+    if (errosFila > 0)
+      showNotification(`⚠️ ${errosFila} item(ns) ainda na fila offline`, 'warning');
+
+  } catch (err) {
+    setSyncStatus('error');
+    if (!silencioso)
+      showNotification('❌ Erro ao sincronizar: ' + err.message, 'error');
+  } finally {
+    _syncEmAndamento = false;
+    atualizarBadgeSync();
+    atualizarInfoUltimaSync();
   }
+}
+
+function _reRenderPaginaAtiva() {
+  const pagina = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
+  if (pagina === 'dashboard')     renderDashboard();
+  if (pagina === 'culto')         renderCultos();
+  if (pagina === 'despesas')      { filtrarDespesas(); renderCategoriasDespesas(); }
+  if (pagina === 'entradas')      renderEntradas();
+  if (pagina === 'historico')     renderHistorico();
+  if (pagina === 'relatorios')    renderRelatorios();
+  if (pagina === 'distribuicoes') renderDistribuicoesMes();
+}
+
+// ── Sync automático ───────────────────────────────────────────
+let _ultimaSync = parseInt(localStorage.getItem('ieq_ultima_sync') || '0');
+
+function iniciarSyncAutomatico() {
+  if (_syncTimer) clearInterval(_syncTimer);
+  _syncTimer = setInterval(() => {
+    if (navigator.onLine) sincronizarTudo(true); // silencioso
+  }, SYNC_INTERVAL_MS);
+}
+
+function atualizarInfoUltimaSync() {
+  const el = document.getElementById('ultimaSyncLabel');
+  if (!el || !_ultimaSync) return;
+  const diff = Math.floor((Date.now() - _ultimaSync) / 1000);
+  if (diff < 60)       el.textContent = 'Agora mesmo';
+  else if (diff < 3600) el.textContent = `${Math.floor(diff / 60)}min atrás`;
+  else                  el.textContent = new Date(_ultimaSync).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Atualiza label "X min atrás" a cada 30s
+setInterval(atualizarInfoUltimaSync, 30_000);
+
+// ── Detecta volta de conexão ──────────────────────────────────
+window.addEventListener('online', () => {
+  showNotification('🌐 Conexão restaurada — sincronizando...', 'info');
+  sincronizarTudo(false);
+});
+window.addEventListener('offline', () => {
+  setSyncStatus('error');
+  showNotification('📴 Sem conexão — operações serão salvas localmente', 'warning');
+});
+
 
   // ============================================================
   // HELPERS
@@ -3111,6 +3353,28 @@ async function excluirDespesa(id) {
   // ============================================================
   // START
   // ============================================================
+  function limparCacheLocal() {
+  const fila = getFilaOffline();
+  const aviso = fila.length > 0
+    ? `\n\n⚠️ Atenção: há ${fila.length} operação(ões) na fila offline que serão perdidas.`
+    : '';
+  if (!confirm(`Limpar cache local?${aviso}`)) return;
+
+  localStorage.removeItem('despesas_cache');
+  localStorage.removeItem('cultos_cache');
+  localStorage.removeItem('entradas_cache');
+  localStorage.removeItem(OFFLINE_QUEUE_KEY);
+  localStorage.removeItem('ieq_ultima_sync');
+
+  DB.despesas = [...DESPESAS_PADRAO];
+  DB.cultos   = [];
+  DB.entradas = [];
+
+  atualizarBadgeSync();
+  showNotification('🗑️ Cache limpo. Sincronizando...', 'info');
+  sincronizarTudo(false);
+}
+
   document.addEventListener('DOMContentLoaded', () => {
     const hoje=new Date().toISOString().split('T')[0];
     ['c-data','d-data','e-data','alt-d-data'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=hoje; });
