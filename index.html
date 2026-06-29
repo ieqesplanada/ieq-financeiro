@@ -1656,6 +1656,7 @@ if (DB.despesas.length === 0 && !localStorage.getItem('ieq_ultima_sync'))
 }
   aplicarConfiguracoes();
   atualizarBadgeSync(); // mostra fila pendente imediatamente
+  restaurarToggleCategorias();
 
   try {
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 6000));
@@ -1874,13 +1875,14 @@ try {
 
 function _reRenderPaginaAtiva() {
   const pagina = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
-  if (pagina === 'dashboard')     renderDashboard();
-  if (pagina === 'culto')         renderCultos();
-  if (pagina === 'despesas')      { filtrarDespesas(); renderCategoriasDespesas(); }
-  if (pagina === 'entradas')      renderEntradas();
-  if (pagina === 'historico')     renderHistorico();
-  if (pagina === 'relatorios')    renderRelatorios();
-  if (pagina === 'distribuicoes') renderDistribuicoesMes();
+  if (pagina === 'dashboard')      renderDashboard();
+  if (pagina === 'culto')          renderCultos();
+  if (pagina === 'despesas')       { filtrarDespesas(); renderCategoriasDespesas(); }
+  if (pagina === 'entradas')       renderEntradas();
+  if (pagina === 'historico')      renderHistorico();
+  if (pagina === 'relatorios')     renderRelatorios();
+  if (pagina === 'distribuicoes')  renderDistribuicoesMes();
+  if (pagina === 'configuracoes')  renderConfiguracoes();
 }
 
 // ── Sync automático ───────────────────────────────────────────
@@ -2748,7 +2750,25 @@ function criarLinhaOferta(nome='', valor='', forma='Caixa') {
   }
 
 
-  function imprimirCultoDireto(idx){ verCulto(idx); setTimeout(()=>imprimirCulto(),150); }
+  function imprimirCultoDireto(idx){
+  verCulto(idx);
+  const modal = document.getElementById('modalVerCulto');
+  if (!modal) { imprimirCulto(); return; }
+
+  if (modal.classList.contains('active')) {
+    requestAnimationFrame(() => imprimirCulto());
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    if (modal.classList.contains('active')) {
+      observer.disconnect();
+      requestAnimationFrame(() => imprimirCulto());
+    }
+  });
+  observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+}
+
    function imprimirCulto(){
     const cont=document.getElementById('printArea').innerHTML;
     const logoSrc=DB.config.logo||'';
