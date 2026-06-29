@@ -2430,7 +2430,7 @@ window.addEventListener('offline', () => {
       const delBtn=podeEx
         ?`<button onclick="excluirCulto(${idx})" class="btn-acao-del w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs flex items-center justify-center" title="Excluir"><i class="fas fa-trash"></i></button>`
         :`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs flex items-center justify-center cursor-not-allowed" title="Sem permissão" disabled><i class="fas fa-trash"></i></button>`;
-      return `<tr class="table-row border-b border-gray-50 ${isPrim?'bg-blue-50':''}">
+      return 
         <td class="p-2 text-sm font-medium">${fmtDate(c.data)}${ceiaTag}</td>
         <td class="p-2"><span class="badge-blue px-2 py-0.5 rounded text-xs font-semibold">${escapeHtml(c.tipo||'-')}</span></td>
         <td class="p-2 text-sm text-gray-600 hidden md:table-cell">${escapeHtml(c.pregador||c.pastor||'-')}</td>
