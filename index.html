@@ -1813,7 +1813,9 @@ async function sincronizarTudo(silencioso = false) {
     if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
       // Mantém registros fixos (_fixed) que não existem no Sheets
       const idsSheets = new Set(despesasBrutos.map(d => String(d.id)));
-      const fixosNaoEnviados = DESPESAS_PADRAO.filter(d => !idsSheets.has(String(d.id)));
+            const fixosNaoEnviados = DESPESAS_PADRAO
+        .filter(d => !idsSheets.has(String(d.id)))
+        .map(d => ({ ...d }));
       DB.despesas = [...fixosNaoEnviados, ...despesasBrutos.map(normalizarDespesa)];
     }
 
