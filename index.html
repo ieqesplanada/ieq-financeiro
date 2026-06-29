@@ -1269,6 +1269,12 @@ async function apiDeleteSeguro(sheet, id) {
     inicializarSistema();
   }
 
+  setInterval(() => {
+  if (SESSAO && Date.now() - SESSAO.loginEm > SESSION_TTL) {
+    logout();
+    showNotification('⏰ Sessão expirada. Faça login novamente.', 'info');
+  }
+}, 60_000);
   function logout() {
     if (!confirm('Deseja sair do sistema?')) return;
     limparSessao();
