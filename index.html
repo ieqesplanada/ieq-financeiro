@@ -1429,13 +1429,16 @@ async function apiDeleteSeguro(sheet, id) {
   }
   function prevMonthKey(mk){ const[y,m]=mk.split('-').map(Number); return monthKeyFromDate(new Date(y,m-2,1)); }
 
-  function getSegundoDomingoDoMes(mk){
+ function getSegundoDomingoDoMes(mk){
     const[y,m]=mk.split('-').map(Number);
+    console.log('mk recebido:', mk, '| y:', y, '| m:', m); // ← adicione esta linha
     for(let d=1;d<=7;d++){
-      if(new Date(y,m-1,d).getDay()===0){
-        const segundo = d + 7;
-        return `${y}-${String(m).padStart(2,'0')}-${String(segundo).padStart(2,'0')}`;
-      }
+        if(new Date(y,m-1,d).getDay()===0){
+            const segundo = d + 7;
+            const resultado = `${y}-${String(m).padStart(2,'0')}-${String(segundo).padStart(2,'0')}`;
+            console.log('Resultado retornado:', resultado); // ← adicione esta linha
+            return resultado;
+        }
     }
     return null;
 }
