@@ -460,8 +460,7 @@
             <div class="text-center p-3 bg-blue-50 rounded-xl">
               <p class="text-3xl font-bold text-blue-600" id="kpi-presentes">0</p>
               <p class="text-sm text-gray-600 mt-1">Presentes na Ceia</p>
-              <p class="text-xs text-blue-400 mt-0.5" id="kpi-presentes-info">1º domingo do mês</p>
-            </div>
+              <p class="text-xs text-red-500 mt-1 font-mono" id="debug-data-ceia" style="display:none;background:#fee2e2;padding:4px 8px;border-radius:4px;"></p>
             <div class="grid grid-cols-2 gap-2">
               <div class="text-center p-2 bg-green-50 rounded-lg">
                 <p class="text-xl font-bold text-green-600" id="kpi-cultos">0</p>
@@ -1431,16 +1430,28 @@ async function apiDeleteSeguro(sheet, id) {
 
  function getSegundoDomingoDoMes(mk){
     const[y,m]=mk.split('-').map(Number);
-    console.log('mk recebido:', mk, '| y:', y, '| m:', m); // ← adicione esta linha
+    
+    // Calcula o segundo domingo
+    let primeiroDom = null;
     for(let d=1;d<=7;d++){
         if(new Date(y,m-1,d).getDay()===0){
-            const segundo = d + 7;
-            const resultado = `${y}-${String(m).padStart(2,'0')}-${String(segundo).padStart(2,'0')}`;
-            console.log('Resultado retornado:', resultado); // ← adicione esta linha
-            return resultado;
+            primeiroDom = d;
+            break;
         }
     }
-    return null;
+    
+    const segundo = primeiroDom + 7;
+    const resultado = `${y}-${String(m).padStart(2,'0')}-${String(segundo).padStart(2,'0')}`;
+    
+    // MOSTRA NA TELA (debug visível)
+    const debugEl = document.getElementById('debug-data-ceia');
+    if(debugEl) {
+        debugEl.textContent = `mk=${mk} | 1ºDom=${primeiroDom} | 2ºDom=${segundo} | Resultado=${resultado}`;
+        debugEl.style.display = 'block';
+    }
+    
+    console.log('getSegundoDomingoDoMes:', {mk, y, m, primeiroDom, segundo, resultado});
+    return resultado;
 }
 
   function getPresentesCeia(mk){
