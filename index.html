@@ -1429,7 +1429,7 @@ async function apiDeleteSeguro(sheet, id) {
   }
   function prevMonthKey(mk){ const[y,m]=mk.split('-').map(Number); return monthKeyFromDate(new Date(y,m-2,1)); }
 
-  function getPrimeiroDomingoDoMes(mk){
+  function getSegundoDomingoDoMes(mk){
     const[y,m]=mk.split('-').map(Number);
     for(let d=1;d<=7;d++){
       if(new Date(y,m-1,d).getDay()===0){
@@ -1439,8 +1439,6 @@ async function apiDeleteSeguro(sheet, id) {
     }
     return null;
 }
-
-  
 
   function getPresentesCeia(mk){
     const segundoDom=getSegundoDomingoDoMes(mk);
