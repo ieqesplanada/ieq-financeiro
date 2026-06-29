@@ -818,6 +818,9 @@
 
         <div class="card p-5" id="cardUsuarios">
 
+
+
+        <div class="card p-5" id="cardUsuarios">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-users-cog text-purple-600"></i> Usuários do Sistema</h3>
           <p class="text-xs text-gray-400 mb-4">Gerencie os acessos na aba <strong>usuarios</strong> da planilha Google Sheets.</p>
           <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-2">
@@ -1240,68 +1243,27 @@ async function apiDeleteSeguro(sheet, id) {
     document.getElementById('loginPass').classList.remove('erro');
   }
 
- async function efetuarLogin(e) {
-  e.preventDefault();
-  limparErroLogin();
-
-  const login = document.getElementById('loginUser').value.trim();
-  const senha = document.getElementById('loginPass').value;
-  const lembrar = document.getElementById('lembrarUser').checked;
-  const btn = document.getElementById('btnLogin');
-
-  if (!login || !senha) {
-    mostrarErroLogin('Preencha usuário e senha.');
-    return;
+  async function efetuarLogin(e) {
+    e.preventDefault();
+    limparErroLogin();
+    const login = document.getElementById('loginUser').value.trim();
+    const senha = document.getElementById('loginPass').value;
+    const lembrar = document.getElementById('lembrarUser').checked;
+    const btn = document.getElementById('btnLogin');
+    if (!login || !senha) { mostrarErroLogin('Preencha usuário e senha.'); return; }
+    if (lembrar) localStorage.setItem('ieq_lembrar_user', login);
+    else localStorage.removeItem('ieq_lembrar_user');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
+    try {
+      const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&senha=${encodeURIComponent(senha)}`;
+      const resp = await fetch(url);
+      const json = await resp.json();
+      if (json.ok) { salvarSessao({ nome: json.nome, permissao: json.permissao }); entrarNoSistema(); }
+      else { mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.'); document.getElementById('loginPass').value = ''; document.getElementById('loginPass').focus(); }
+    } catch (err) { mostrarErroLogin('Erro de conexão. Verifique sua internet.'); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar'; }
   }
-
-  if (lembrar) {
-    localStorage.setItem('ieq_lembrar_user', login);
-  } else {
-    localStorage.removeItem('ieq_lembrar_user');
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
-
-  try {
-    // ✅ CORREÇÃO: envia login e senha pelo corpo da requisição POST
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify({
-        action: 'login',
-        login: login,
-        senha: senha
-      })
-    });
-
-    if (!resp.ok) {
-      throw new Error(`Erro HTTP ${resp.status}`);
-    }
-
-    const json = await resp.json();
-
-    if (json.ok) {
-      salvarSessao({
-        nome: json.nome,
-        permissao: json.permissao
-      });
-      entrarNoSistema();
-    } else {
-      mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.');
-      document.getElementById('loginPass').value = '';
-      document.getElementById('loginPass').focus();
-    }
-  } catch (err) {
-    console.error('Erro no login:', err);
-    mostrarErroLogin('Erro de conexão. Verifique sua internet ou tente novamente.');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar';
-  }
-}
 
   function entrarNoSistema() {
     document.getElementById('loginScreen').classList.remove('active');
@@ -1310,12 +1272,6 @@ async function apiDeleteSeguro(sheet, id) {
     inicializarSistema();
   }
 
-  setInterval(() => {
-  if (SESSAO && Date.now() - SESSAO.loginEm > SESSION_TTL) {
-    logout();
-    showNotification('⏰ Sessão expirada. Faça login novamente.', 'info');
-  }
-}, 60_000);
   function logout() {
     if (!confirm('Deseja sair do sistema?')) return;
     limparSessao();
@@ -1380,21 +1336,21 @@ async function apiDeleteSeguro(sheet, id) {
   };
 
   const DESPESAS_PADRAO = [
-  { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',     valor:114.48,  data:'2026-05-10', _fixed:true, _placeholder:true },
-  { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',         valor:109.84,  data:'2026-05-10', _fixed:true, _placeholder:true },
-  { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual', valor:184.41,  data:'2026-05-15', _fixed:true, _placeholder:true },
-  { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional', valor:353.82,  data:'2026-05-15', _fixed:true, _placeholder:true },
-  { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',   valor:150.00,  data:'2026-05-05', _fixed:true, _placeholder:true },
-  { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',      valor:169.41,  data:'2026-05-15', _fixed:true, _placeholder:true },
-  { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:40.00,   data:'2026-05-02', _fixed:true, _placeholder:true },
-  { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-06', _fixed:true, _placeholder:true },
-  { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:100.00,  data:'2026-05-09', _fixed:true, _placeholder:true },
-  { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-12', _fixed:true, _placeholder:true },
-  { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-16', _fixed:true, _placeholder:true },
-  { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-20', _fixed:true, _placeholder:true },
-  { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-23', _fixed:true, _placeholder:true },
-  { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',   valor:1863.46, data:'2026-05-30', _fixed:true, _placeholder:true },
-];
+    { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',     valor:114.48,  data:'2026-05-10', _fixed:true },
+    { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',         valor:109.84,  data:'2026-05-10', _fixed:true },
+    { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual', valor:184.41,  data:'2026-05-15', _fixed:true },
+    { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional', valor:353.82,  data:'2026-05-15', _fixed:true },
+    { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',   valor:150.00,  data:'2026-05-05', _fixed:true },
+    { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',      valor:169.41,  data:'2026-05-15', _fixed:true },
+    { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:40.00,   data:'2026-05-02', _fixed:true },
+    { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-06', _fixed:true },
+    { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:100.00,  data:'2026-05-09', _fixed:true },
+    { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-12', _fixed:true },
+    { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-16', _fixed:true },
+    { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-20', _fixed:true },
+    { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-23', _fixed:true },
+    { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',   valor:1863.46, data:'2026-05-30', _fixed:true },
+  ];
 
   // ============================================================
   // NORMALIZAÇÃO
@@ -1448,10 +1404,6 @@ async function apiDeleteSeguro(sheet, id) {
   }
   return '-';
 };
-  function gerarIdTmp() {
-  return 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
-}
-
 
   function monthKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
   function monthLabel(mk){
@@ -1699,15 +1651,10 @@ async function apiDeleteSeguro(sheet, id) {
 
   const safetyTimer = setTimeout(() => mostrarLoading(false), 8000);
 
- DB.loadLocal();
-const jaSincronizouAlgumaVez = !!localStorage.getItem('ieq_ultima_sync');
-if (DB.despesas.length === 0 && !localStorage.getItem('ieq_ultima_sync'))
- {
-  DB.despesas = [...DESPESAS_PADRAO];
-}
+  DB.loadLocal();
+  if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
   aplicarConfiguracoes();
   atualizarBadgeSync(); // mostra fila pendente imediatamente
-  restaurarToggleCategorias();
 
   try {
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 6000));
@@ -1733,21 +1680,6 @@ if (DB.despesas.length === 0 && !localStorage.getItem('ieq_ultima_sync'))
 
     if (eR.status === 'fulfilled' && eR.value.length > 0)
       DB.entradas = eR.value.map(normalizarEntrada);
-
-    // Busca categorias da sheet config
-try {
-  const configRows = await apiGet('config');
-  const catRow = configRows.find(r => r.id === 'categoriasDespesas');
-  if (catRow && catRow.valor) {
-    const cats = JSON.parse(catRow.valor);
-    if (Array.isArray(cats) && cats.length > 0) {
-      DB.config.categoriasDespesas = cats;
-      localStorage.setItem('ieq_config', JSON.stringify(DB.config));
-    }
-  }
-} catch (err) {
-  // sem config remota, mantém local
-}
 
     DB.saveLocal();
     setSyncStatus('synced');
@@ -1883,21 +1815,6 @@ async function sincronizarTudo(silencioso = false) {
       DB.entradas = entradasBrutos.map(normalizarEntrada);
     }
 
-    // Busca categorias da sheet config
-try {
-  const configRows = await apiGet('config');
-  const catRow = configRows.find(r => r.id === 'categoriasDespesas');
-  if (catRow && catRow.valor) {
-    const cats = JSON.parse(catRow.valor);
-    if (Array.isArray(cats) && cats.length > 0) {
-      DB.config.categoriasDespesas = cats;
-      localStorage.setItem('ieq_config', JSON.stringify(DB.config));
-    }
-  }
-} catch (err) {
-  // sem config remota, mantém local
-}
-
     DB.saveLocal();
     setSyncStatus('synced');
     _ultimaSync = Date.now();
@@ -1926,14 +1843,13 @@ try {
 
 function _reRenderPaginaAtiva() {
   const pagina = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
-  if (pagina === 'dashboard')      renderDashboard();
-  if (pagina === 'culto')          renderCultos();
-  if (pagina === 'despesas')       { filtrarDespesas(); renderCategoriasDespesas(); }
-  if (pagina === 'entradas')       renderEntradas();
-  if (pagina === 'historico')      renderHistorico();
-  if (pagina === 'relatorios')     renderRelatorios();
-  if (pagina === 'distribuicoes')  renderDistribuicoesMes();
-  if (pagina === 'configuracoes')  renderConfiguracoes();
+  if (pagina === 'dashboard')     renderDashboard();
+  if (pagina === 'culto')         renderCultos();
+  if (pagina === 'despesas')      { filtrarDespesas(); renderCategoriasDespesas(); }
+  if (pagina === 'entradas')      renderEntradas();
+  if (pagina === 'historico')     renderHistorico();
+  if (pagina === 'relatorios')    renderRelatorios();
+  if (pagina === 'distribuicoes') renderDistribuicoesMes();
 }
 
 // ── Sync automático ───────────────────────────────────────────
@@ -2202,40 +2118,18 @@ window.addEventListener('offline', () => {
   // ============================================================
   // CULTOS
   // ============================================================
- function criarLinhaDizimista(nome='', valor='', forma='Caixa') {
-  const div = document.createElement('div');
-  div.className = 'dizimista-row';
-  div.innerHTML = `
-    <input type="text" placeholder="Nome do dizimista" class="input-field text-sm diz-nome">
-    <input type="number" placeholder="0,00" class="input-field text-sm diz-valor" min="0" step="0.01" oninput="calcTotalCulto()">
-    <select class="forma-pag diz-forma" onchange="calcTotalCulto()">
-      <option value="Caixa">Caixa</option>
-      <option value="PIX">PIX</option>
-    </select>
-    <button type="button" class="btn-remove" onclick="removerLinha(this,'dizimista')"><i class="fas fa-times"></i></button>`;
-  div.querySelector('.diz-nome').value = nome;
-  div.querySelector('.diz-valor').value = valor;
-  div.querySelector('.diz-forma').value = forma;
-  return div;
-}
-
-function criarLinhaOferta(nome='', valor='', forma='Caixa') {
-  const div = document.createElement('div');
-  div.className = 'oferta-row';
-  div.innerHTML = `
-    <input type="text" placeholder="Nome do ofertante" class="input-field text-sm of-nome">
-    <input type="number" placeholder="0,00" class="input-field text-sm of-valor" min="0" step="0.01" oninput="calcTotalCulto()">
-    <select class="forma-pag of-forma" onchange="calcTotalCulto()">
-      <option value="Caixa">Caixa</option>
-      <option value="PIX">PIX</option>
-    </select>
-    <button type="button" class="btn-remove" onclick="removerLinha(this,'oferta')"><i class="fas fa-times"></i></button>`;
-  div.querySelector('.of-nome').value = nome;
-  div.querySelector('.of-valor').value = valor;
-  div.querySelector('.of-forma').value = forma;
-  return div;
-}
-
+  function criarLinhaDizimista(nome='',valor='',forma='Caixa'){
+    const div=document.createElement('div'); div.className='dizimista-row';
+    div.innerHTML=`
+      <input type="text" placeholder="Nome do dizimista" class="input-field text-sm diz-nome" value="${escapeHtml(nome)}">
+      <input type="number" placeholder="0,00" class="input-field text-sm diz-valor" value="${valor}" min="0" step="0.01" oninput="calcTotalCulto()">
+      <select class="forma-pag diz-forma" onchange="calcTotalCulto()">
+        <option ${forma==='Caixa'?'selected':''}>Caixa</option>
+        <option ${forma==='PIX'?'selected':''}>PIX</option>
+      </select>
+      <button type="button" class="btn-remove" onclick="removerLinha(this,'dizimista')"><i class="fas fa-times"></i></button>`;
+    return div;
+  }
   function criarLinhaOferta(nome='',valor='',forma='Caixa'){
     const div=document.createElement('div'); div.className='oferta-row';
     div.innerHTML=`
@@ -2396,21 +2290,17 @@ function criarLinhaOferta(nome='', valor='', forma='Caixa') {
       setSyncStatus('synced');
       showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
     } catch(err){
-  const cultoId = gerarIdTmp();
-  DB.cultos.unshift({...cultoData, id: cultoId, dizimistas: coletarDizimistas(), ofertas: coletarOfertas()});
-  if(total > 0){
-    DB.entradas.unshift({
-      id: gerarIdTmp(),
-      descricao: `Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
-      valor: total,
-      data: cultoData.data,
-      origem: 'culto',
-      cultoId: cultoId
-    });
-  }
-  // ...
-}
-
+      const lid=Date.now();
+      const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
+      DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
+      if(total>0) DB.entradas.unshift({
+        id:lid+1,
+        descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
+        valor:total,
+        data:cultoData.data,
+        origem:'culto',
+        cultoId:lid
+      });
       DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
       setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
     } finally{
@@ -2457,8 +2347,8 @@ function criarLinhaOferta(nome='', valor='', forma='Caixa') {
       return;
     }
     const podeEd=temPermissao('podeEditar'), podeEx=temPermissao('podeExcluir');
-    tbody.innerHTML = lista.map(c => {
-      const idx = DB.cultos.findIndex(x => String(x.id) === String(c.id));
+    tbody.innerHTML=lista.map(c=>{
+      const idx=DB.cultos.indexOf(c);
       const isPrim=primDom&&c.data===primDom;
       const ceiaTag=isPrim?`<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">🍞 Ceia</span>`:'';
       const editBtn=podeEd
@@ -2800,25 +2690,7 @@ function criarLinhaOferta(nome='', valor='', forma='Caixa') {
   }
 
 
-  function imprimirCultoDireto(idx){
-  verCulto(idx);
-  const modal = document.getElementById('modalVerCulto');
-  if (!modal) { imprimirCulto(); return; }
-
-  if (modal.classList.contains('active')) {
-    requestAnimationFrame(() => imprimirCulto());
-    return;
-  }
-
-  const observer = new MutationObserver(() => {
-    if (modal.classList.contains('active')) {
-      observer.disconnect();
-      requestAnimationFrame(() => imprimirCulto());
-    }
-  });
-  observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-}
-
+  function imprimirCultoDireto(idx){ verCulto(idx); setTimeout(()=>imprimirCulto(),150); }
    function imprimirCulto(){
     const cont=document.getElementById('printArea').innerHTML;
     const logoSrc=DB.config.logo||'';
@@ -2848,39 +2720,19 @@ function criarLinhaOferta(nome='', valor='', forma='Caixa') {
   }
 
 
-  async function excluirCultoPorId(id, {silent=false}={}){
-  const idx = DB.cultos.findIndex(c => String(c.id) === String(id));
-  if (idx === -1) return;
-  setSyncStatus('syncing');
-
-  try {
-    await apiDelete('cultos', id);
-    for (const ent of DB.entradas.filter(e => String(e.cultoId) === String(id))) {
-      try { await apiDelete('entradas', ent.id); } catch(e) { /* ignora se entrada já não existe */ }
-    }
-    DB.cultos.splice(idx, 1);
-    DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(id));
-    DB.saveLocal();
-    setSyncStatus('synced');
-    if (!silent) showNotification('🗑️ Culto excluído', 'info');
-  } catch(err) {
-    if (!navigator.onLine) {
-      // Só remove localmente se estiver offline
-      DB.cultos.splice(idx, 1);
-      DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(id));
-      DB.saveLocal();
-      enfileirarOperacao({ action: 'delete', sheet: 'cultos', id, data: { id }, timestamp: Date.now() });
-      setSyncStatus('error');
-      if (!silent) showNotification('⚠️ Excluído localmente — será sincronizado quando a internet voltar', 'warning');
-    } else {
-      // Erro inesperado online: não remove localmente
-      setSyncStatus('error');
-      if (!silent) showNotification('❌ Não foi possível excluir. Tente novamente.', 'error');
-      throw err; // deixa o chamador saber que falhou
+  async function excluirCultoPorId(id,{silent=false}={}){
+    const idx=DB.cultos.findIndex(c=>String(c.id)===String(id)); if(idx===-1)return;
+    setSyncStatus('syncing');
+    try{
+      await apiDelete('cultos',id);
+      for(const ent of DB.entradas.filter(e=>String(e.cultoId)===String(id))){try{await apiDelete('entradas',ent.id);}catch(e){}}
+      DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
+      DB.saveLocal(); setSyncStatus('synced'); if(!silent)showNotification('🗑️ Culto excluído','info');
+    }catch(err){
+      DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
+      DB.saveLocal(); setSyncStatus('error'); if(!silent)showNotification('⚠️ Excluído localmente','warning');
     }
   }
-}
-
 
   async function excluirCulto(idx){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
