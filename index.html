@@ -1333,21 +1333,21 @@ async function apiDeleteSeguro(sheet, id) {
   };
 
   const DESPESAS_PADRAO = [
-    { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',     valor:114.48,  data:'2026-05-10', _fixed:true },
-    { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',         valor:109.84,  data:'2026-05-10', _fixed:true },
-    { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual', valor:184.41,  data:'2026-05-15', _fixed:true },
-    { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional', valor:353.82,  data:'2026-05-15', _fixed:true },
-    { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',   valor:150.00,  data:'2026-05-05', _fixed:true },
-    { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',      valor:169.41,  data:'2026-05-15', _fixed:true },
-    { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:40.00,   data:'2026-05-02', _fixed:true },
-    { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-06', _fixed:true },
-    { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:100.00,  data:'2026-05-09', _fixed:true },
-    { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-12', _fixed:true },
-    { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-16', _fixed:true },
-    { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-20', _fixed:true },
-    { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-23', _fixed:true },
-    { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',   valor:1863.46, data:'2026-05-30', _fixed:true },
-  ];
+  { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',     valor:114.48,  data:'2026-05-10', _fixed:true, _placeholder:true },
+  { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',         valor:109.84,  data:'2026-05-10', _fixed:true, _placeholder:true },
+  { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual', valor:184.41,  data:'2026-05-15', _fixed:true, _placeholder:true },
+  { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional', valor:353.82,  data:'2026-05-15', _fixed:true, _placeholder:true },
+  { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',   valor:150.00,  data:'2026-05-05', _fixed:true, _placeholder:true },
+  { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',      valor:169.41,  data:'2026-05-15', _fixed:true, _placeholder:true },
+  { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:40.00,   data:'2026-05-02', _fixed:true, _placeholder:true },
+  { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-06', _fixed:true, _placeholder:true },
+  { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:100.00,  data:'2026-05-09', _fixed:true, _placeholder:true },
+  { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-12', _fixed:true, _placeholder:true },
+  { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-16', _fixed:true, _placeholder:true },
+  { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-20', _fixed:true, _placeholder:true },
+  { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-23', _fixed:true, _placeholder:true },
+  { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',   valor:1863.46, data:'2026-05-30', _fixed:true, _placeholder:true },
+];
 
   // ============================================================
   // NORMALIZAÇÃO
@@ -1648,8 +1648,12 @@ async function apiDeleteSeguro(sheet, id) {
 
   const safetyTimer = setTimeout(() => mostrarLoading(false), 8000);
 
-  DB.loadLocal();
-  if (DB.despesas.length === 0) DB.despesas = [...DESPESAS_PADRAO];
+ DB.loadLocal();
+const jaSincronizouAlgumaVez = !!localStorage.getItem('ieq_ultima_sync');
+if (DB.despesas.length === 0 && !localStorage.getItem('ieq_ultima_sync'))
+ {
+  DB.despesas = [...DESPESAS_PADRAO];
+}
   aplicarConfiguracoes();
   atualizarBadgeSync(); // mostra fila pendente imediatamente
 
@@ -2145,18 +2149,40 @@ window.addEventListener('offline', () => {
   // ============================================================
   // CULTOS
   // ============================================================
-  function criarLinhaDizimista(nome='',valor='',forma='Caixa'){
-    const div=document.createElement('div'); div.className='dizimista-row';
-    div.innerHTML=`
-      <input type="text" placeholder="Nome do dizimista" class="input-field text-sm diz-nome" value="${escapeHtml(nome)}">
-      <input type="number" placeholder="0,00" class="input-field text-sm diz-valor" value="${valor}" min="0" step="0.01" oninput="calcTotalCulto()">
-      <select class="forma-pag diz-forma" onchange="calcTotalCulto()">
-        <option ${forma==='Caixa'?'selected':''}>Caixa</option>
-        <option ${forma==='PIX'?'selected':''}>PIX</option>
-      </select>
-      <button type="button" class="btn-remove" onclick="removerLinha(this,'dizimista')"><i class="fas fa-times"></i></button>`;
-    return div;
-  }
+ function criarLinhaDizimista(nome='', valor='', forma='Caixa') {
+  const div = document.createElement('div');
+  div.className = 'dizimista-row';
+  div.innerHTML = `
+    <input type="text" placeholder="Nome do dizimista" class="input-field text-sm diz-nome">
+    <input type="number" placeholder="0,00" class="input-field text-sm diz-valor" min="0" step="0.01" oninput="calcTotalCulto()">
+    <select class="forma-pag diz-forma" onchange="calcTotalCulto()">
+      <option value="Caixa">Caixa</option>
+      <option value="PIX">PIX</option>
+    </select>
+    <button type="button" class="btn-remove" onclick="removerLinha(this,'dizimista')"><i class="fas fa-times"></i></button>`;
+  div.querySelector('.diz-nome').value = nome;
+  div.querySelector('.diz-valor').value = valor;
+  div.querySelector('.diz-forma').value = forma;
+  return div;
+}
+
+function criarLinhaOferta(nome='', valor='', forma='Caixa') {
+  const div = document.createElement('div');
+  div.className = 'oferta-row';
+  div.innerHTML = `
+    <input type="text" placeholder="Nome do ofertante" class="input-field text-sm of-nome">
+    <input type="number" placeholder="0,00" class="input-field text-sm of-valor" min="0" step="0.01" oninput="calcTotalCulto()">
+    <select class="forma-pag of-forma" onchange="calcTotalCulto()">
+      <option value="Caixa">Caixa</option>
+      <option value="PIX">PIX</option>
+    </select>
+    <button type="button" class="btn-remove" onclick="removerLinha(this,'oferta')"><i class="fas fa-times"></i></button>`;
+  div.querySelector('.of-nome').value = nome;
+  div.querySelector('.of-valor').value = valor;
+  div.querySelector('.of-forma').value = forma;
+  return div;
+}
+
   function criarLinhaOferta(nome='',valor='',forma='Caixa'){
     const div=document.createElement('div'); div.className='oferta-row';
     div.innerHTML=`
@@ -2317,17 +2343,21 @@ window.addEventListener('offline', () => {
       setSyncStatus('synced');
       showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
     } catch(err){
-      const lid=Date.now();
-      const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
-      DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
-      if(total>0) DB.entradas.unshift({
-        id:lid+1,
-        descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
-        valor:total,
-        data:cultoData.data,
-        origem:'culto',
-        cultoId:lid
-      });
+  const cultoId = gerarIdTmp();
+  DB.cultos.unshift({...cultoData, id: cultoId, dizimistas: coletarDizimistas(), ofertas: coletarOfertas()});
+  if(total > 0){
+    DB.entradas.unshift({
+      id: gerarIdTmp(),
+      descricao: `Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
+      valor: total,
+      data: cultoData.data,
+      origem: 'culto',
+      cultoId: cultoId
+    });
+  }
+  // ...
+}
+
       DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
       setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
     } finally{
@@ -2374,7 +2404,8 @@ window.addEventListener('offline', () => {
       return;
     }
     const podeEd=temPermissao('podeEditar'), podeEx=temPermissao('podeExcluir');
-    tbody.innerHTML=lista.map(c=>{
+    tbody.innerHTML = lista.map(c => {
+      const idx = DB.cultos.findIndex(x => String(x.id) === String(c.id));
       const idx=DB.cultos.indexOf(c);
       const isPrim=primDom&&c.data===primDom;
       const ceiaTag=isPrim?`<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">🍞 Ceia</span>`:'';
@@ -2747,19 +2778,39 @@ window.addEventListener('offline', () => {
   }
 
 
-  async function excluirCultoPorId(id,{silent=false}={}){
-    const idx=DB.cultos.findIndex(c=>String(c.id)===String(id)); if(idx===-1)return;
-    setSyncStatus('syncing');
-    try{
-      await apiDelete('cultos',id);
-      for(const ent of DB.entradas.filter(e=>String(e.cultoId)===String(id))){try{await apiDelete('entradas',ent.id);}catch(e){}}
-      DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
-      DB.saveLocal(); setSyncStatus('synced'); if(!silent)showNotification('🗑️ Culto excluído','info');
-    }catch(err){
-      DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
-      DB.saveLocal(); setSyncStatus('error'); if(!silent)showNotification('⚠️ Excluído localmente','warning');
+  async function excluirCultoPorId(id, {silent=false}={}){
+  const idx = DB.cultos.findIndex(c => String(c.id) === String(id));
+  if (idx === -1) return;
+  setSyncStatus('syncing');
+
+  try {
+    await apiDelete('cultos', id);
+    for (const ent of DB.entradas.filter(e => String(e.cultoId) === String(id))) {
+      try { await apiDelete('entradas', ent.id); } catch(e) { /* ignora se entrada já não existe */ }
+    }
+    DB.cultos.splice(idx, 1);
+    DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(id));
+    DB.saveLocal();
+    setSyncStatus('synced');
+    if (!silent) showNotification('🗑️ Culto excluído', 'info');
+  } catch(err) {
+    if (!navigator.onLine) {
+      // Só remove localmente se estiver offline
+      DB.cultos.splice(idx, 1);
+      DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(id));
+      DB.saveLocal();
+      enfileirarOperacao({ action: 'delete', sheet: 'cultos', id, data: { id }, timestamp: Date.now() });
+      setSyncStatus('error');
+      if (!silent) showNotification('⚠️ Excluído localmente — será sincronizado quando a internet voltar', 'warning');
+    } else {
+      // Erro inesperado online: não remove localmente
+      setSyncStatus('error');
+      if (!silent) showNotification('❌ Não foi possível excluir. Tente novamente.', 'error');
+      throw err; // deixa o chamador saber que falhou
     }
   }
+}
+
 
   async function excluirCulto(idx){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
