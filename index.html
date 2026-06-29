@@ -3152,7 +3152,8 @@ async function excluirDespesa(id) {
         <td class="p-2 text-sm">${h.ceia}</td>
         <td class="p-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.entradas>=h.saidas?'badge-green':'badge-red'}">${h.entradas>=h.saidas?'✓ Superávit':'⚠ Déficit'}</span></td>
       </tr>`).join('');
-    const ctx=document.getElementById('chartSaldos'); if(chartSald)chartSald.destroy();
+    const ctx=document.getElementById('chartSaldos'); if (charts.saldos) charts.saldos.destroy();
+    charts.saldos = new Chart(ctx, { ... });
     chartSald=new Chart(ctx,{type:'bar',data:{labels:DB.historico.map(h=>h.nome),datasets:[
       {label:'Entradas',data:DB.historico.map(h=>h.entradas),backgroundColor:'rgba(16,185,129,0.7)',borderRadius:6},
       {label:'Saídas',  data:DB.historico.map(h=>h.saidas),  backgroundColor:'rgba(239,68,68,0.7)', borderRadius:6},
