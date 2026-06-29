@@ -1899,7 +1899,13 @@ window.addEventListener('offline', () => {
   // ============================================================
   // HELPERS
   // ============================================================
-  let chartEv,chartDp,chartComp,chartSald;
+    const charts = {
+    evolucao: null,
+    despesas: null,
+    comparativo: null,
+    saldos: null,
+  };
+
   const getEntradasMes=mk=>DB.entradas.filter(e=>(e.data||'').startsWith(mk));
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
