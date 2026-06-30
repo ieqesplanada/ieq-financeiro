@@ -1948,7 +1948,32 @@ window.addEventListener('offline', () => {
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
   const sum=(arr,fn)=>arr.reduce((a,x)=>a+(fn?fn(x):x),0);
-  const getHistoricoRow=mk=>{ const[y,m]=mk.split('-').map(Number); return DB.historico.find(h=>h.ano===y&&h.mes===m)||null; };
+  const getHistoricoRow = mk => {
+  const [y, m] = mk.split('-').map(Number);
+  // Busca no histórico fixo primeiro
+  const found = DB.historico.find(h => h.ano === y && h.mes === m);
+  if (found) return found;
+
+  // Se não encontrou, calcula dinamicamente
+  const entMes = sum(getEntradasMes(mk), e => e.valor);
+  const saiMes = sum(getDespesasMes(mk), d => d.valor);
+  const prevKey = prevMonthKey(mk);
+  const prev = getHistoricoRow(prevKey); // recursivo para meses anteriores
+  const saldoAnt = prev ? prev.saldoFinal : 0;
+
+  return {
+    mes: m,
+    ano: y,
+    nome: new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
+      .replace(/^\w/, c => c.toUpperCase()),
+    saldoAnt,
+    entradas: entMes,
+    saidas: saiMes,
+    saldoFinal: saldoAnt + entMes - saiMes,
+    ceia: getPresentesCeia(mk).presentes
+  };
+};
+
 
   // ============================================================
   // DASHBOARD
