@@ -1939,32 +1939,6 @@ window.addEventListener('offline', () => {
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
   const sum=(arr,fn)=>arr.reduce((a,x)=>a+(fn?fn(x):x),0);
-  const getHistoricoRow = mk => {
-  const [y, m] = mk.split('-').map(Number);
-  // Busca no histórico fixo primeiro
-  const found = DB.historico.find(h => h.ano === y && h.mes === m);
-  if (found) return found;
-
-  // Se não encontrou, calcula dinamicamente
-  const entMes = sum(getEntradasMes(mk), e => e.valor);
-  const saiMes = sum(getDespesasMes(mk), d => d.valor);
-  const prevKey = prevMonthKey(mk);
-  const prev = getHistoricoRow(prevKey); // recursivo para meses anteriores
-  const saldoAnt = prev ? prev.saldoFinal : 0;
-
-  return {
-    mes: m,
-    ano: y,
-    nome: new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
-      .replace(/^\w/, c => c.toUpperCase()),
-    saldoAnt,
-    entradas: entMes,
-    saidas: saiMes,
-    saldoFinal: saldoAnt + entMes - saiMes,
-    ceia: getPresentesCeia(mk).presentes
-  };
-};
-
 
   // ============================================================
   // DASHBOARD
@@ -2027,26 +2001,32 @@ window.addEventListener('offline', () => {
       </tr>`).join('');
   }
 
-  function renderChartEvolucao(){
-    const ctx = document.getElementById('chartEvolucao');
-    if (charts.evolucao) charts.evolucao.destroy();
-    charts.evolucao = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: DB.historico.map(h => h.nome),
-        datasets: [
-          { label: 'Entradas', data: DB.historico.map(h => h.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saídas',   data: DB.historico.map(h => h.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saldo',    data: DB.historico.map(h => h.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
-        scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
-      }
-    });
-  }
+ function renderChartEvolucao(){
+  const ctx = document.getElementById('chartEvolucao');
+  if (charts.evolucao) charts.evolucao.destroy();
+
+  const now = new Date();
+  const meses = [];
+  for (let i = 11; i >= 0; i--) meses.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
+  const rows = meses.map(mk => getHistoricoRow(mk));
+
+  charts.evolucao = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: rows.map(h => h.nome),
+      datasets: [
+        { label: 'Entradas', data: rows.map(h => h.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
+        { label: 'Saídas',   data: rows.map(h => h.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
+        { label: 'Saldo',    data: rows.map(h => h.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
+      scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+    }
+  });
+}
   
   function renderChartDespesasMes(){
     const ctx = document.getElementById('chartDespesas');
@@ -3322,33 +3302,61 @@ async function excluirDespesa(id) {
     document.getElementById('relCultoIni').value = GLOBAL_MONTH;
     document.getElementById('relCultoFim').value = GLOBAL_MONTH;
 
-    const ctx = document.getElementById('chartComparativo');
-if (charts.comparativo) charts.comparativo.destroy();
-charts.comparativo = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: DB.historico.map(h => h.nome),
-      datasets: [{
-        label: 'Saldo Final',
-        data: DB.historico.map(h => h.saldoFinal),
-        borderColor: '#1e3a5f',
-        backgroundColor: 'rgba(30,58,95,0.1)',
-        tension: 0.4,
-        fill: true,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointBackgroundColor: '#c8a951'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } }
+    function renderRelatorios(){
+    const sel = document.getElementById('relatorioMesSelect');
+    if (sel) {
+      const now = new Date();
+      const keys = [];
+      for (let i = 12; i >= 0; i--) {
+        keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
       }
+      keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
+      sel.innerHTML = keys.map(k => `<option value="${k}" ${k === GLOBAL_MONTH ? 'selected' : ''}>${monthLabel(k)}</option>`).join('');
     }
-  });
+
+    const selCulto = document.getElementById('relCultoMesSelect');
+    if (selCulto) {
+      const now = new Date();
+      const keysC = [];
+      for (let i = 12; i >= 0; i--) {
+        keysC.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
+      }
+      keysC.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
+      selCulto.innerHTML = `<option value="">-- Intervalo abaixo --</option>` + keysC.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
+    }
+
+    document.getElementById('relCultoIni').value = GLOBAL_MONTH;
+    document.getElementById('relCultoFim').value = GLOBAL_MONTH;
+
+    // ===== CORREÇÃO: gráfico comparativo com dados reais do Sheets =====
+    const now2 = new Date();
+    const mesesComp = [];
+    for (let i = 11; i >= 0; i--) mesesComp.push(monthKeyFromDate(new Date(now2.getFullYear(), now2.getMonth() - i, 1)));
+    const rowsComp = mesesComp.map(mk => getHistoricoRow(mk));
+
+    const ctx = document.getElementById('chartComparativo');
+    if (charts.comparativo) charts.comparativo.destroy();
+    charts.comparativo = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: rowsComp.map(h => h.nome),
+        datasets: [{
+          label: 'Saldo Final',
+          data: rowsComp.map(h => h.saldoFinal),
+          borderColor: '#1e3a5f',
+          backgroundColor: 'rgba(30,58,95,0.1)',
+          tension: 0.4, fill: true, borderWidth: 3,
+          pointRadius: 5, pointBackgroundColor: '#c8a951'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+      }
+    });
   }
+
   
   function gerarRelatorio(){
     const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
