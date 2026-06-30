@@ -3276,32 +3276,7 @@ async function excluirDespesa(id) {
   // ============================================================
   // RELATÓRIOS
   // ============================================================
-       function renderRelatorios(){
-    const sel = document.getElementById('relatorioMesSelect');
-    if (sel) {
-      const now = new Date();
-      const keys = [];
-      for (let i = 12; i >= 0; i--) {
-        keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
-      }
-      keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
-      sel.innerHTML = keys.map(k => `<option value="${k}" ${k === GLOBAL_MONTH ? 'selected' : ''}>${monthLabel(k)}</option>`).join('');
-    }
-
-    const selCulto = document.getElementById('relCultoMesSelect');
-    if (selCulto) {
-      const now = new Date();
-      const keysC = [];
-      for (let i = 12; i >= 0; i--) {
-        keysC.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
-      }
-      keysC.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
-      selCulto.innerHTML = `<option value="">-- Intervalo abaixo --</option>` + keysC.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
-    }
-
-    document.getElementById('relCultoIni').value = GLOBAL_MONTH;
-    document.getElementById('relCultoFim').value = GLOBAL_MONTH;
-
+     
     function renderRelatorios(){
     const sel = document.getElementById('relatorioMesSelect');
     if (sel) {
