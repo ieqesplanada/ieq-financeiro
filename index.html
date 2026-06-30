@@ -3302,13 +3302,14 @@ charts.comparativo = new Chart(ctx, {
     }
   });
   }
-
-
+  
   function gerarRelatorio(){
     const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
     const entMes=sum(getEntradasMes(ms),e=>e.valor),saiMes=sum(getDespesasMes(ms),d=>d.valor);
     const h=getHistoricoRow(ms),prev=getHistoricoRow(prevMonthKey(ms));
     const saldoAnt = prev?.saldoFinal ?? 0;,saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
+    //                                     ^^^ AQUI está o erro
+
     const logoHtml=DB.config.logo?`<img src="${DB.config.logo}" style="width:60px;height:60px;border-radius:10px;object-fit:contain;background:#fff;padding:3px;border:1px solid #e5e7eb;vertical-align:middle;margin-right:10px">`:'⛪';
     const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ Esplanada');
     const despLista=getDespesasMes(ms);
