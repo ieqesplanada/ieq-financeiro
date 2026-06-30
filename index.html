@@ -1699,6 +1699,7 @@ function getSegundoDomingoDoMes(mk){
   const safetyTimer = setTimeout(() => mostrarLoading(false), 8000);
 
     DB.loadLocal();
+  if (DB.despesas.length === 0) DB.despesas = DESPESAS_PADRAO.map(d => ({ ...d }));
   aplicarConfiguracoes();
   atualizarBadgeSync(); // mostra fila pendente imediatamente
 
@@ -1716,8 +1717,12 @@ function getSegundoDomingoDoMes(mk){
     if (cR.status === 'fulfilled' && cR.value.length > 0)
       DB.cultos = cR.value.map(normalizarCulto);
 
-        if (dR.status === 'fulfilled') {
-      DB.despesas = dR.value.map(normalizarDespesa);
+    if (dR.status === 'fulfilled' && dR.value.length > 0) {
+      const idsSheets = new Set(dR.value.map(d => String(d.id)));
+      DB.despesas = [
+        ...DESPESAS_PADRAO.filter(d => !idsSheets.has(String(d.id))),
+        ...dR.value.map(normalizarDespesa)
+      ];
     }
 
     if (eR.status === 'fulfilled' && eR.value.length > 0)
@@ -1842,16 +1847,20 @@ async function sincronizarTudo(silencioso = false) {
     ]);
 
     // 3. Sheets substitui local — ele é a fonte de verdade
-    if (cultosBrutos.length > 0) {
+    if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
       DB.cultos = cultosBrutos.map(normalizarCulto);
     }
 
-        if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
-      DB.despesas = despesasBrutos.map(normalizarDespesa);
+    if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
+      // Mantém registros fixos (_fixed) que não existem no Sheets
+      const idsSheets = new Set(despesasBrutos.map(d => String(d.id)));
+            const fixosNaoEnviados = DESPESAS_PADRAO
+        .filter(d => !idsSheets.has(String(d.id)))
+        .map(d => ({ ...d }));
+      DB.despesas = [...fixosNaoEnviados, ...despesasBrutos.map(normalizarDespesa)];
     }
 
-
-    if (entradasBrutos.length > 0) {
+    if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
       DB.entradas = entradasBrutos.map(normalizarEntrada);
     }
 
@@ -1939,63 +1948,36 @@ window.addEventListener('offline', () => {
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
   const sum=(arr,fn)=>arr.reduce((a,x)=>a+(fn?fn(x):x),0);
+  const getHistoricoRow = mk => {
+  const [y, m] = mk.split('-').map(Number);
+  // Busca no histórico fixo primeiro
+  const found = DB.historico.find(h => h.ano === y && h.mes === m);
+  if (found) return found;
+
+  // Se não encontrou, calcula dinamicamente
+  const entMes = sum(getEntradasMes(mk), e => e.valor);
+  const saiMes = sum(getDespesasMes(mk), d => d.valor);
+  const prevKey = prevMonthKey(mk);
+  const prev = getHistoricoRow(prevKey); // recursivo para meses anteriores
+  const saldoAnt = prev ? prev.saldoFinal : 0;
+
+  return {
+    mes: m,
+    ano: y,
+    nome: new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
+      .replace(/^\w/, c => c.toUpperCase()),
+    saldoAnt,
+    entradas: entMes,
+    saidas: saiMes,
+    saldoFinal: saldoAnt + entMes - saiMes,
+    ceia: getPresentesCeia(mk).presentes
+  };
+};
+
 
   // ============================================================
   // DASHBOARD
   // ============================================================
-function getHistoricoRow(mk) {
-    const [y, m] = mk.split('-').map(Number);
-
-    // 1) Se existir registro fechado em DB.historico, usa ele
-    const fixo = DB.historico.find(h => h.ano === y && h.mes === m);
-    if (fixo) {
-      return {
-        mk,
-        nome: fixo.nome,
-        saldoAnt: fixo.saldoAnt,
-        entradas: fixo.entradas,
-        saidas: fixo.saidas,
-        saldoFinal: fixo.saldoFinal,
-        ceia: fixo.ceia
-      };
-    }
-
-    // 2) Caso contrário, calcula dinamicamente com base nos dados reais
-    const entradas = sum(getEntradasMes(mk), e => e.valor);
-    const saidas   = sum(getDespesasMes(mk), d => d.valor);
-
-    const prevRow  = getHistoricoRowSemRecursao(prevMonthKey(mk));
-    const saldoAnt = prevRow ? prevRow.saldoFinal : 0;
-    const saldoFinal = saldoAnt + entradas - saidas;
-
-    const nome = new Date(y, m - 1, 1)
-      .toLocaleDateString('pt-BR', { month: 'long' })
-      .replace(/^\w/, c => c.toUpperCase());
-
-    const ceia = getPresentesCeia(mk).presentes;
-
-    return { mk, nome, saldoAnt, entradas, saidas, saldoFinal, ceia };
-  }
-
-  // Evita recursão infinita ao calcular o saldo anterior
-  function getHistoricoRowSemRecursao(mk) {
-    const [y, m] = mk.split('-').map(Number);
-    const fixo = DB.historico.find(h => h.ano === y && h.mes === m);
-    if (fixo) return fixo;
-
-    const entradas = sum(getEntradasMes(mk), e => e.valor);
-    const saidas   = sum(getDespesasMes(mk), d => d.valor);
-    return { saldoFinal: entradas - saidas };
-  }
-  // ============================================================
-  // ⬆️⬆️⬆️ FIM DA FUNÇÃO ADICIONADA ⬆️⬆️⬆️
-  // ============================================================
-
-  // ============================================================
-  // DASHBOARD
-  // ============================================================
-  function renderDashboard(){
-  
   function renderDashboard(){
     updatePageSubtitleForMonth();
     const h=getHistoricoRow(GLOBAL_MONTH),prev=getHistoricoRow(prevMonthKey(GLOBAL_MONTH));
@@ -2054,32 +2036,26 @@ function getHistoricoRow(mk) {
       </tr>`).join('');
   }
 
- function renderChartEvolucao(){
-  const ctx = document.getElementById('chartEvolucao');
-  if (charts.evolucao) charts.evolucao.destroy();
-
-  const now = new Date();
-  const meses = [];
-  for (let i = 11; i >= 0; i--) meses.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
-  const rows = meses.map(mk => getHistoricoRow(mk));
-
-  charts.evolucao = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: rows.map(h => h.nome),
-      datasets: [
-        { label: 'Entradas', data: rows.map(h => h.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
-        { label: 'Saídas',   data: rows.map(h => h.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
-        { label: 'Saldo',    data: rows.map(h => h.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
-      scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
-    }
-  });
-}
+  function renderChartEvolucao(){
+    const ctx = document.getElementById('chartEvolucao');
+    if (charts.evolucao) charts.evolucao.destroy();
+    charts.evolucao = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: DB.historico.map(h => h.nome),
+        datasets: [
+          { label: 'Entradas', data: DB.historico.map(h => h.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saídas',   data: DB.historico.map(h => h.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saldo',    data: DB.historico.map(h => h.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
+        scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+      }
+    });
+  }
   
   function renderChartDespesasMes(){
     const ctx = document.getElementById('chartDespesas');
@@ -3265,38 +3241,9 @@ async function excluirDespesa(id) {
   // HISTÓRICO
   // ============================================================
   function renderHistorico(){
-    // Gera dinamicamente com base nos dados REAIS do Google Sheets
-    const now = new Date();
-    const months = [];
-    
-    // Gera de Janeiro/2026 até o mês atual
-    for (let m = 1; m <= 12; m++) {
-        const mk = `2026-${String(m).padStart(2, '0')}`;
-        const [y, mon] = mk.split('-').map(Number);
-        if (y < now.getFullYear() || (y === now.getFullYear() && mon <= now.getMonth() + 1)) {
-            months.push(mk);
-        }
-    }
-    
-    let saldoAntAcum = 0;
-    const rows = months.map(mk => {
-        const entradas = sum(getEntradasMes(mk), e => e.valor);
-        const saidas   = sum(getDespesasMes(mk), d => d.valor);
-        const ceia     = getPresentesCeia(mk).presentes;
-        const saldoFinal = saldoAntAcum + entradas - saidas;
-        const nome = new Date(2026, parseInt(mk.split('-')[1]) - 1, 1)
-            .toLocaleDateString('pt-BR', { month: 'long' })
-            .replace(/^\w/, c => c.toUpperCase());
-        
-        const row = { nome, mk, saldoAnt: saldoAntAcum, entradas, saidas, saldoFinal, ceia };
-        saldoAntAcum = saldoFinal; // acumula para o próximo mês
-        return row;
-    });
-
-    // Tabela
-    document.getElementById('tabelaHistorico').innerHTML = rows.map(h => `
+    document.getElementById('tabelaHistorico').innerHTML=DB.historico.map(h=>`
       <tr class="table-row border-b border-gray-50">
-        <td class="p-2 font-semibold text-gray-800 text-sm">${h.nome} 2026</td>
+        <td class="p-2 font-semibold text-gray-800 text-sm">${h.nome} ${h.ano}</td>
         <td class="p-2 text-sm text-blue-600">${fmt(h.saldoAnt)}</td>
         <td class="p-2 text-sm text-green-600 font-semibold">${fmt(h.entradas)}</td>
         <td class="p-2 text-sm text-red-600 font-semibold">${fmt(h.saidas)}</td>
@@ -3304,33 +3251,30 @@ async function excluirDespesa(id) {
         <td class="p-2 text-sm">${h.ceia}</td>
         <td class="p-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.entradas>=h.saidas?'badge-green':'badge-red'}">${h.entradas>=h.saidas?'✓ Superávit':'⚠ Déficit'}</span></td>
       </tr>`).join('');
-
-    // Gráfico de saldos
-    const ctx = document.getElementById('chartSaldos');
-    if (charts.saldos) charts.saldos.destroy();
-    charts.saldos = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: rows.map(h => h.nome),
-            datasets: [
-                { label: 'Entradas', data: rows.map(h => h.entradas), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 },
-                { label: 'Saídas',   data: rows.map(h => h.saidas),   backgroundColor: 'rgba(239,68,68,0.7)',  borderRadius: 6 },
-                { label: 'Saldo',    data: rows.map(h => h.saldoFinal), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 6 }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
-            scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
-        }
-    });
-}
+   const ctx = document.getElementById('chartSaldos');
+if (charts.saldos) charts.saldos.destroy();
+charts.saldos = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: DB.historico.map(h => h.nome),
+    datasets: [
+      { label: 'Entradas', data: DB.historico.map(h => h.entradas), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 },
+      { label: 'Saídas',   data: DB.historico.map(h => h.saidas),   backgroundColor: 'rgba(239,68,68,0.7)',  borderRadius: 6 },
+      { label: 'Saldo',    data: DB.historico.map(h => h.saldoFinal), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 6 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
+    scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+  }
+});
+  }
 
   // ============================================================
   // RELATÓRIOS
   // ============================================================
-     
-    function renderRelatorios(){
+       function renderRelatorios(){
     const sel = document.getElementById('relatorioMesSelect');
     if (sel) {
       const now = new Date();
@@ -3356,35 +3300,33 @@ async function excluirDespesa(id) {
     document.getElementById('relCultoIni').value = GLOBAL_MONTH;
     document.getElementById('relCultoFim').value = GLOBAL_MONTH;
 
-    // ===== CORREÇÃO: gráfico comparativo com dados reais do Sheets =====
-    const now2 = new Date();
-    const mesesComp = [];
-    for (let i = 11; i >= 0; i--) mesesComp.push(monthKeyFromDate(new Date(now2.getFullYear(), now2.getMonth() - i, 1)));
-    const rowsComp = mesesComp.map(mk => getHistoricoRow(mk));
-
     const ctx = document.getElementById('chartComparativo');
-    if (charts.comparativo) charts.comparativo.destroy();
-    charts.comparativo = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: rowsComp.map(h => h.nome),
-        datasets: [{
-          label: 'Saldo Final',
-          data: rowsComp.map(h => h.saldoFinal),
-          borderColor: '#1e3a5f',
-          backgroundColor: 'rgba(30,58,95,0.1)',
-          tension: 0.4, fill: true, borderWidth: 3,
-          pointRadius: 5, pointBackgroundColor: '#c8a951'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+if (charts.comparativo) charts.comparativo.destroy();
+charts.comparativo = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: DB.historico.map(h => h.nome),
+      datasets: [{
+        label: 'Saldo Final',
+        data: DB.historico.map(h => h.saldoFinal),
+        borderColor: '#1e3a5f',
+        backgroundColor: 'rgba(30,58,95,0.1)',
+        tension: 0.4,
+        fill: true,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointBackgroundColor: '#c8a951'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } }
       }
-    });
+    }
+  });
   }
-
   
   function gerarRelatorio(){
     const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
