@@ -1943,6 +1943,59 @@ window.addEventListener('offline', () => {
   // ============================================================
   // DASHBOARD
   // ============================================================
+function getHistoricoRow(mk) {
+    const [y, m] = mk.split('-').map(Number);
+
+    // 1) Se existir registro fechado em DB.historico, usa ele
+    const fixo = DB.historico.find(h => h.ano === y && h.mes === m);
+    if (fixo) {
+      return {
+        mk,
+        nome: fixo.nome,
+        saldoAnt: fixo.saldoAnt,
+        entradas: fixo.entradas,
+        saidas: fixo.saidas,
+        saldoFinal: fixo.saldoFinal,
+        ceia: fixo.ceia
+      };
+    }
+
+    // 2) Caso contrário, calcula dinamicamente com base nos dados reais
+    const entradas = sum(getEntradasMes(mk), e => e.valor);
+    const saidas   = sum(getDespesasMes(mk), d => d.valor);
+
+    const prevRow  = getHistoricoRowSemRecursao(prevMonthKey(mk));
+    const saldoAnt = prevRow ? prevRow.saldoFinal : 0;
+    const saldoFinal = saldoAnt + entradas - saidas;
+
+    const nome = new Date(y, m - 1, 1)
+      .toLocaleDateString('pt-BR', { month: 'long' })
+      .replace(/^\w/, c => c.toUpperCase());
+
+    const ceia = getPresentesCeia(mk).presentes;
+
+    return { mk, nome, saldoAnt, entradas, saidas, saldoFinal, ceia };
+  }
+
+  // Evita recursão infinita ao calcular o saldo anterior
+  function getHistoricoRowSemRecursao(mk) {
+    const [y, m] = mk.split('-').map(Number);
+    const fixo = DB.historico.find(h => h.ano === y && h.mes === m);
+    if (fixo) return fixo;
+
+    const entradas = sum(getEntradasMes(mk), e => e.valor);
+    const saidas   = sum(getDespesasMes(mk), d => d.valor);
+    return { saldoFinal: entradas - saidas };
+  }
+  // ============================================================
+  // ⬆️⬆️⬆️ FIM DA FUNÇÃO ADICIONADA ⬆️⬆️⬆️
+  // ============================================================
+
+  // ============================================================
+  // DASHBOARD
+  // ============================================================
+  function renderDashboard(){
+  
   function renderDashboard(){
     updatePageSubtitleForMonth();
     const h=getHistoricoRow(GLOBAL_MONTH),prev=getHistoricoRow(prevMonthKey(GLOBAL_MONTH));
