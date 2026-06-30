@@ -1321,14 +1321,8 @@ async function apiDeleteSeguro(sheet, id) {
   // ============================================================
   // DB LOCAL
   // ============================================================
-  const DB = {
-    historico: [
-      { mes:1, ano:2026, nome:'Janeiro',   saldoAnt:0,       entradas:2641.82, saidas:2641.82, saldoFinal:0,       ceia:56 },
-      { mes:2, ano:2026, nome:'Fevereiro', saldoAnt:0,       entradas:4022.91, saidas:2963.70, saldoFinal:1181.61, ceia:44 },
-      { mes:3, ano:2026, nome:'Março',     saldoAnt:1181.61, entradas:4172.40, saidas:4023.12, saldoFinal:1330.89, ceia:53 },
-      { mes:4, ano:2026, nome:'Abril',     saldoAnt:1330.89, entradas:4235.18, saidas:4253.26, saldoFinal:1312.81, ceia:60 },
-      { mes:5, ano:2026, nome:'Maio',      saldoAnt:1312.81, entradas:3483.14, saidas:3335.42, saldoFinal:1217.53, ceia:60 },
-    ],
+ const DB = {
+    historico: [],  // TUDO calculado dinamicamente a partir do Sheets
 
     despesas:[], cultos:[], entradas:[], config:{},
     saveLocal() {
@@ -1347,23 +1341,6 @@ async function apiDeleteSeguro(sheet, id) {
       } catch(e){ this.despesas=[]; this.cultos=[]; this.entradas=[]; this.config={}; }
     }
   };
-
-  const DESPESAS_PADRAO = [
-    { id:'fix-1',  categoria:'ENERGIA',       descricao:'Conta de Energia',     valor:114.48,  data:'2026-05-10', _fixed:true },
-    { id:'fix-2',  categoria:'AGUA',          descricao:'Conta de Água',         valor:109.84,  data:'2026-05-10', _fixed:true },
-    { id:'fix-3',  categoria:'CED',           descricao:'Contribuição Estadual', valor:184.41,  data:'2026-05-15', _fixed:true },
-    { id:'fix-4',  categoria:'CND',           descricao:'Contribuição Nacional', valor:353.82,  data:'2026-05-15', _fixed:true },
-    { id:'fix-5',  categoria:'CONTADOR',      descricao:'Honorários Contador',   valor:150.00,  data:'2026-05-05', _fixed:true },
-    { id:'fix-6',  categoria:'TAXA REGIONAL', descricao:'Taxa Regional 4%',      valor:169.41,  data:'2026-05-15', _fixed:true },
-    { id:'fix-7',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:40.00,   data:'2026-05-02', _fixed:true },
-    { id:'fix-8',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-06', _fixed:true },
-    { id:'fix-9',  categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:100.00,  data:'2026-05-09', _fixed:true },
-    { id:'fix-10', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-12', _fixed:true },
-    { id:'fix-11', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-16', _fixed:true },
-    { id:'fix-12', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-20', _fixed:true },
-    { id:'fix-13', categoria:'COMBUSTIVEL',   descricao:'Combustível',           valor:50.00,   data:'2026-05-23', _fixed:true },
-    { id:'fix-14', categoria:'PREBENDA',      descricao:'Prebenda Pr. Danilo',   valor:1863.46, data:'2026-05-30', _fixed:true },
-  ];
 
   // ============================================================
   // NORMALIZAÇÃO
@@ -1937,11 +1914,27 @@ window.addEventListener('offline', () => {
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
   const sum=(arr,fn)=>arr.reduce((a,x)=>a+(fn?fn(x):x),0);
-  const getHistoricoRow = mk => {
+ const getHistoricoRow = mk => {
   const [y, m] = mk.split('-').map(Number);
-  // Busca no histórico fixo primeiro
-  const found = DB.historico.find(h => h.ano === y && h.mes === m);
-  if (found) return found;
+  // SEMPRE calcula dinamicamente a partir dos dados reais
+  const entMes = sum(getEntradasMes(mk), e => e.valor);
+  const saiMes = sum(getDespesasMes(mk), d => d.valor);
+  const prevKey = prevMonthKey(mk);
+  const prev = getHistoricoRow(prevKey);
+  const saldoAnt = prev ? prev.saldoFinal : 0;
+
+  return {
+    mes: m,
+    ano: y,
+    nome: new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
+      .replace(/^\w/, c => c.toUpperCase()),
+    saldoAnt,
+    entradas: entMes,
+    saidas: saiMes,
+    saldoFinal: saldoAnt + entMes - saiMes,
+    ceia: getPresentesCeia(mk).presentes
+  };
+};
 
   // Se não encontrou, calcula dinamicamente
   const entMes = sum(getEntradasMes(mk), e => e.valor);
@@ -2025,19 +2018,38 @@ window.addEventListener('offline', () => {
       </tr>`).join('');
   }
 
-  function renderChartEvolucao(){
+ function renderChartEvolucao(){
     const ctx = document.getElementById('chartEvolucao');
     if (charts.evolucao) charts.evolucao.destroy();
+    
+    // Gera dinamicamente: Janeiro até o mês atual
+    const now = new Date();
+    const rows = [];
+    for (let m = 1; m <= 12; m++) {
+      const mk = `2026-${String(m).padStart(2, '0')}`;
+      const [y, mon] = mk.split('-').map(Number);
+      if (y < now.getFullYear() || (y === now.getFullYear() && mon <= now.getMonth() + 1)) {
+        rows.push(getHistoricoRow(mk));
+      }
+    }
+    
     charts.evolucao = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: DB.historico.map(h => h.nome),
+        labels: rows.map(h => h.nome),
         datasets: [
-          { label: 'Entradas', data: DB.historico.map(h => h.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saídas',   data: DB.historico.map(h => h.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saldo',    data: DB.historico.map(h => h.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
+          { label: 'Entradas', data: rows.map(h => h.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saídas',   data: rows.map(h => h.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saldo',    data: rows.map(h => h.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
         ]
       },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
+        scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+      }
+    });
+  }
       options: {
         responsive: true,
         plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
@@ -3322,13 +3334,23 @@ async function excluirDespesa(id) {
 
     const ctx = document.getElementById('chartComparativo');
 if (charts.comparativo) charts.comparativo.destroy();
+const nowC = new Date();
+const rowsC = [];
+for (let m = 1; m <= 12; m++) {
+    const mk = `2026-${String(m).padStart(2, '0')}`;
+    const [y, mon] = mk.split('-').map(Number);
+    if (y < nowC.getFullYear() || (y === nowC.getFullYear() && mon <= nowC.getMonth() + 1)) {
+        rowsC.push(getHistoricoRow(mk));
+    }
+}
 charts.comparativo = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: DB.historico.map(h => h.nome),
+      labels: rowsC.map(h => h.nome),
       datasets: [{
         label: 'Saldo Final',
-        data: DB.historico.map(h => h.saldoFinal),
+        data: rowsC.map(h => h.saldoFinal),
+
         borderColor: '#1e3a5f',
         backgroundColor: 'rgba(30,58,95,0.1)',
         tension: 0.4,
@@ -3530,7 +3552,8 @@ charts.comparativo = new Chart(ctx, {
   localStorage.removeItem(OFFLINE_QUEUE_KEY);
   localStorage.removeItem('ieq_ultima_sync');
 
-  DB.despesas = [...DESPESAS_PADRAO];
+  DB.despesas = [];
+
   DB.cultos   = [];
   DB.entradas = [];
 
