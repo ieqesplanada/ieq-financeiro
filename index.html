@@ -1324,11 +1324,12 @@ async function apiDeleteSeguro(sheet, id) {
   const DB = {
     historico: [
       { mes:1, ano:2026, nome:'Janeiro',   saldoAnt:0,       entradas:2641.82, saidas:2641.82, saldoFinal:0,       ceia:56 },
-      { mes:2, ano:2026, nome:'Fevereiro', saldoAnt:122.40,  entradas:4022.91, saidas:2963.70, saldoFinal:1181.61, ceia:44 },
+      { mes:2, ano:2026, nome:'Fevereiro', saldoAnt:0,       entradas:4022.91, saidas:2963.70, saldoFinal:1181.61, ceia:44 },
       { mes:3, ano:2026, nome:'Março',     saldoAnt:1181.61, entradas:4172.40, saidas:4023.12, saldoFinal:1330.89, ceia:53 },
       { mes:4, ano:2026, nome:'Abril',     saldoAnt:1330.89, entradas:4235.18, saidas:4253.26, saldoFinal:1312.81, ceia:60 },
-      { mes:5, ano:2026, nome:'Maio',      saldoAnt:1099.81, entradas:3483.14, saidas:3335.42, saldoFinal:1247.53, ceia:60 },
+      { mes:5, ano:2026, nome:'Maio',      saldoAnt:1312.81, entradas:3483.14, saidas:3335.42, saldoFinal:1247.53, ceia:60 },
     ],
+
     despesas:[], cultos:[], entradas:[], config:{},
     saveLocal() {
       try {
@@ -1957,7 +1958,7 @@ window.addEventListener('offline', () => {
     const h=getHistoricoRow(GLOBAL_MONTH),prev=getHistoricoRow(prevMonthKey(GLOBAL_MONTH));
     const entMes=sum(getEntradasMes(GLOBAL_MONTH),e=>e.valor);
     const saiMes=sum(getDespesasMes(GLOBAL_MONTH),d=>d.valor);
-    const saldoAnt=h?.saldoAnt??(prev?.saldoFinal??0);
+    const saldoAnt=prev?.saldoFinal??0;
     const saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
     const elSaldoAnt = document.getElementById('kpi-saldo-ant');
     if (elSaldoAnt) elSaldoAnt.textContent = fmt(saldoAnt);
