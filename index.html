@@ -1698,10 +1698,8 @@ function getSegundoDomingoDoMes(mk){
 
   const safetyTimer = setTimeout(() => mostrarLoading(false), 8000);
 
-    DB.loadLocal();
-  if (DB.despesas.length === 0) DB.despesas = DESPESAS_PADRAO.map(d => ({ ...d }));
+   DB.loadLocal();
   aplicarConfiguracoes();
-  atualizarBadgeSync(); // mostra fila pendente imediatamente
 
   try {
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 6000));
@@ -1717,12 +1715,8 @@ function getSegundoDomingoDoMes(mk){
     if (cR.status === 'fulfilled' && cR.value.length > 0)
       DB.cultos = cR.value.map(normalizarCulto);
 
-    if (dR.status === 'fulfilled' && dR.value.length > 0) {
-      const idsSheets = new Set(dR.value.map(d => String(d.id)));
-      DB.despesas = [
-        ...DESPESAS_PADRAO.filter(d => !idsSheets.has(String(d.id))),
-        ...dR.value.map(normalizarDespesa)
-      ];
+        if (dR.status === 'fulfilled') {
+      DB.despesas = dR.value.map(normalizarDespesa);
     }
 
     if (eR.status === 'fulfilled' && eR.value.length > 0)
@@ -1847,20 +1841,15 @@ async function sincronizarTudo(silencioso = false) {
     ]);
 
     // 3. Sheets substitui local — ele é a fonte de verdade
-    if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
+    if (cultosBrutos.length > 0) {
       DB.cultos = cultosBrutos.map(normalizarCulto);
     }
 
-    if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
-      // Mantém registros fixos (_fixed) que não existem no Sheets
-      const idsSheets = new Set(despesasBrutos.map(d => String(d.id)));
-            const fixosNaoEnviados = DESPESAS_PADRAO
-        .filter(d => !idsSheets.has(String(d.id)))
-        .map(d => ({ ...d }));
-      DB.despesas = [...fixosNaoEnviados, ...despesasBrutos.map(normalizarDespesa)];
+        if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
+      DB.despesas = despesasBrutos.map(normalizarDespesa);
     }
 
-    if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
+    if (entradasBrutos.length > 0) {
       DB.entradas = entradasBrutos.map(normalizarEntrada);
     }
 
