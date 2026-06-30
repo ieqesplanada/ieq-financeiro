@@ -408,7 +408,7 @@
         <!-- Saldo Anterior -->
         <div class="card p-4">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-gray-500 text-xs font-medium">Saldo Anterior</span>
+            <span class="text-gray-500 text-xs font-medium">Saldo Transferido</span>
             <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-arrow-right text-blue-600 text-xs"></i></div>
           </div>
           <p class="text-lg sm:text-2xl font-bold text-blue-600" id="kpi-saldo-ant">R$ 0,00</p>
@@ -3308,7 +3308,7 @@ charts.comparativo = new Chart(ctx, {
     const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
     const entMes=sum(getEntradasMes(ms),e=>e.valor),saiMes=sum(getDespesasMes(ms),d=>d.valor);
     const h=getHistoricoRow(ms),prev=getHistoricoRow(prevMonthKey(ms));
-    const saldoAnt=h?.saldoAnt??(prev?.saldoFinal??0),saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
+    const saldoAnt = prev?.saldoFinal ?? 0;,saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
     const logoHtml=DB.config.logo?`<img src="${DB.config.logo}" style="width:60px;height:60px;border-radius:10px;object-fit:contain;background:#fff;padding:3px;border:1px solid #e5e7eb;vertical-align:middle;margin-right:10px">`:'⛪';
     const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ Esplanada');
     const despLista=getDespesasMes(ms);
