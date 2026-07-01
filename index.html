@@ -1826,7 +1826,7 @@ async function processarFilaOffline() {
   return { enviados, erros };
 }
 
-  function invalidarCacheResumo() {
+   {
   // Limpa cache interno de resumo do dashboard
   // (se houver variáveis de cache, zere-as aqui)
   _cacheDashboard = null;
@@ -2908,8 +2908,7 @@ function invalidarCacheResumo() {
       DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
           DB.saveLocal();
     invalidarCacheResumo();   // ← ADICIONAR ESTA LINHA
-    setSyncStatus('synced');
-    _ultimaSync = Date.now();
+    
  if(!silent)showNotification('🗑️ Culto excluído','info');
     }catch(err){
       DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
