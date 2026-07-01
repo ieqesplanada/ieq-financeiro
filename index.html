@@ -1978,7 +1978,7 @@ window.addEventListener('offline', () => {
   // ============================================================
   // DASHBOARD
   // ============================================================
-  function renderDashboard(){
+    function renderDashboard(){
     updatePageSubtitleForMonth();
     const h=getHistoricoRow(GLOBAL_MONTH),prev=getHistoricoRow(prevMonthKey(GLOBAL_MONTH));
     const entMes=sum(getEntradasMes(GLOBAL_MONTH),e=>e.valor);
@@ -3153,7 +3153,6 @@ async function excluirDespesa(id) {
   renderDashboard();
 }
 
-  async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
     if(!confirm('Excluir esta despesa?'))return;
     const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
