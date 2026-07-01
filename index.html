@@ -2069,6 +2069,28 @@ window.addEventListener('offline', () => {
       }
     });
   }
+function renderChartSaldos(){
+  const ctx = document.getElementById('chartSaldos');
+  if (!ctx) return;
+  if (charts.saldos) charts.saldos.destroy();
+  charts.saldos = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: DB.historico.map(h => `${h.nome}/${h.ano}`),
+      datasets: [{
+        label: 'Saldo Final',
+        data: DB.historico.map(h => h.saldoFinal),
+        backgroundColor: '#1e3a5f',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR') } } }
+    }
+  });
+}
   
   function renderChartDespesasMes(){
     const ctx = document.getElementById('chartDespesas');
@@ -3254,48 +3276,33 @@ async function excluirDespesa(id) {
   // HISTÓRICO
   // ============================================================
     function renderHistorico(){
-    const tbody = document.getElementById('tabelaHistorico');
+  const tbody = document.getElementById('tabelaHistorico');
 
-    // ✅ NOVO: se não houver dados salvos na planilha, exibe aviso
-    if (!DB.historico.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-400">
-        <i class="fas fa-database text-4xl mb-3 block text-gray-300"></i>
-        Nenhum histórico cadastrado na planilha Google Sheets
-      </td></tr>`;
-      if (charts.saldos) { charts.saldos.destroy(); charts.saldos = null; }
-      return;
-    }
-
-    tbody.innerHTML=DB.historico.map(h=>`
-
-      <tr class="table-row border-b border-gray-50">
-        <td class="p-2 font-semibold text-gray-800 text-sm">${h.nome} ${h.ano}</td>
-        <td class="p-2 text-sm text-blue-600">${fmt(h.saldoAnt)}</td>
-        <td class="p-2 text-sm text-green-600 font-semibold">${fmt(h.entradas)}</td>
-        <td class="p-2 text-sm text-red-600 font-semibold">${fmt(h.saidas)}</td>
-        <td class="p-2 text-sm font-bold ${h.saldoFinal>=0?'text-green-700':'text-red-700'}">${fmt(h.saldoFinal)}</td>
-        <td class="p-2 text-sm">${h.ceia}</td>
-        <td class="p-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.entradas>=h.saidas?'badge-green':'badge-red'}">${h.entradas>=h.saidas?'✓ Superávit':'⚠ Déficit'}</span></td>
-      </tr>`).join('');
-   const ctx = document.getElementById('chartSaldos');
-if (charts.saldos) charts.saldos.destroy();
-charts.saldos = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: DB.historico.map(h => h.nome),
-    datasets: [
-      { label: 'Entradas', data: DB.historico.map(h => h.entradas), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 },
-      { label: 'Saídas',   data: DB.historico.map(h => h.saidas),   backgroundColor: 'rgba(239,68,68,0.7)',  borderRadius: 6 },
-      { label: 'Saldo',    data: DB.historico.map(h => h.saldoFinal), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 6 }
-    ]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
-    scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+  // ✅ CORREÇÃO: se não houver dados na planilha, avisa e não inventa nada
+  if (!DB.historico.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-400">
+      <i class="fas fa-database text-4xl mb-3 block text-gray-300"></i>
+      Nenhum histórico cadastrado na planilha Google Sheets
+    </td></tr>`;
+    if (charts.saldos) { charts.saldos.destroy(); charts.saldos = null; }
+    return;
   }
-});
-  }
+
+  // ✅ CORREÇÃO: exibe SOMENTE os valores literais da planilha, sem cálculo/fallback
+  tbody.innerHTML = DB.historico.map(h=>`
+    <tr>
+      <td>${h.nome}/${h.ano}</td>
+      <td>${fmt(h.saldoAnt)}</td>
+      <td>${fmt(h.entradas)}</td>
+      <td>${fmt(h.saidas)}</td>
+      <td>${fmt(h.saldoFinal)}</td>
+      <td>${h.ceia}</td>
+    </tr>
+  `).join('');
+
+  renderChartSaldos();
+}
+
 
   // ============================================================
   // RELATÓRIOS
