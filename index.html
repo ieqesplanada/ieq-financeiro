@@ -1865,9 +1865,10 @@ async function sincronizarTudo(silencioso = false) {
     }
 
     DB.saveLocal();
-    setSyncStatus('synced');
-    _ultimaSync = Date.now();
-    localStorage.setItem('ieq_ultima_sync', _ultimaSync);
+invalidarCacheResumo();
+setSyncStatus('synced');
+_ultimaSync = Date.now();
+localStorage.setItem('ieq_ultima_sync', _ultimaSync);
 
     if (!silencioso)
       showNotification('✅ Sincronizado! Dados atualizados do Sheets.', 'success');
@@ -1891,7 +1892,9 @@ async function sincronizarTudo(silencioso = false) {
 }
 
 function _reRenderPaginaAtiva() {
+  invalidarCacheResumo(); // ← ADICIONE ESTA LINHA
   const pagina = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
+
   if (pagina === 'dashboard')     renderDashboard();
   if (pagina === 'culto')         renderCultos();
   if (pagina === 'despesas')      { filtrarDespesas(); renderCategoriasDespesas(); }
@@ -1974,33 +1977,82 @@ window.addEventListener('offline', () => {
   };
 };
 
+  // ============================================================
+// NOVO: Cálculo dinâmico a partir dos dados reais
+// ============================================================
+let _cacheResumoAnual = null;
+let _cacheResumoAnualKey = '';
+
+function calcularResumoAnual(ano) {
+  const cacheKey = String(ano);
+  if (_cacheResumoAnual && _cacheResumoAnualKey === cacheKey) {
+    return _cacheResumoAnual;
+  }
+  
+  const meses = [];
+  let saldoAnt = 0;
+  for (let m = 1; m <= 12; m++) {
+    const mk = `${ano}-${String(m).padStart(2, '0')}`;
+    const entMes = sum(getEntradasMes(mk), e => e.valor);
+    const saiMes = sum(getDespesasMes(mk), d => d.valor);
+    const saldoFinal = saldoAnt + entMes - saiMes;
+    const ceia = getPresentesCeia(mk).presentes;
+    meses.push({
+      mes: m, ano, mk,
+      nome: new Date(ano, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}).replace(/^\w/, c=>c.toUpperCase()),
+      saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia
+    });
+    saldoAnt = saldoFinal;
+  }
+  
+  _cacheResumoAnual = meses;
+  _cacheResumoAnualKey = cacheKey;
+  return meses;
+}
+
+function calcularResumoMes(mk) {
+  const [ano, mes] = mk.split('-').map(Number);
+  const resumoAnual = calcularResumoAnual(ano);
+  return resumoAnual.find(r => r.mes === mes) || null;
+}
+
+function invalidarCacheResumo() {
+  _cacheResumoAnual = null;
+  _cacheResumoAnualKey = '';
+}
 
   // ============================================================
   // DASHBOARD
   // ============================================================
   function renderDashboard(){
     updatePageSubtitleForMonth();
-    const h=getHistoricoRow(GLOBAL_MONTH),prev=getHistoricoRow(prevMonthKey(GLOBAL_MONTH));
-    const entMes=sum(getEntradasMes(GLOBAL_MONTH),e=>e.valor);
-    const saiMes=sum(getDespesasMes(GLOBAL_MONTH),d=>d.valor);
-    const saldoAnt=prev?.saldoFinal??0;
-    const saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
+    const resumoAtual = calcularResumoMes(GLOBAL_MONTH);
+    const resumoPrev  = calcularResumoMes(prevMonthKey(GLOBAL_MONTH));
+    
+    const entMes   = resumoAtual ? resumoAtual.entradas : sum(getEntradasMes(GLOBAL_MONTH), e => e.valor);
+    const saiMes   = resumoAtual ? resumoAtual.saidas   : sum(getDespesasMes(GLOBAL_MONTH), d => d.valor);
+    const saldoAnt = resumoAtual ? resumoAtual.saldoAnt : (resumoPrev ? resumoPrev.saldoFinal : 0);
+    const saldoFinal = resumoAtual ? resumoAtual.saldoFinal : (saldoAnt + entMes - saiMes);
+    
     const elSaldoAnt = document.getElementById('kpi-saldo-ant');
     if (elSaldoAnt) elSaldoAnt.textContent = fmt(saldoAnt);
     const elSaldoAntSub = document.getElementById('kpi-saldo-ant-sub');
-    if (elSaldoAntSub) elSaldoAntSub.textContent = prev ? `Transferido de ${prev.nome}` : '—';
+    if (elSaldoAntSub) elSaldoAntSub.textContent = resumoPrev ? `Transferido de ${resumoPrev.nome}` : '—';
 
-    document.getElementById('kpi-entradas').textContent     =fmt(h?.entradas??entMes);
-    document.getElementById('kpi-saidas').textContent       =fmt(h?.saidas??saiMes);
-    document.getElementById('kpi-saldo').textContent        =fmt(saldoFinal);
-    document.getElementById('kpi-saldo-sub').textContent    =`Mês: ${monthLabel(GLOBAL_MONTH)}`;
-    const vE=(prev&&prev.entradas)?(((h?.entradas??entMes)-prev.entradas)/prev.entradas)*100:null;
-    const vS=(prev&&prev.saidas)?(((h?.saidas??saiMes)-prev.saidas)/prev.saidas)*100:null;
-    document.getElementById('kpi-entradas-var').textContent=vE===null?'—':`${vE<0?'▼':'▲'} ${Math.abs(vE).toFixed(1).replace('.',',')}% vs ${prev.nome}`;
-    document.getElementById('kpi-saidas-var').textContent  =vS===null?'—':`${vS<0?'▼':'▲'} ${Math.abs(vS).toFixed(1).replace('.',',')}% vs ${prev.nome}`;
+    document.getElementById('kpi-entradas').textContent     = fmt(entMes);
+    document.getElementById('kpi-saidas').textContent       = fmt(saiMes);
+    document.getElementById('kpi-saldo').textContent        = fmt(saldoFinal);
+    document.getElementById('kpi-saldo-sub').textContent    = `Mês: ${monthLabel(GLOBAL_MONTH)}`;
+    
+    const vE = (resumoPrev && resumoPrev.entradas) ? ((entMes - resumoPrev.entradas) / resumoPrev.entradas) * 100 : null;
+    const vS = (resumoPrev && resumoPrev.saidas)   ? ((saiMes - resumoPrev.saidas)   / resumoPrev.saidas)   * 100 : null;
+    
+    document.getElementById('kpi-entradas-var').textContent = vE === null ? '—' : `${vE<0?'▼':'▲'} ${Math.abs(vE).toFixed(1).replace('.',',')}% vs ${resumoPrev.nome}`;
+    document.getElementById('kpi-saidas-var').textContent   = vS === null ? '—' : `${vS<0?'▼':'▲'} ${Math.abs(vS).toFixed(1).replace('.',',')}% vs ${resumoPrev.nome}`;
+    
     renderMovimentacoesMes(); renderChartEvolucao(); renderChartDespesasMes();
     renderDistribuicoesMes(); renderMetricasCultoMes();
-  }
+}
 
   function renderMetricasCultoMes(){
     const cultos=getCultosMes(GLOBAL_MONTH);
@@ -2039,14 +2091,22 @@ window.addEventListener('offline', () => {
   function renderChartEvolucao(){
     const ctx = document.getElementById('chartEvolucao');
     if (charts.evolucao) charts.evolucao.destroy();
+    
+    const anoAtual = new Date().getFullYear();
+    const resumoAnual = calcularResumoAnual(anoAtual);
+    
+    const hoje = new Date();
+    const mesesFiltrados = resumoAnual.filter(r => r.mes <= (hoje.getMonth() + 1));
+    const dados = mesesFiltrados.length > 0 ? mesesFiltrados : resumoAnual;
+    
     charts.evolucao = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: DB.historico.map(h => h.nome),
+        labels: dados.map(r => r.nome),
         datasets: [
-          { label: 'Entradas', data: DB.historico.map(h => h.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saídas',   data: DB.historico.map(h => h.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saldo',    data: DB.historico.map(h => h.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
+          { label: 'Entradas', data: dados.map(r => r.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saídas',   data: dados.map(r => r.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saldo',    data: dados.map(r => r.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
         ]
       },
       options: {
@@ -2055,7 +2115,7 @@ window.addEventListener('offline', () => {
         scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
       }
     });
-  }
+}
   
   function renderChartDespesasMes(){
     const ctx = document.getElementById('chartDespesas');
@@ -2837,7 +2897,11 @@ window.addEventListener('offline', () => {
       await apiDelete('cultos',id);
       for(const ent of DB.entradas.filter(e=>String(e.cultoId)===String(id))){try{await apiDelete('entradas',ent.id);}catch(e){}}
       DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
-      DB.saveLocal(); setSyncStatus('synced'); if(!silent)showNotification('🗑️ Culto excluído','info');
+          DB.saveLocal();
+    invalidarCacheResumo(); // ← ADICIONE ESTA LINHA
+    setSyncStatus('synced');
+    _ultimaSync = Date.now();
+ if(!silent)showNotification('🗑️ Culto excluído','info');
     }catch(err){
       DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
       DB.saveLocal(); setSyncStatus('error'); if(!silent)showNotification('⚠️ Excluído localmente','warning');
@@ -3241,35 +3305,44 @@ async function excluirDespesa(id) {
   // HISTÓRICO
   // ============================================================
   function renderHistorico(){
-    document.getElementById('tabelaHistorico').innerHTML=DB.historico.map(h=>`
+    const anoAtual = new Date().getFullYear();
+    const resumoAnual = calcularResumoAnual(anoAtual);
+    
+    const hoje = new Date();
+    const dados = resumoAnual.filter(r => {
+      return r.entradas > 0 || r.saidas > 0 || r.mes <= (hoje.getMonth() + 1);
+    });
+    
+    document.getElementById('tabelaHistorico').innerHTML = dados.map(r => `
       <tr class="table-row border-b border-gray-50">
-        <td class="p-2 font-semibold text-gray-800 text-sm">${h.nome} ${h.ano}</td>
-        <td class="p-2 text-sm text-blue-600">${fmt(h.saldoAnt)}</td>
-        <td class="p-2 text-sm text-green-600 font-semibold">${fmt(h.entradas)}</td>
-        <td class="p-2 text-sm text-red-600 font-semibold">${fmt(h.saidas)}</td>
-        <td class="p-2 text-sm font-bold ${h.saldoFinal>=0?'text-green-700':'text-red-700'}">${fmt(h.saldoFinal)}</td>
-        <td class="p-2 text-sm">${h.ceia}</td>
-        <td class="p-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.entradas>=h.saidas?'badge-green':'badge-red'}">${h.entradas>=h.saidas?'✓ Superávit':'⚠ Déficit'}</span></td>
+        <td class="p-2 font-semibold text-gray-800 text-sm">${r.nome} ${r.ano}</td>
+        <td class="p-2 text-sm text-blue-600">${fmt(r.saldoAnt)}</td>
+        <td class="p-2 text-sm text-green-600 font-semibold">${fmt(r.entradas)}</td>
+        <td class="p-2 text-sm text-red-600 font-semibold">${fmt(r.saidas)}</td>
+        <td class="p-2 text-sm font-bold ${r.saldoFinal>=0?'text-green-700':'text-red-700'}">${fmt(r.saldoFinal)}</td>
+        <td class="p-2 text-sm">${r.ceia}</td>
+        <td class="p-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${r.entradas>=r.saidas?'badge-green':'badge-red'}">${r.entradas>=r.saidas?'✓ Superávit':'⚠ Déficit'}</span></td>
       </tr>`).join('');
-   const ctx = document.getElementById('chartSaldos');
-if (charts.saldos) charts.saldos.destroy();
-charts.saldos = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: DB.historico.map(h => h.nome),
-    datasets: [
-      { label: 'Entradas', data: DB.historico.map(h => h.entradas), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 },
-      { label: 'Saídas',   data: DB.historico.map(h => h.saidas),   backgroundColor: 'rgba(239,68,68,0.7)',  borderRadius: 6 },
-      { label: 'Saldo',    data: DB.historico.map(h => h.saldoFinal), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 6 }
-    ]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
-    scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
-  }
-});
-  }
+    
+    const ctx = document.getElementById('chartSaldos');
+    if (charts.saldos) charts.saldos.destroy();
+    charts.saldos = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dados.map(r => r.nome),
+        datasets: [
+          { label: 'Entradas', data: dados.map(r => r.entradas), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 },
+          { label: 'Saídas',   data: dados.map(r => r.saidas),   backgroundColor: 'rgba(239,68,68,0.7)',  borderRadius: 6 },
+          { label: 'Saldo',    data: dados.map(r => r.saldoFinal), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 6 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
+        scales: { y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } } }
+      }
+    });
+}
 
   // ============================================================
   // RELATÓRIOS
@@ -3300,52 +3373,63 @@ charts.saldos = new Chart(ctx, {
     document.getElementById('relCultoIni').value = GLOBAL_MONTH;
     document.getElementById('relCultoFim').value = GLOBAL_MONTH;
 
+        const anoAtual = new Date().getFullYear();
+    const resumoAnual = calcularResumoAnual(anoAtual);
+    const hoje = new Date();
+    const dadosRel = resumoAnual.filter(r => r.mes <= (hoje.getMonth() + 1));
+    const dadosChart = dadosRel.length > 0 ? dadosRel : resumoAnual;
+    
     const ctx = document.getElementById('chartComparativo');
-if (charts.comparativo) charts.comparativo.destroy();
-charts.comparativo = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: DB.historico.map(h => h.nome),
-      datasets: [{
-        label: 'Saldo Final',
-        data: DB.historico.map(h => h.saldoFinal),
-        borderColor: '#1e3a5f',
-        backgroundColor: 'rgba(30,58,95,0.1)',
-        tension: 0.4,
-        fill: true,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointBackgroundColor: '#c8a951'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } }
-      }
-    }
-  });
-  }
+    if (charts.comparativo) charts.comparativo.destroy();
+    charts.comparativo = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dadosChart.map(r => r.nome),
+          datasets: [{
+            label: 'Saldo Final',
+            data: dadosChart.map(r => r.saldoFinal),
+            borderColor: '#1e3a5f',
+            backgroundColor: 'rgba(30,58,95,0.1)',
+            tension: 0.4,
+            fill: true,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: '#c8a951'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { callback: v => 'R$' + v.toLocaleString('pt-BR'), font: { size: 10 } } }
+          }
+        }
+    });
+
   
   function gerarRelatorio(){
-    const ms=document.getElementById('relatorioMesSelect')?.value||GLOBAL_MONTH;
-    const entMes=sum(getEntradasMes(ms),e=>e.valor),saiMes=sum(getDespesasMes(ms),d=>d.valor);
-    const h=getHistoricoRow(ms),prev=getHistoricoRow(prevMonthKey(ms));
-    const saldoAnt = prev?.saldoFinal ?? 0;saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
-    const logoHtml=DB.config.logo?`<img src="${DB.config.logo}" style="width:60px;height:60px;border-radius:10px;object-fit:contain;background:#fff;padding:3px;border:1px solid #e5e7eb;vertical-align:middle;margin-right:10px">`:'⛪';
-    const nomeIgreja=escapeHtml(DB.config.nomeIgreja||'IEQ Esplanada');
-    const despLista=getDespesasMes(ms);
-    const w=window.open('','_blank');
+    const ms = document.getElementById('relatorioMesSelect')?.value || GLOBAL_MONTH;
+    const entMes = sum(getEntradasMes(ms), e => e.valor);
+    const saiMes = sum(getDespesasMes(ms), d => d.valor);
+    const resumo = calcularResumoMes(ms);
+    const resumoPrev = calcularResumoMes(prevMonthKey(ms));
+    const saldoAnt = resumo ? resumo.saldoAnt : (resumoPrev ? resumoPrev.saldoFinal : 0);
+    const saldoFinal = resumo ? resumo.saldoFinal : (saldoAnt + entMes - saiMes);
+    
+    const logoHtml = DB.config.logo ? `<img src="${DB.config.logo}" style="width:60px;height:60px;border-radius:10px;object-fit:contain;background:#fff;padding:3px;border:1px solid #e5e7eb;vertical-align:middle;margin-right:10px">` : '⛪';
+    const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
+    const despLista = getDespesasMes(ms);
+    const w = window.open('','_blank');
     w.document.write(`<html><head><title>Relatório — ${monthLabel(ms)}</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px}h1{color:#1e3a5f;border-bottom:3px solid #c8a951;padding-bottom:10px}table{width:100%;border-collapse:collapse;margin:15px 0}th{background:#1e3a5f;color:white;padding:10px;text-align:left}td{padding:8px 10px;border-bottom:1px solid #eee}.total{font-weight:bold;background:#f8f8f8}.green{color:#059669}.red{color:#dc2626}img{max-width:100%;height:auto;object-fit:contain}</style></head><body>
       <h1>${logoHtml} ${nomeIgreja} — Relatório Financeiro</h1>
       <h2>${monthLabel(ms)}</h2>
-      <table><tr><th colspan="2">RESUMO</th></tr><tr><td>Saldo Anterior</td><td class="green">${fmt(saldoAnt)}</td></tr><tr><td>Total Entradas</td><td class="green">${fmt(h?.entradas??entMes)}</td></tr><tr><td>Total Saídas</td><td class="red">${fmt(h?.saidas??saiMes)}</td></tr><tr class="total"><td>Saldo Final</td><td>${fmt(saldoFinal)}</td></tr></table>
+      <table><tr><th colspan="2">RESUMO</th></tr><tr><td>Saldo Anterior</td><td class="green">${fmt(saldoAnt)}</td></tr><tr><td>Total Entradas</td><td class="green">${fmt(entMes)}</td></tr><tr><td>Total Saídas</td><td class="red">${fmt(saiMes)}</td></tr><tr class="total"><td>Saldo Final</td><td>${fmt(saldoFinal)}</td></tr></table>
       <table><tr><th>Categoria</th><th>Descrição</th><th>Data</th><th style="text-align:right">Valor</th></tr>${despLista.map(d=>`<tr><td>${escapeHtml(d.categoria||'')}</td><td>${escapeHtml(d.descricao||'')}</td><td>${fmtDate(d.data)}</td><td class="red" style="text-align:right">${fmt(d.valor)}</td></tr>`).join('')}<tr class="total"><td colspan="3">TOTAL</td><td class="red" style="text-align:right">${fmt(saiMes)}</td></tr></table>
       <p style="font-size:12px;color:#666">Gerado em ${new Date().toLocaleString('pt-BR')}</p>
       <script>window.print();<\/script></body></html>`);
     w.document.close();
-  }
+}
+
     function exportarCultosExcel() {
     const mesSelect = document.getElementById('relCultoMesSelect')?.value;
     let lista;
@@ -3407,22 +3491,22 @@ charts.comparativo = new Chart(ctx, {
     const ms = document.getElementById('relatorioMesSelect')?.value || GLOBAL_MONTH;
     const entMes = sum(getEntradasMes(ms), e => e.valor);
     const saiMes = sum(getDespesasMes(ms), d => d.valor);
-    const h = getHistoricoRow(ms);
-    const prev = getHistoricoRow(prevMonthKey(ms));
-    const saldoAnt = h?.saldoAnt ?? (prev?.saldoFinal ?? 0);
-    const saldoFinal = h?.saldoFinal ?? (saldoAnt + entMes - saiMes);
+    const resumo = calcularResumoMes(ms);
+    const resumoPrev = calcularResumoMes(prevMonthKey(ms));
+    const saldoAnt = resumo ? resumo.saldoAnt : (resumoPrev ? resumoPrev.saldoFinal : 0);
+    const saldoFinal = resumo ? resumo.saldoFinal : (saldoAnt + entMes - saiMes);
     const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
 
     const texto = '\uD83D\uDCCA *' + nomeIgreja + ' - Relatório Mensal*\n'
       + '\uD83D\uDCC5 *Mês:* ' + monthLabel(ms) + '\n\n'
       + '\uD83D\uDCB0 *Saldo Anterior:* ' + fmt(saldoAnt) + '\n'
-      + '\uD83D\uDCE5 *Total Entradas:* ' + fmt(h?.entradas??entMes) + '\n'
-      + '\uD83D\uDCE4 *Total Saídas:* ' + fmt(h?.saidas??saiMes) + '\n'
+      + '\uD83D\uDCE5 *Total Entradas:* ' + fmt(entMes) + '\n'
+      + '\uD83D\uDCE4 *Total Saídas:* ' + fmt(saiMes) + '\n'
       + '\uD83D\uDCB5 *Saldo Final:* ' + fmt(saldoFinal) + '\n\n'
       + '\u2728 Gerado pelo Sistema Financeiro IEQ';
 
     compartilharWhatsApp(texto);
-  }
+}
 
   function compartilharCultosWhatsApp() {
     const mesSelect = document.getElementById('relCultoMesSelect')?.value;
