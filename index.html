@@ -1826,12 +1826,6 @@ async function processarFilaOffline() {
   return { enviados, erros };
 }
 
-   {
-  // Limpa cache interno de resumo do dashboard
-  // (se houver variáveis de cache, zere-as aqui)
-  _cacheDashboard = null;
-}
-
 // ── Sincronização principal ───────────────────────────────────
 async function sincronizarTudo(silencioso = false) {
   if (_syncEmAndamento) return;
@@ -1898,12 +1892,8 @@ localStorage.setItem('ieq_ultima_sync', _ultimaSync);
 }
 
 function _reRenderPaginaAtiva() {
-  invalidarCacheResumo();   // ← ADICIONAR NO INÍCIO
+  invalidarCacheResumo();
   const pagina = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
-  if (pagina === 'dashboard')     renderDashboard();
-  // ...
-}
-
   if (pagina === 'dashboard')     renderDashboard();
   if (pagina === 'culto')         renderCultos();
   if (pagina === 'despesas')      { filtrarDespesas(); renderCategoriasDespesas(); }
