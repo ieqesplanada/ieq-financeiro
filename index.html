@@ -1322,26 +1322,29 @@ async function apiDeleteSeguro(sheet, id) {
   // DB LOCAL
   // ============================================================
   const DB = {
-    historico: [], // ✅ agora vem exclusivamente do Google Sheets (aba "historico")
+    historico: [
+      { mes:1, ano:2026, nome:'Janeiro',   saldoAnt:0,       entradas:2641.82, saidas:2641.82, saldoFinal:0,       ceia:56 },
+      { mes:2, ano:2026, nome:'Fevereiro', saldoAnt:0,       entradas:4022.91, saidas:2963.70, saldoFinal:1181.61, ceia:44 },
+      { mes:3, ano:2026, nome:'Março',     saldoAnt:1181.61, entradas:4172.40, saidas:4023.12, saldoFinal:1330.89, ceia:53 },
+      { mes:4, ano:2026, nome:'Abril',     saldoAnt:1330.89, entradas:4235.18, saidas:4253.26, saldoFinal:1312.81, ceia:60 },
+      { mes:5, ano:2026, nome:'Maio',      saldoAnt:1312.81, entradas:3483.14, saidas:3335.42, saldoFinal:1217.53, ceia:60 },
+    ],
 
     despesas:[], cultos:[], entradas:[], config:{},
-
-          saveLocal() {
+    saveLocal() {
       try {
-        localStorage.setItem('despesas_cache',  JSON.stringify(this.despesas));
-        localStorage.setItem('cultos_cache',    JSON.stringify(this.cultos));
-        localStorage.setItem('entradas_cache',  JSON.stringify(this.entradas));
-        localStorage.setItem('historico_cache', JSON.stringify(this.historico)); // ✅ novo cache
+        localStorage.setItem('despesas_cache', JSON.stringify(this.despesas));
+        localStorage.setItem('cultos_cache',   JSON.stringify(this.cultos));
+        localStorage.setItem('entradas_cache', JSON.stringify(this.entradas));
       } catch(e){}
     },
     loadLocal() {
       try {
-        this.despesas  = JSON.parse(localStorage.getItem('despesas_cache') ||'[]');
-        this.cultos    = JSON.parse(localStorage.getItem('cultos_cache')   ||'[]');
-        this.entradas  = JSON.parse(localStorage.getItem('entradas_cache')||'[]');
-        this.historico = JSON.parse(localStorage.getItem('historico_cache')||'[]'); // ✅ novo cache
-        this.config    = JSON.parse(localStorage.getItem('ieq_config')    ||'{}');
-      } catch(e){ this.despesas=[]; this.cultos=[]; this.entradas=[]; this.historico=[]; this.config={}; }
+        this.despesas = JSON.parse(localStorage.getItem('despesas_cache')||'[]');
+        this.cultos   = JSON.parse(localStorage.getItem('cultos_cache')  ||'[]');
+        this.entradas = JSON.parse(localStorage.getItem('entradas_cache')||'[]');
+        this.config   = JSON.parse(localStorage.getItem('ieq_config')    ||'{}');
+      } catch(e){ this.despesas=[]; this.cultos=[]; this.entradas=[]; this.config={}; }
     }
   };
 
@@ -1384,21 +1387,6 @@ async function apiDeleteSeguro(sheet, id) {
       observacoes: c.observacoes || '',
     };
   }
-
-    // ✅ NOVO: normaliza os dados de histórico vindos da planilha
-  function normalizarHistorico(h){
-    return {
-      mes: parseInt(h.mes) || 0,
-      ano: parseInt(h.ano) || 0,
-      nome: h.nome || '',
-      saldoAnt: parseFloat(h.saldoAnt) || 0,
-      entradas: parseFloat(h.entradas) || 0,
-      saidas: parseFloat(h.saidas) || 0,
-      saldoFinal: parseFloat(h.saldoFinal) || 0,
-      ceia: parseInt(h.ceia) || 0
-    };
-  }
-  
   function normalizarDespesa(d){
   // Garante que a data fique no formato yyyy-mm-dd para o input[type=date]
   let dataNormalizada = (d.data || '');
@@ -1718,13 +1706,12 @@ function getSegundoDomingoDoMes(mk){
   try {
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 6000));
 
-       const res = await Promise.race([
-      Promise.allSettled([apiGet('cultos'), apiGet('despesas'), apiGet('entradas'), apiGet('historico')]),
+    const res = await Promise.race([
+      Promise.allSettled([apiGet('cultos'), apiGet('despesas'), apiGet('entradas')]),
       timeout
     ]);
 
-    const [cR, dR, eR, hR] = res;
-
+    const [cR, dR, eR] = res;
 
     // Sheets substitui local (fonte de verdade)
     if (cR.status === 'fulfilled' && cR.value.length > 0)
@@ -1740,11 +1727,6 @@ function getSegundoDomingoDoMes(mk){
 
     if (eR.status === 'fulfilled' && eR.value.length > 0)
       DB.entradas = eR.value.map(normalizarEntrada);
-
-    
-    // ✅ NOVO: histórico exclusivamente da planilha
-    if (hR.status === 'fulfilled')
-      DB.historico = hR.value.map(normalizarHistorico);
 
     DB.saveLocal();
     setSyncStatus('synced');
@@ -1858,12 +1840,10 @@ async function sincronizarTudo(silencioso = false) {
       showNotification(`📤 ${enviados} operação(ões) offline enviada(s)`, 'info');
 
     // 2. Busca tudo do Sheets (fonte de verdade)
-        // 2. Busca tudo do Sheets (fonte de verdade)
-    const [cultosBrutos, despesasBrutos, entradasBrutos, historicoBrutos] = await Promise.all([
+    const [cultosBrutos, despesasBrutos, entradasBrutos] = await Promise.all([
       apiGet('cultos'),
       apiGet('despesas'),
-      apiGet('entradas'),
-      apiGet('historico')
+      apiGet('entradas')
     ]);
 
     // 3. Sheets substitui local — ele é a fonte de verdade
@@ -1880,15 +1860,11 @@ async function sincronizarTudo(silencioso = false) {
       DB.despesas = [...fixosNaoEnviados, ...despesasBrutos.map(normalizarDespesa)];
     }
 
-        if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
+    if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
       DB.entradas = entradasBrutos.map(normalizarEntrada);
     }
 
-    // ✅ NOVO: histórico sempre reflete exatamente o que está na planilha
-    DB.historico = historicoBrutos.map(normalizarHistorico);
-
     DB.saveLocal();
-
     setSyncStatus('synced');
     _ultimaSync = Date.now();
     localStorage.setItem('ieq_ultima_sync', _ultimaSync);
@@ -1972,42 +1948,53 @@ window.addEventListener('offline', () => {
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
   const sum=(arr,fn)=>arr.reduce((a,x)=>a+(fn?fn(x):x),0);
-    // ✅ CORRIGIDO: retorna somente o que existe na planilha (Google Sheets).
-  // Não inventa/calcula mais valores quando o mês não está cadastrado.
   const getHistoricoRow = mk => {
-    const [y, m] = mk.split('-').map(Number);
-    return DB.historico.find(h => h.ano === y && h.mes === m) || null;
+  const [y, m] = mk.split('-').map(Number);
+  // Busca no histórico fixo primeiro
+  const found = DB.historico.find(h => h.ano === y && h.mes === m);
+  if (found) return found;
+
+  // Se não encontrou, calcula dinamicamente
+  const entMes = sum(getEntradasMes(mk), e => e.valor);
+  const saiMes = sum(getDespesasMes(mk), d => d.valor);
+  const prevKey = prevMonthKey(mk);
+  const prev = getHistoricoRow(prevKey); // recursivo para meses anteriores
+  const saldoAnt = prev ? prev.saldoFinal : 0;
+
+  return {
+    mes: m,
+    ano: y,
+    nome: new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
+      .replace(/^\w/, c => c.toUpperCase()),
+    saldoAnt,
+    entradas: entMes,
+    saidas: saiMes,
+    saldoFinal: saldoAnt + entMes - saiMes,
+    ceia: getPresentesCeia(mk).presentes
   };
+};
 
 
   // ============================================================
   // DASHBOARD
   // ============================================================
-    function renderDashboard(){
+  function renderDashboard(){
     updatePageSubtitleForMonth();
     const h=getHistoricoRow(GLOBAL_MONTH),prev=getHistoricoRow(prevMonthKey(GLOBAL_MONTH));
     const entMes=sum(getEntradasMes(GLOBAL_MONTH),e=>e.valor);
     const saiMes=sum(getDespesasMes(GLOBAL_MONTH),d=>d.valor);
     const saldoAnt=prev?.saldoFinal??0;
-
-    // ✅ CORREÇÃO: Total de Entradas do mês = Saldo Transferido (saldo final do mês anterior) + Entradas do mês atual
-    const entradasComSaldoAnt = saldoAnt + (h?.entradas??entMes);
-
     const saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
     const elSaldoAnt = document.getElementById('kpi-saldo-ant');
     if (elSaldoAnt) elSaldoAnt.textContent = fmt(saldoAnt);
     const elSaldoAntSub = document.getElementById('kpi-saldo-ant-sub');
     if (elSaldoAntSub) elSaldoAntSub.textContent = prev ? `Transferido de ${prev.nome}` : '—';
 
-    // ✅ CORREÇÃO: exibe saldo transferido + entradas do mês
-    document.getElementById('kpi-entradas').textContent     =fmt(entradasComSaldoAnt);
+    document.getElementById('kpi-entradas').textContent     =fmt(h?.entradas??entMes);
     document.getElementById('kpi-saidas').textContent       =fmt(h?.saidas??saiMes);
     document.getElementById('kpi-saldo').textContent        =fmt(saldoFinal);
     document.getElementById('kpi-saldo-sub').textContent    =`Mês: ${monthLabel(GLOBAL_MONTH)}`;
-
-    // ✅ CORREÇÃO: variação percentual agora compara entradas (com saldo transferido) com o mês anterior
-    const entradasAntComSaldo = prev ? ((prev.saldoAnt??0) + (prev.entradas??0)) : null;
-    const vE=(prev&&entradasAntComSaldo)?((entradasComSaldoAnt-entradasAntComSaldo)/entradasAntComSaldo)*100:null;
+    const vE=(prev&&prev.entradas)?(((h?.entradas??entMes)-prev.entradas)/prev.entradas)*100:null;
     const vS=(prev&&prev.saidas)?(((h?.saidas??saiMes)-prev.saidas)/prev.saidas)*100:null;
     document.getElementById('kpi-entradas-var').textContent=vE===null?'—':`${vE<0?'▼':'▲'} ${Math.abs(vE).toFixed(1).replace('.',',')}% vs ${prev.nome}`;
     document.getElementById('kpi-saidas-var').textContent  =vS===null?'—':`${vS<0?'▼':'▲'} ${Math.abs(vS).toFixed(1).replace('.',',')}% vs ${prev.nome}`;
@@ -3253,21 +3240,8 @@ async function excluirDespesa(id) {
   // ============================================================
   // HISTÓRICO
   // ============================================================
-    function renderHistorico(){
-    const tbody = document.getElementById('tabelaHistorico');
-
-    // ✅ NOVO: se não houver dados salvos na planilha, exibe aviso
-    if (!DB.historico.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-400">
-        <i class="fas fa-database text-4xl mb-3 block text-gray-300"></i>
-        Nenhum histórico cadastrado na planilha Google Sheets
-      </td></tr>`;
-      if (charts.saldos) { charts.saldos.destroy(); charts.saldos = null; }
-      return;
-    }
-
-    tbody.innerHTML=DB.historico.map(h=>`
-
+  function renderHistorico(){
+    document.getElementById('tabelaHistorico').innerHTML=DB.historico.map(h=>`
       <tr class="table-row border-b border-gray-50">
         <td class="p-2 font-semibold text-gray-800 text-sm">${h.nome} ${h.ano}</td>
         <td class="p-2 text-sm text-blue-600">${fmt(h.saldoAnt)}</td>
