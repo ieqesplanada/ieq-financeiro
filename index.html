@@ -1983,23 +1983,31 @@ window.addEventListener('offline', () => {
   // ============================================================
   // DASHBOARD
   // ============================================================
-  function renderDashboard(){
+    function renderDashboard(){
     updatePageSubtitleForMonth();
     const h=getHistoricoRow(GLOBAL_MONTH),prev=getHistoricoRow(prevMonthKey(GLOBAL_MONTH));
     const entMes=sum(getEntradasMes(GLOBAL_MONTH),e=>e.valor);
     const saiMes=sum(getDespesasMes(GLOBAL_MONTH),d=>d.valor);
     const saldoAnt=prev?.saldoFinal??0;
+
+    // ✅ CORREÇÃO: Total de Entradas do mês = Saldo Transferido (saldo final do mês anterior) + Entradas do mês atual
+    const entradasComSaldoAnt = saldoAnt + (h?.entradas??entMes);
+
     const saldoFinal=h?.saldoFinal??(saldoAnt+entMes-saiMes);
     const elSaldoAnt = document.getElementById('kpi-saldo-ant');
     if (elSaldoAnt) elSaldoAnt.textContent = fmt(saldoAnt);
     const elSaldoAntSub = document.getElementById('kpi-saldo-ant-sub');
     if (elSaldoAntSub) elSaldoAntSub.textContent = prev ? `Transferido de ${prev.nome}` : '—';
 
-    document.getElementById('kpi-entradas').textContent     =fmt(h?.entradas??entMes);
+    // ✅ CORREÇÃO: exibe saldo transferido + entradas do mês
+    document.getElementById('kpi-entradas').textContent     =fmt(entradasComSaldoAnt);
     document.getElementById('kpi-saidas').textContent       =fmt(h?.saidas??saiMes);
     document.getElementById('kpi-saldo').textContent        =fmt(saldoFinal);
     document.getElementById('kpi-saldo-sub').textContent    =`Mês: ${monthLabel(GLOBAL_MONTH)}`;
-    const vE=(prev&&prev.entradas)?(((h?.entradas??entMes)-prev.entradas)/prev.entradas)*100:null;
+
+    // ✅ CORREÇÃO: variação percentual agora compara entradas (com saldo transferido) com o mês anterior
+    const entradasAntComSaldo = prev ? ((prev.saldoAnt??0) + (prev.entradas??0)) : null;
+    const vE=(prev&&entradasAntComSaldo)?((entradasComSaldoAnt-entradasAntComSaldo)/entradasAntComSaldo)*100:null;
     const vS=(prev&&prev.saidas)?(((h?.saidas??saiMes)-prev.saidas)/prev.saidas)*100:null;
     document.getElementById('kpi-entradas-var').textContent=vE===null?'—':`${vE<0?'▼':'▲'} ${Math.abs(vE).toFixed(1).replace('.',',')}% vs ${prev.nome}`;
     document.getElementById('kpi-saidas-var').textContent  =vS===null?'—':`${vS<0?'▼':'▲'} ${Math.abs(vS).toFixed(1).replace('.',',')}% vs ${prev.nome}`;
