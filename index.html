@@ -224,16 +224,106 @@
     .btn-whatsapp:hover { background: #20bd5a; transform: translateY(-1px); }
     .btn-whatsapp-sm { background: #25D366; color: white; padding: 0; width: 28px; height: 28px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .btn-whatsapp-sm:hover { background: #20bd5a; transform: translateY(-1px); }
-        /* ============================================================
+    
+               /* ============================================================
        ESTILOS DE IMPRESSÃO — REFC
        ============================================================ */
-       @media print {
+    @media print {
       @page { margin: 12mm; size: A4; }
       body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .refc-header { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .refc-table th { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .refc-total-row { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .refc-missoes-row { background: #0f766e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* ===== ESTILOS DE IMPRESSÃO / PDF (Ctrl+P na tela do app) ===== */
+    @media print {
+      header, nav, aside, .no-print,
+      #sidebar, #bottomNav, #topBar,
+      button, .btn-primary, .btn-danger, .btn-secondary,
+      .modal-overlay, #fabMenu {
+        display: none !important;
+      }
+
+      body, html {
+        background: #fff !important;
+        margin: 0;
+        padding: 0;
+      }
+
+      #appRoot, main, .app-content {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+      }
+      .print-header h1 {
+        font-size: 18pt;
+        font-weight: bold;
+        color: #000 !important;
+      }
+      .print-header p {
+        font-size: 10pt;
+        color: #555 !important;
+      }
+
+      .card, .rounded-2xl, .rounded-xl, .shadow, .shadow-lg, .shadow-2xl {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+        break-inside: avoid;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 10pt;
+      }
+      table th, table td {
+        border: 1px solid #999 !important;
+        padding: 6px 8px !important;
+        color: #000 !important;
+        background: #fff !important;
+      }
+      table th {
+        background: #f0f0f0 !important;
+        font-weight: bold;
+      }
+
+      tr { break-inside: avoid; }
+
+      .text-green-600, .text-green-500 { color: #15803d !important; font-weight: 600; }
+      .text-red-600, .text-red-500     { color: #b91c1c !important; font-weight: 600; }
+
+      h2, h3 {
+        color: #000 !important;
+        page-break-after: avoid;
+      }
+
+      .print-footer {
+        display: block !important;
+        margin-top: 20px;
+        font-size: 8pt;
+        color: #777 !important;
+        text-align: right;
+      }
+
+      .page-break {
+        page-break-before: always;
+      }
+    }
+
+    .print-header, .print-footer {
+      display: none;
     }
 
   </style>
@@ -2878,7 +2968,7 @@ function invalidarCacheResumo() {
 
 
   function imprimirCultoDireto(idx){ verCulto(idx); setTimeout(()=>imprimirCulto(),150); }
-   function imprimirCulto(){
+  function imprimirCulto(){
   const cont=document.getElementById('printArea').innerHTML;
   const w=window.open('','_blank','width=900,height=700');
   w.document.write(`<!DOCTYPE html>
@@ -2894,8 +2984,7 @@ function invalidarCacheResumo() {
     @page{margin:10mm;size:A4}
     body{padding:0;max-width:100%}
     .no-print{display:none!important}
-    /* Garante que cores de fundo (cabeçalho azul, totais) apareçam impressas */
-    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
   }
 
   .print-btn{display:block;margin:24px auto 0;background:#1e3a5f;color:white;border:none;padding:12px 36px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600;letter-spacing:0.5px;transition:all 0.2s}
@@ -2909,7 +2998,6 @@ function invalidarCacheResumo() {
 </body></html>`);
   w.document.close();
 }
-
 
    async function excluirCulto(idx){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
