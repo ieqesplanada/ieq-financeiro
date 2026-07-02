@@ -3213,45 +3213,47 @@ async function salvarDespesa(e) {
   }
 }
 
+// ============================================================
+// DESPESAS — FIX 2: função única e completa (remover duplicata)
+// ============================================================
 async function excluirDespesa(id) {
   if (!temPermissao('podeExcluir')) {
     showNotification('🔒 Sem permissão.', 'error');
     return;
   }
-  if (!confirm('Excluir esta despesa?')) return;
+
+  const confirmado = await confirmar('Excluir esta despesa?'); // Fix 10
+  if (!confirmado) return;
 
   const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
-  if (idx === -1) { showNotification('❌ Não encontrada.', 'error'); return; }
-  if (DB.despesas[idx]._fixed) { showNotification('❌ Registro fixo não pode ser excluído.', 'error'); return; }
+  if (idx === -1) {
+    showNotification('❌ Não encontrada.', 'error');
+    return;
+  }
+  if (DB.despesas[idx]._fixed) {
+    showNotification('❌ Registro fixo não pode ser excluído.', 'error');
+    return;
+  }
 
   setSyncStatus('syncing');
   try {
     await apiDelete('despesas', id);
     DB.despesas.splice(idx, 1);
     DB.saveLocal();
+    invalidarCacheResumo(); // ✅ Fix 5
     setSyncStatus('synced');
     showNotification('🗑️ Despesa excluída', 'info');
   } catch (err) {
     DB.despesas.splice(idx, 1);
     DB.saveLocal();
+    invalidarCacheResumo(); // ✅ Fix 5
     setSyncStatus('error');
     showNotification('⚠️ Excluído localmente', 'warning');
   }
+
   filtrarDespesas();
   renderDashboard();
 }
-
-  async function excluirDespesa(id){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    if(!confirm('Excluir esta despesa?'))return;
-    const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
-    if(idx===-1){showNotification('❌ Não encontrada.','error');return;}
-    if(DB.despesas[idx]._fixed){showNotification('❌ Registro fixo.','error');return;}
-    setSyncStatus('syncing');
-    try{await apiDelete('despesas',id);DB.despesas.splice(idx,1);DB.saveLocal();setSyncStatus('synced');showNotification('🗑️ Despesa excluída','info');}
-    catch(err){DB.despesas.splice(idx,1);DB.saveLocal();setSyncStatus('error');showNotification('⚠️ Excluído localmente','warning');}
-    filtrarDespesas(); renderDashboard();
-  }
 
   // ============================================================
   // ENTRADAS
