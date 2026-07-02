@@ -1195,41 +1195,59 @@ async function apiDeleteSeguro(sheet, id) {
   // ============================================================
   // SESSÃO / LOGIN
   // ============================================================
-  const SESSION_KEY = 'ieq_session';
-  const SESSION_TTL = 8 * 60 * 60 * 1000;
+  // ============================================================
+// SESSÃO — FIX 3: renovação automática do TTL
+// ============================================================
+const SESSION_KEY = 'ieq_session';
+const SESSION_TTL = 8 * 60 * 60 * 1000; // 8h
 
-  let SESSAO = null;
+let SESSAO = null;
+let _renovacaoTimer = null;
 
-  const PERMISSOES = {
-    podeEditar:  ['admin','tesoureiro'],
-    podeExcluir: ['admin','tesoureiro'],
-    podeLancar:  ['admin','tesoureiro'],
-    podeConfig:  ['admin'],
-  };
+function salvarSessao(dados) {
+  const sessao = { ...dados, loginEm: Date.now() };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
+  SESSAO = sessao;
+}
 
-  function temPermissao(acao) {
-    if (!SESSAO) return false;
-    return (PERMISSOES[acao] || []).includes(SESSAO.permissao);
+function carregarSessao() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (Date.now() - s.loginEm > SESSION_TTL) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return s;
+  } catch {
+    return null;
   }
+}
 
-  function salvarSessao(dados) {
-    const sessao = { ...dados, loginEm: Date.now() };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
-    SESSAO = sessao;
+function limparSessao() {
+  localStorage.removeItem(SESSION_KEY);
+  SESSAO = null;
+  if (_renovacaoTimer) {
+    clearInterval(_renovacaoTimer);
+    _renovacaoTimer = null;
   }
+}
 
-  function carregarSessao() {
-    try {
-      const raw = localStorage.getItem(SESSION_KEY);
-      if (!raw) return null;
-      const s = JSON.parse(raw);
-      if (Date.now() - s.loginEm > SESSION_TTL) { localStorage.removeItem(SESSION_KEY); return null; }
-      return s;
-    } catch { return null; }
-  }
+// ✅ FIX 3: renova TTL a cada interação do usuário
+function renovarSessao() {
+  if (!SESSAO) return;
+  SESSAO.loginEm = Date.now();
+  localStorage.setItem(SESSION_KEY, JSON.stringify(SESSAO));
+}
 
-  function limparSessao() { localStorage.removeItem(SESSION_KEY); SESSAO = null; }
-
+function iniciarRenovacaoSessao() {
+  if (_renovacaoTimer) clearInterval(_renovacaoTimer);
+  // Renova a cada 30 minutos de atividade
+  _renovacaoTimer = setInterval(() => {
+    if (SESSAO) renovarSessao();
+  }, 30 * 60 * 1000);
+}
   // ============================================================
   // LOGIN
   // ============================================================
