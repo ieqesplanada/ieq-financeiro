@@ -2960,7 +2960,9 @@ function invalidarCacheResumo() {
 
         <!-- RODAPÉ -->
         <div style="text-align:center;color:#9ca3af;font-size:11px;margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">
-          <p style="margin:0">📅 Gerado em ${new Date().toLocaleString('pt-BR')} • ${nomeIgreja} — Sistema Financeiro v3.9</p>
+          <p style="margin:0">📅 Gerado em ${new Date().toLocaleString('pt-BR')} • ${nomeIgreja}</p>
+<p style="margin:2px 0 0">Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</p>
+
         </div>
       </div>`;
     openModal('modalVerCulto');
@@ -3592,8 +3594,9 @@ async function salvarDespesa(e) {
   </table>
 
   <div class="footer">
-    Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja} — Sistema Financeiro
-  </div>
+    Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>
+    Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão
+</div>
 
   <div class="no-print" style="text-align:center">
     <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
