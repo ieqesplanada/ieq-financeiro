@@ -1326,6 +1326,7 @@ async function efetuarLogin(e) {
     document.getElementById('loginScreen').classList.remove('active');
     document.getElementById('appRoot').style.display = 'block';
     aplicarPermissoesUI();
+    iniciarRenovacaoSessao();
     inicializarSistema();
   }
 
@@ -3671,6 +3672,12 @@ async function excluirDespesa(id) {
     document.getElementById('loginUser').addEventListener('keydown', e=>{
       if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
     });
+
+    // ✅ FIX 3: ativa renovação de sessão por interação
+    ['click', 'keydown', 'mousemove', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, renovarSessao, { passive: true })
+    );
+});
 
     GLOBAL_MONTH=monthKeyFromDate(new Date());
     console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
