@@ -1195,59 +1195,41 @@ async function apiDeleteSeguro(sheet, id) {
   // ============================================================
   // SESSÃO / LOGIN
   // ============================================================
-  // ============================================================
-// SESSÃO — FIX 3: renovação automática do TTL
-// ============================================================
-const SESSION_KEY = 'ieq_session';
-const SESSION_TTL = 8 * 60 * 60 * 1000; // 8h
+  const SESSION_KEY = 'ieq_session';
+  const SESSION_TTL = 8 * 60 * 60 * 1000;
 
-let SESSAO = null;
-let _renovacaoTimer = null;
+  let SESSAO = null;
 
-function salvarSessao(dados) {
-  const sessao = { ...dados, loginEm: Date.now() };
-  localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
-  SESSAO = sessao;
-}
+  const PERMISSOES = {
+    podeEditar:  ['admin','tesoureiro'],
+    podeExcluir: ['admin','tesoureiro'],
+    podeLancar:  ['admin','tesoureiro'],
+    podeConfig:  ['admin'],
+  };
 
-function carregarSessao() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    if (Date.now() - s.loginEm > SESSION_TTL) {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-    return s;
-  } catch {
-    return null;
+  function temPermissao(acao) {
+    if (!SESSAO) return false;
+    return (PERMISSOES[acao] || []).includes(SESSAO.permissao);
   }
-}
 
-function limparSessao() {
-  localStorage.removeItem(SESSION_KEY);
-  SESSAO = null;
-  if (_renovacaoTimer) {
-    clearInterval(_renovacaoTimer);
-    _renovacaoTimer = null;
+  function salvarSessao(dados) {
+    const sessao = { ...dados, loginEm: Date.now() };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
+    SESSAO = sessao;
   }
-}
 
-// ✅ FIX 3: renova TTL a cada interação do usuário
-function renovarSessao() {
-  if (!SESSAO) return;
-  SESSAO.loginEm = Date.now();
-  localStorage.setItem(SESSION_KEY, JSON.stringify(SESSAO));
-}
+  function carregarSessao() {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      if (Date.now() - s.loginEm > SESSION_TTL) { localStorage.removeItem(SESSION_KEY); return null; }
+      return s;
+    } catch { return null; }
+  }
 
-function iniciarRenovacaoSessao() {
-  if (_renovacaoTimer) clearInterval(_renovacaoTimer);
-  // Renova a cada 30 minutos de atividade
-  _renovacaoTimer = setInterval(() => {
-    if (SESSAO) renovarSessao();
-  }, 30 * 60 * 1000);
-}
+  function limparSessao() { localStorage.removeItem(SESSION_KEY); SESSAO = null; }
+
   // ============================================================
   // LOGIN
   // ============================================================
@@ -1273,60 +1255,32 @@ function iniciarRenovacaoSessao() {
     document.getElementById('loginPass').classList.remove('erro');
   }
 
-  // ============================================================
-// LOGIN — FIX 1: POST ao invés de GET (senha não fica na URL)
-// ============================================================
-async function efetuarLogin(e) {
-  e.preventDefault();
-  limparErroLogin();
-  const login   = document.getElementById('loginUser').value.trim();
-  const senha   = document.getElementById('loginPass').value;
-  const lembrar = document.getElementById('lembrarUser').checked;
-  const btn     = document.getElementById('btnLogin');
-
-  if (!login || !senha) {
-    mostrarErroLogin('Preencha usuário e senha.');
-    return;
+  async function efetuarLogin(e) {
+    e.preventDefault();
+    limparErroLogin();
+    const login = document.getElementById('loginUser').value.trim();
+    const senha = document.getElementById('loginPass').value;
+    const lembrar = document.getElementById('lembrarUser').checked;
+    const btn = document.getElementById('btnLogin');
+    if (!login || !senha) { mostrarErroLogin('Preencha usuário e senha.'); return; }
+    if (lembrar) localStorage.setItem('ieq_lembrar_user', login);
+    else localStorage.removeItem('ieq_lembrar_user');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
+    try {
+      const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&senha=${encodeURIComponent(senha)}`;
+      const resp = await fetch(url);
+      const json = await resp.json();
+      if (json.ok) { salvarSessao({ nome: json.nome, permissao: json.permissao }); entrarNoSistema(); }
+      else { mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.'); document.getElementById('loginPass').value = ''; document.getElementById('loginPass').focus(); }
+    } catch (err) { mostrarErroLogin('Erro de conexão. Verifique sua internet.'); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar'; }
   }
-
-  if (lembrar) localStorage.setItem('ieq_lembrar_user', login);
-  else         localStorage.removeItem('ieq_lembrar_user');
-
-  btn.disabled  = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
-
-  try {
-    // ✅ FIX 1: credenciais via POST, nunca na URL
-    const resp = await fetch(API_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body:    JSON.stringify({ action: 'login', login, senha })
-    });
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-
-    if (json.ok) {
-      salvarSessao({ nome: json.nome, permissao: json.permissao });
-      entrarNoSistema();
-    } else {
-      mostrarErroLogin(json.erro || 'Usuário ou senha incorretos.');
-      document.getElementById('loginPass').value = '';
-      document.getElementById('loginPass').focus();
-    }
-  } catch (err) {
-    mostrarErroLogin('Erro de conexão. Verifique sua internet.');
-  } finally {
-    btn.disabled  = false;
-    btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Entrar';
-  }
-}
 
   function entrarNoSistema() {
     document.getElementById('loginScreen').classList.remove('active');
     document.getElementById('appRoot').style.display = 'block';
     aplicarPermissoesUI();
-    iniciarRenovacaoSessao();
     inicializarSistema();
   }
 
@@ -1763,12 +1717,12 @@ function getSegundoDomingoDoMes(mk){
     if (cR.status === 'fulfilled' && cR.value.length > 0)
       DB.cultos = cR.value.map(normalizarCulto);
 
-        if (dR.status === 'fulfilled' && dR.value.length > 0) {
-      // ✅ Sheets é a fonte de verdade — sem mesclar fixos
-      DB.despesas = dR.value.map(normalizarDespesa);
-    } else if (DB.despesas.length === 0) {
-      // Só usa dados padrão se não houver NADA (nem cache nem Sheets)
-      DB.despesas = DESPESAS_PADRAO.map(d => ({ ...d }));
+    if (dR.status === 'fulfilled' && dR.value.length > 0) {
+      const idsSheets = new Set(dR.value.map(d => String(d.id)));
+      DB.despesas = [
+        ...DESPESAS_PADRAO.filter(d => !idsSheets.has(String(d.id))),
+        ...dR.value.map(normalizarDespesa)
+      ];
     }
 
     if (eR.status === 'fulfilled' && eR.value.length > 0)
@@ -1897,12 +1851,13 @@ async function sincronizarTudo(silencioso = false) {
       DB.cultos = cultosBrutos.map(normalizarCulto);
     }
 
-        if (despesasBrutos.length > 0) {
-      // ✅ Sheets é a fonte de verdade
-      DB.despesas = despesasBrutos.map(normalizarDespesa);
-    } else if (DB.despesas.length === 0) {
-      // Fallback: só usa dados padrão se não houver nada
-      DB.despesas = DESPESAS_PADRAO.map(d => ({ ...d }));
+    if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
+      // Mantém registros fixos (_fixed) que não existem no Sheets
+      const idsSheets = new Set(despesasBrutos.map(d => String(d.id)));
+            const fixosNaoEnviados = DESPESAS_PADRAO
+        .filter(d => !idsSheets.has(String(d.id)))
+        .map(d => ({ ...d }));
+      DB.despesas = [...fixosNaoEnviados, ...despesasBrutos.map(normalizarDespesa)];
     }
 
     if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
@@ -3232,47 +3187,45 @@ async function salvarDespesa(e) {
   }
 }
 
-// ============================================================
-// DESPESAS — FIX 2: função única e completa (remover duplicata)
-// ============================================================
 async function excluirDespesa(id) {
   if (!temPermissao('podeExcluir')) {
     showNotification('🔒 Sem permissão.', 'error');
     return;
   }
-
-  const confirmado = await confirmar('Excluir esta despesa?'); // Fix 10
-  if (!confirmado) return;
+  if (!confirm('Excluir esta despesa?')) return;
 
   const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
-  if (idx === -1) {
-    showNotification('❌ Não encontrada.', 'error');
-    return;
-  }
-  if (DB.despesas[idx]._fixed) {
-    showNotification('❌ Registro fixo não pode ser excluído.', 'error');
-    return;
-  }
+  if (idx === -1) { showNotification('❌ Não encontrada.', 'error'); return; }
+  if (DB.despesas[idx]._fixed) { showNotification('❌ Registro fixo não pode ser excluído.', 'error'); return; }
 
   setSyncStatus('syncing');
   try {
     await apiDelete('despesas', id);
     DB.despesas.splice(idx, 1);
     DB.saveLocal();
-    invalidarCacheResumo(); // ✅ Fix 5
     setSyncStatus('synced');
     showNotification('🗑️ Despesa excluída', 'info');
   } catch (err) {
     DB.despesas.splice(idx, 1);
     DB.saveLocal();
-    invalidarCacheResumo(); // ✅ Fix 5
     setSyncStatus('error');
     showNotification('⚠️ Excluído localmente', 'warning');
   }
-
   filtrarDespesas();
   renderDashboard();
 }
+
+  async function excluirDespesa(id){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    if(!confirm('Excluir esta despesa?'))return;
+    const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
+    if(idx===-1){showNotification('❌ Não encontrada.','error');return;}
+    if(DB.despesas[idx]._fixed){showNotification('❌ Registro fixo.','error');return;}
+    setSyncStatus('syncing');
+    try{await apiDelete('despesas',id);DB.despesas.splice(idx,1);DB.saveLocal();setSyncStatus('synced');showNotification('🗑️ Despesa excluída','info');}
+    catch(err){DB.despesas.splice(idx,1);DB.saveLocal();setSyncStatus('error');showNotification('⚠️ Excluído localmente','warning');}
+    filtrarDespesas(); renderDashboard();
+  }
 
   // ============================================================
   // ENTRADAS
@@ -3639,7 +3592,7 @@ async function excluirDespesa(id) {
   localStorage.removeItem(OFFLINE_QUEUE_KEY);
   localStorage.removeItem('ieq_ultima_sync');
 
-  DB.despesas = [];
+  DB.despesas = [...DESPESAS_PADRAO];
   DB.cultos   = [];
   DB.entradas = [];
 
@@ -3673,15 +3626,9 @@ async function excluirDespesa(id) {
       if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
     });
 
-    // ✅ FIX 3: ativa renovação de sessão por interação
-    ['click', 'keydown', 'mousemove', 'touchstart'].forEach(ev =>
-      document.addEventListener(ev, renovarSessao, { passive: true })
-    );
-
     GLOBAL_MONTH=monthKeyFromDate(new Date());
     console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
-});
-
+  });
 </script>
 </body>
 </html>
