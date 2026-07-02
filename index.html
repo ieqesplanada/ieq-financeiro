@@ -1105,6 +1105,28 @@
   </div>
 </div>
 
+  <!-- MODAL: CONFIRMAÇÃO DE EXCLUSÃO -->
+<div class="modal-overlay" id="modalConfirmarExclusao">
+  <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
+    <div class="p-5 text-center">
+      <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-800 text-base mb-1">Confirma a exclusão?</h3>
+      <p class="text-gray-500 text-sm mb-5" id="msgConfirmarExclusao">Esta ação não pode ser desfeita.</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal('modalConfirmarExclusao')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm font-medium">
+          Cancelar
+        </button>
+        <button id="btnConfirmarExclusaoOk" class="flex-1 btn-danger text-sm">
+          <i class="fas fa-trash mr-2"></i> Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 </div><!-- fim #appRoot -->
 
 
@@ -1521,6 +1543,30 @@ function getSegundoDomingoDoMes(mk){
   document.querySelectorAll('.modal-overlay').forEach(m=>{
     m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('active'); });
   });
+
+    function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+  document.querySelectorAll('.modal-overlay').forEach(m=>{
+    m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('active'); });
+  });
+
+  // ===== COLE AQUI A FUNÇÃO NOVA =====
+  function confirmarExclusao(mensagem, callback) {
+    document.getElementById('msgConfirmarExclusao').textContent =
+      mensagem || 'Esta ação não pode ser desfeita.';
+
+    const btnOk = document.getElementById('btnConfirmarExclusaoOk');
+    const novoBtn = btnOk.cloneNode(true);
+    btnOk.parentNode.replaceChild(novoBtn, btnOk);
+
+    novoBtn.addEventListener('click', () => {
+      closeModal('modalConfirmarExclusao');
+      callback();
+    });
+
+    document.getElementById('modalConfirmarExclusao').classList.add('active');
+  }
+  // ===== FIM DA FUNÇÃO NOVA =====
+
 
   function setBtnLoading(id,loading,label='Salvar'){
     const btn=document.getElementById(id); if(!btn)return;
@@ -2861,21 +2907,13 @@ function invalidarCacheResumo() {
   }
 
 
-  async function excluirCultoPorId(id,{silent=false}={}){
-    const idx=DB.cultos.findIndex(c=>String(c.id)===String(id)); if(idx===-1)return;
-    setSyncStatus('syncing');
-    try{
-      await apiDelete('cultos',id);
-      for(const ent of DB.entradas.filter(e=>String(e.cultoId)===String(id))){try{await apiDelete('entradas',ent.id);}catch(e){}}
-      DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
-          DB.saveLocal();
-    invalidarCacheResumo();   // ← ADICIONAR ESTA LINHA
-    
- if(!silent)showNotification('🗑️ Culto excluído','info');
-    }catch(err){
-      DB.cultos.splice(idx,1); DB.entradas=DB.entradas.filter(e=>String(e.cultoId)!==String(id));
-      DB.saveLocal(); setSyncStatus('error'); if(!silent)showNotification('⚠️ Excluído localmente','warning');
-    }
+   async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    const c=DB.cultos[idx]; if(!c)return;
+    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
+      await excluirCultoPorId(c.id);
+      renderCultos(); renderEntradas(); renderDashboard();
+    });
   }
 
   async function excluirCulto(idx){
@@ -3159,44 +3197,25 @@ async function salvarDespesa(e) {
   }
 }
 
-async function excluirDespesa(id) {
-  if (!temPermissao('podeExcluir')) {
-    showNotification('🔒 Sem permissão.', 'error');
-    return;
-  }
-  if (!confirm('Excluir esta despesa?')) return;
-
-  const idx = DB.despesas.findIndex(d => String(d.id) === String(id));
-  if (idx === -1) { showNotification('❌ Não encontrada.', 'error'); return; }
-  if (DB.despesas[idx]._fixed) { showNotification('❌ Registro fixo não pode ser excluído.', 'error'); return; }
-
-  setSyncStatus('syncing');
-  try {
-    await apiDelete('despesas', id);
-    DB.despesas.splice(idx, 1);
-    DB.saveLocal();
-    setSyncStatus('synced');
-    showNotification('🗑️ Despesa excluída', 'info');
-  } catch (err) {
-    DB.despesas.splice(idx, 1);
-    DB.saveLocal();
-    setSyncStatus('error');
-    showNotification('⚠️ Excluído localmente', 'warning');
-  }
-  filtrarDespesas();
-  renderDashboard();
-}
-
-  async function excluirDespesa(id){
+    async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    if(!confirm('Excluir esta despesa?'))return;
     const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
     if(idx===-1){showNotification('❌ Não encontrada.','error');return;}
-    if(DB.despesas[idx]._fixed){showNotification('❌ Registro fixo.','error');return;}
-    setSyncStatus('syncing');
-    try{await apiDelete('despesas',id);DB.despesas.splice(idx,1);DB.saveLocal();setSyncStatus('synced');showNotification('🗑️ Despesa excluída','info');}
-    catch(err){DB.despesas.splice(idx,1);DB.saveLocal();setSyncStatus('error');showNotification('⚠️ Excluído localmente','warning');}
-    filtrarDespesas(); renderDashboard();
+    if(DB.despesas[idx]._fixed){showNotification('❌ Registro fixo não pode ser excluído.','error');return;}
+    const d = DB.despesas[idx];
+
+    confirmarExclusao(`Excluir a despesa "${d.categoria}" de ${fmt(d.valor)}?`, async () => {
+      setSyncStatus('syncing');
+      try{
+        await apiDelete('despesas',id);
+        DB.despesas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('synced'); showNotification('🗑️ Despesa excluída','info');
+      }catch(err){
+        DB.despesas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+      }
+      filtrarDespesas(); renderDashboard();
+    });
   }
 
   // ============================================================
@@ -3261,14 +3280,23 @@ async function excluirDespesa(id) {
     }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
   }
 
-  async function excluirEntrada(id){
+   async function excluirEntrada(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    if(!confirm('Excluir esta entrada?'))return;
     const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
-    setSyncStatus('syncing');
-    try{await apiDelete('entradas',id);DB.entradas.splice(idx,1);DB.saveLocal();setSyncStatus('synced');showNotification('🗑️ Entrada excluída','info');}
-    catch(err){DB.entradas.splice(idx,1);DB.saveLocal();setSyncStatus('error');showNotification('⚠️ Excluído localmente','warning');}
-    renderEntradas(); renderDashboard();
+    const ent = DB.entradas[idx];
+
+    confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
+      setSyncStatus('syncing');
+      try{
+        await apiDelete('entradas',id);
+        DB.entradas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
+      }catch(err){
+        DB.entradas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+      }
+      renderEntradas(); renderDashboard();
+    });
   }
 
   // ============================================================
