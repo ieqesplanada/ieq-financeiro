@@ -2020,6 +2020,51 @@ function invalidarCacheResumo() {
   _cacheResumoAnualKey = '';
 }
 
+
+  // ============================================================
+// NOVO: Cálculo dinâmico a partir dos dados reais
+// ============================================================
+let _cacheResumoAnual = null;
+let _cacheResumoAnualKey = '';
+
+function calcularResumoAnual(ano) {
+  const cacheKey = String(ano);
+  if (_cacheResumoAnual && _cacheResumoAnualKey === cacheKey) {
+    return _cacheResumoAnual;
+  }
+  
+  const meses = [];
+  let saldoAnt = 0;
+  for (let m = 1; m <= 12; m++) {
+    const mk = `${ano}-${String(m).padStart(2, '0')}`;
+    const entMes = sum(getEntradasMes(mk), e => e.valor);
+    const saiMes = sum(getDespesasMes(mk), d => d.valor);
+    const saldoFinal = saldoAnt + entMes - saiMes;
+    const ceia = getPresentesCeia(mk).presentes;
+    meses.push({
+      mes: m, ano, mk,
+      nome: new Date(ano, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}).replace(/^\w/, c=>c.toUpperCase()),
+      saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia
+    });
+    saldoAnt = saldoFinal;
+  }
+  
+  _cacheResumoAnual = meses;
+  _cacheResumoAnualKey = cacheKey;
+  return meses;
+}
+
+function calcularResumoMes(mk) {
+  const [ano, mes] = mk.split('-').map(Number);
+  const resumoAnual = calcularResumoAnual(ano);
+  return resumoAnual.find(r => r.mes === mes) || null;
+}
+
+function invalidarCacheResumo() {
+  _cacheResumoAnual = null;
+  _cacheResumoAnualKey = '';
+}
+
   // ============================================================
   // DASHBOARD
   // ============================================================
@@ -2087,7 +2132,7 @@ function invalidarCacheResumo() {
       </tr>`).join('');
   }
 
-  function renderChartEvolucao(){
+ function renderChartEvolucao(){
     const ctx = document.getElementById('chartEvolucao');
     if (charts.evolucao) charts.evolucao.destroy();
     
@@ -3125,6 +3170,7 @@ async function confirmarAlteracaoDespesa(e) {
     });
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
+    invalidarCacheResumo();
     setSyncStatus('synced');
     showNotification('✅ Despesa alterada!', 'success');
   } catch (err) {
@@ -3377,6 +3423,12 @@ async function excluirDespesa(id) {
     const dadosRel = resumoAnual.filter(r => r.mes <= (hoje.getMonth() + 1));
     const dadosChart = dadosRel.length > 0 ? dadosRel : resumoAnual;
     
+        const anoAtual = new Date().getFullYear();
+    const resumoAnual = calcularResumoAnual(anoAtual);
+    const hoje = new Date();
+    const dadosRel = resumoAnual.filter(r => r.mes <= (hoje.getMonth() + 1));
+    const dadosChart = dadosRel.length > 0 ? dadosRel : resumoAnual;
+    
     const ctx = document.getElementById('chartComparativo');
     if (charts.comparativo) charts.comparativo.destroy();
     charts.comparativo = new Chart(ctx, {
@@ -3403,9 +3455,8 @@ async function excluirDespesa(id) {
           }
         }
     });
- }
   
-  function gerarRelatorio(){
+ function gerarRelatorio(){
     const ms = document.getElementById('relatorioMesSelect')?.value || GLOBAL_MONTH;
     const entMes = sum(getEntradasMes(ms), e => e.valor);
     const saiMes = sum(getDespesasMes(ms), d => d.valor);
@@ -3485,7 +3536,7 @@ async function excluirDespesa(id) {
     window.open(url, '_blank');
   }
 
-  function compartilharRelatorioMensal() {
+ function compartilharRelatorioMensal() {
     const ms = document.getElementById('relatorioMesSelect')?.value || GLOBAL_MONTH;
     const entMes = sum(getEntradasMes(ms), e => e.valor);
     const saiMes = sum(getDespesasMes(ms), d => d.valor);
