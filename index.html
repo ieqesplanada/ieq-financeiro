@@ -922,15 +922,33 @@
 </div> <!-- fecha card Informações da Igreja -->
 
         <div class="card p-5" id="cardUsuarios">
+  <div class="flex items-center justify-between mb-1">
+    <h3 class="font-bold text-gray-800 flex items-center gap-2 text-sm">
+      <i class="fas fa-users-cog text-purple-600"></i> Usuários do Sistema
+    </h3>
+    <button class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-1.5 rounded-lg font-medium" onclick="abrirModalUsuario()">
+      <i class="fas fa-plus mr-1"></i> Novo Usuário
+    </button>
+  </div>
+  <p class="text-xs text-gray-400 mb-4">Gerencie logins, senhas e permissões de acesso.</p>
 
-          <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-users-cog text-purple-600"></i> Usuários do Sistema</h3>
-          <p class="text-xs text-gray-400 mb-4">Gerencie os acessos na aba <strong>usuarios</strong> da planilha Google Sheets.</p>
-          <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-2">
-            <p><span class="font-semibold text-red-600">🔴 admin</span> — Acesso total (todas as funções)</p>
-            <p><span class="font-semibold text-blue-600">🔵 tesoureiro</span> — Pode lançar, editar e excluir</p>
-            <p><span class="font-semibold text-green-600">🟢 visualizador</span> — Apenas visualização, sem edição</p>
-          </div>
-        </div>
+  <div class="bg-gray-50 rounded-xl p-3 mb-4 text-xs text-gray-600 grid grid-cols-1 sm:grid-cols-3 gap-1">
+    <p><span class="font-semibold text-red-600">🔴 admin</span> — Acesso total</p>
+    <p><span class="font-semibold text-blue-600">🔵 tesoureiro</span> — Lança/edita/exclui</p>
+    <p><span class="font-semibold text-teal-600">🟣 relatorios_culto</span> — Só Relatório de Culto</p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full" style="min-width:400px">
+      <thead><tr class="text-left text-xs text-gray-500 border-b">
+        <th class="pb-2">Login</th><th class="pb-2">Nome</th><th class="pb-2">Permissão</th><th class="pb-2">Ativo</th><th class="pb-2">Ações</th>
+      </tr></thead>
+      <tbody id="corpoTabelaUsuarios">
+        <tr><td colspan="5" class="py-4 text-center text-gray-400 text-sm">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
         <div class="card p-5">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-database text-purple-600"></i> Dados do Sistema</h3>
@@ -1216,6 +1234,42 @@
   </div>
 </div>
 
+<!-- MODAL: USUÁRIO -->
+<div class="modal-overlay" id="modalUsuario">
+  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+    <div class="bg-gradient-to-r from-purple-700 to-purple-500 p-4 flex justify-between items-center rounded-t-2xl">
+      <h3 class="text-white font-bold text-base"><i class="fas fa-user-cog mr-2"></i><span id="tituloModalUsuario">Novo Usuário</span></h3>
+      <button onclick="closeModal('modalUsuario')" class="text-white hover:text-purple-200"><i class="fas fa-times text-xl"></i></button>
+    </div>
+    <div class="p-4">
+      <form id="formUsuario" onsubmit="salvarUsuario(event)">
+        <input type="hidden" id="usuarioLinha">
+        <div class="space-y-3">
+          <div><label class="text-sm text-gray-600 mb-1 block">Login*</label><input type="text" id="usuarioLogin" class="input-field text-sm" required></div>
+          <div><label class="text-sm text-gray-600 mb-1 block">Senha*</label><input type="text" id="usuarioSenha" class="input-field text-sm" required></div>
+          <div><label class="text-sm text-gray-600 mb-1 block">Nome*</label><input type="text" id="usuarioNome" class="input-field text-sm" required></div>
+          <div><label class="text-sm text-gray-600 mb-1 block">Permissão*</label>
+            <select id="usuarioPermissao" class="input-field text-sm" required>
+              <option value="admin">🔴 Administrador (acesso total)</option>
+              <option value="tesoureiro">🔵 Tesoureiro</option>
+              <option value="relatorios_culto">🟣 Somente Relatório de Culto</option>
+            </select>
+          </div>
+          <div><label class="text-sm text-gray-600 mb-1 block">Ativo</label>
+            <select id="usuarioAtivo" class="input-field text-sm">
+              <option value="sim">Sim</option>
+              <option value="não">Não</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-4">
+          <button type="button" onclick="closeModal('modalUsuario')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
+          <button type="submit" class="flex-1 btn-primary bg-purple-600 hover:bg-purple-700 text-sm" id="btnSalvarUsuario"><i class="fas fa-save mr-2"></i> Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 </div><!-- fim #appRoot -->
 
@@ -1319,6 +1373,19 @@ async function apiDeleteSeguro(sheet, id) {
     podeConfig:  ['admin'],
   };
 
+  // Mapa de páginas por permissão — NOVO
+  const PAGINAS_PERMITIDAS = {
+    admin:              ['dashboard','culto','entradas','despesas','distribuicoes','relatorios','historico','configuracoes'],
+    tesoureiro:         ['dashboard','culto','entradas','despesas','distribuicoes','relatorios','historico'],
+    relatorios_culto:   ['culto'] // ← só acessa Relatório de Culto
+  };
+
+  function paginaPermitida(pagina){
+    if(!SESSAO) return false;
+    const lista = PAGINAS_PERMITIDAS[SESSAO.permissao] || [];
+    return lista.includes(pagina);
+  }
+
   function temPermissao(acao) {
     if (!SESSAO) return false;
     return (PERMISSOES[acao] || []).includes(SESSAO.permissao);
@@ -1410,17 +1477,18 @@ async function apiDeleteSeguro(sheet, id) {
   // ============================================================
   // PERMISSÕES
   // ============================================================
-  function aplicarPermissoesUI() {
+ function aplicarPermissoesUI() {
     if (!SESSAO) return;
     const { nome, permissao } = SESSAO;
     document.getElementById('sidebarUserNome').textContent = nome;
-    const permLabels = { admin:'Admin', tesoureiro:'Tesoureiro', visualizador:'Visualizador' };
-    const permClasses = { admin:'perm-admin', tesoureiro:'perm-tesoureiro', visualizador:'perm-visualizador' };
+    const permLabels  = { admin:'Admin', tesoureiro:'Tesoureiro', visualizador:'Visualizador', relatorios_culto:'Rel. Culto' };
+    const permClasses = { admin:'perm-admin', tesoureiro:'perm-tesoureiro', visualizador:'perm-visualizador', relatorios_culto:'perm-visualizador' };
     document.getElementById('sidebarUserPerm').innerHTML =
       `<span class="perm-badge ${permClasses[permissao]||'perm-visualizador'}">
-         <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'eye'} text-xs"></i>
+         <i class="fas fa-${permissao==='admin'?'crown':permissao==='tesoureiro'?'briefcase':'lock'} text-xs"></i>
          ${permLabels[permissao]||permissao}
        </span>`;
+
     const podeLancar = temPermissao('podeLancar');
     const podeConfig = temPermissao('podeConfig');
     const setVisivel = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? '' : 'none'; };
@@ -1428,8 +1496,20 @@ async function apiDeleteSeguro(sheet, id) {
     setVisivel('btnNovaEntrada', podeLancar);
     setVisivel('btnNovaDespesa', podeLancar);
     setVisivel('cardUsuarios', podeConfig);
-  }
 
+    // NOVO: esconde itens do menu que a permissão não acessa
+    const menuIds = ['dashboard','culto','entradas','despesas','distribuicoes','relatorios','historico','configuracoes'];
+    const permitidas = PAGINAS_PERMITIDAS[permissao] || [];
+    menuIds.forEach(pg => {
+      const el = document.getElementById('nav-' + pg);
+      if (el) el.style.display = permitidas.includes(pg) ? '' : 'none';
+    });
+
+    // Abre automaticamente a primeira página permitida
+    if (!permitidas.includes('dashboard') && permitidas.length) {
+      setTimeout(() => showPage(permitidas[0]), 50);
+    }
+}
   // ============================================================
   // DB LOCAL
   // ============================================================
@@ -1668,7 +1748,12 @@ function getSegundoDomingoDoMes(mk){
   // NAVEGAÇÃO
   // ============================================================
   function showPage(page){
+    if(!paginaPermitida(page)){
+      showNotification('🔒 Você não tem permissão para acessar esta área.','error');
+      return;
+    }
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     const pEl=document.getElementById(`page-${page}`),nEl=document.getElementById(`nav-${page}`);
     if(!pEl)return;
@@ -1801,11 +1886,96 @@ function getSegundoDomingoDoMes(mk){
       document.getElementById('btnRemoverLogo').style.display='none';
       document.getElementById('logoPreviewLabel').textContent='Nenhuma logo configurada';
     }
-    document.getElementById('cfgQtdCultos').textContent=DB.cultos.length;
+        document.getElementById('cfgQtdCultos').textContent=DB.cultos.length;
     document.getElementById('cfgQtdDespesas').textContent=DB.despesas.length;
     document.getElementById('cfgQtdEntradas').textContent=DB.entradas.length;
     const card=document.getElementById('cardUsuarios');
     if(card) card.style.display=temPermissao('podeConfig')?'':'none';
+    if(temPermissao('podeConfig')) carregarUsuarios(); // NOVO
+  }
+
+  // ============================================================
+  // GERENCIAMENTO DE USUÁRIOS — NOVO BLOCO
+  // ============================================================
+  async function carregarUsuarios(){
+    const tbody=document.getElementById('corpoTabelaUsuarios');
+    try{
+      const resp=await fetch(`${API_URL}?action=listarUsuarios`);
+      const data=await resp.json();
+      if(!data.ok){ tbody.innerHTML='<tr><td colspan="5" class="py-4 text-center text-red-400 text-sm">Erro ao carregar</td></tr>'; return; }
+      const permLabel={admin:'🔴 Admin',tesoureiro:'🔵 Tesoureiro',relatorios_culto:'🟣 Rel. Culto',visualizador:'🟢 Visualizador'};
+      tbody.innerHTML=data.usuarios.map(u=>`
+        <tr class="table-row border-b border-gray-50">
+          <td class="py-2 text-sm font-medium">${escapeHtml(u.login)}</td>
+          <td class="py-2 text-sm">${escapeHtml(u.nome)}</td>
+          <td class="py-2 text-sm">${permLabel[u.permissao]||u.permissao}</td>
+          <td class="py-2 text-sm">${u.ativo}</td>
+          <td class="py-2">
+            <div class="flex gap-1">
+              <button onclick='editarUsuario(${JSON.stringify(u).replace(/'/g,"&#39;")})' class="w-7 h-7 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-xs inline-flex items-center justify-center"><i class="fas fa-pen"></i></button>
+              <button onclick="excluirUsuario(${u.linha},'${escapeHtml(u.login)}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }catch(err){
+      tbody.innerHTML='<tr><td colspan="5" class="py-4 text-center text-red-400 text-sm">Erro de conexão</td></tr>';
+    }
+  }
+
+  function abrirModalUsuario(){
+    document.getElementById('formUsuario').reset();
+    document.getElementById('usuarioLinha').value='';
+    document.getElementById('tituloModalUsuario').textContent='Novo Usuário';
+    document.getElementById('usuarioAtivo').value='sim';
+    document.getElementById('modalUsuario').classList.add('active');
+  }
+
+  function editarUsuario(u){
+    document.getElementById('usuarioLinha').value=u.linha;
+    document.getElementById('usuarioLogin').value=u.login;
+    document.getElementById('usuarioSenha').value=u.senha;
+    document.getElementById('usuarioNome').value=u.nome;
+    document.getElementById('usuarioPermissao').value=u.permissao;
+    document.getElementById('usuarioAtivo').value=u.ativo;
+    document.getElementById('tituloModalUsuario').textContent='Editar Usuário';
+    document.getElementById('modalUsuario').classList.add('active');
+  }
+
+  async function salvarUsuario(e){
+    e.preventDefault();
+    const btn=document.getElementById('btnSalvarUsuario');
+    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
+    const params={
+      action:'salvarUsuario',
+      linha:document.getElementById('usuarioLinha').value||null,
+      login:document.getElementById('usuarioLogin').value.trim(),
+      senha:document.getElementById('usuarioSenha').value,
+      permissao:document.getElementById('usuarioPermissao').value,
+      nome:document.getElementById('usuarioNome').value.trim(),
+      ativo:document.getElementById('usuarioAtivo').value
+    };
+    try{
+      await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(params)});
+      showNotification('✅ Usuário salvo!','success');
+      closeModal('modalUsuario');
+      carregarUsuarios();
+    }catch(err){
+      showNotification('❌ Erro ao salvar usuário','error');
+    }finally{
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-save mr-2"></i> Salvar';
+    }
+  }
+
+  function excluirUsuario(linha,login){
+    confirmarExclusao(`Excluir o usuário "${login}"?`, async ()=>{
+      try{
+        await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'excluirUsuario',linha})});
+        showNotification('🗑️ Usuário excluído','info');
+        carregarUsuarios();
+      }catch(err){
+        showNotification('❌ Erro ao excluir','error');
+      }
+    });
   }
 
   // ============================================================
