@@ -820,19 +820,19 @@
         </div>
         
                 <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
-          <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
-          <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
-          <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
-          <div class="grid grid-cols-2 gap-2 mb-3">
-            <input type="month" class="input-field text-sm" id="relCultoIni">
-            <input type="month" class="input-field text-sm" id="relCultoFim">
-          </div>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
-            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          </div>
-        </div>
+  <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
+  <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
+  <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
+  <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
+  <div class="grid grid-cols-2 gap-2 mb-3">
+    <input type="month" class="input-field text-sm" id="relCultoIni">
+    <input type="month" class="input-field text-sm" id="relCultoFim">
+  </div>
+  <div class="flex flex-col sm:flex-row gap-2">
+    <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCultosPDF()"><i class="fas fa-file-pdf mr-2"></i> Gerar PDF</button>
+    <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+  </div>
+</div>
 
                   <!-- RELATÓRIO DE DIZIMISTAS -->
         <div class="card p-4">
@@ -3839,45 +3839,88 @@ async function salvarDespesa(e) {
     compartilharWhatsApp(texto);
   }
 
-    function exportarCultosExcel() {
-    const mesSelect = document.getElementById('relCultoMesSelect')?.value;
-    let lista;
-    let periodoLabel;
-    if (mesSelect) {
-      lista = DB.cultos.filter(c => (c.data || '').startsWith(mesSelect));
-      periodoLabel = monthLabel(mesSelect);
-    } else {
-      const ini = document.getElementById('relCultoIni')?.value || GLOBAL_MONTH;
-      const fim = document.getElementById('relCultoFim')?.value || GLOBAL_MONTH;
-      lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= fim + '-31');
-      periodoLabel = monthLabel(ini) + ' a ' + monthLabel(fim);
-    }
-    if (!lista.length) {
-      showNotification('⚠️ Nenhum culto no período.', 'warning');
-      return;
-    }
-    const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
-    const rows = lista.map(c => [
-      fmtDate(c.data),
-      c.tipo || '',
-      c.pregador || c.pastor || '',
-      c.presentes || 0,
-      (parseFloat(c.totalDizimos) || 0).toFixed(2).replace('.', ','),
-      (parseFloat(c.totalOfertas) || 0).toFixed(2).replace('.', ','),
-      (parseFloat(c.missoes) || 0).toFixed(2).replace('.', ','),
-      (parseFloat(c.totalArrecadado) || 0).toFixed(2).replace('.', ',')
-    ]);
-    let csv = 'Data;Tipo;Pregador;Presentes;Dízimos;Ofertas;Missões;Total\n';
-    csv += rows.map(r => r.join(';')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'cultos_' + periodoLabel.replace(/\s+/g, '_') + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-    showNotification('✅ Exportado com sucesso!', 'success');
+    function gerarRelatorioCultosPDF() {
+  const mesSelect = document.getElementById('relCultoMesSelect')?.value;
+  let lista, periodoLabel;
+
+  if (mesSelect) {
+    lista = DB.cultos.filter(c => (c.data || '').startsWith(mesSelect));
+    periodoLabel = monthLabel(mesSelect);
+  } else {
+    const ini = document.getElementById('relCultoIni')?.value || GLOBAL_MONTH;
+    const fim = document.getElementById('relCultoFim')?.value || GLOBAL_MONTH;
+    lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= fim + '-31');
+    periodoLabel = monthLabel(ini) + ' a ' + monthLabel(fim);
   }
+
+  if (!lista.length) {
+    showNotification('⚠️ Nenhum culto no período.', 'warning');
+    return;
+  }
+
+  lista = [...lista].sort((a,b) => (a.data||'').localeCompare(b.data||''));
+
+  const totDiz = lista.reduce((s,c)=>s+(parseFloat(c.totalDizimos)||0),0);
+  const totOf  = lista.reduce((s,c)=>s+(parseFloat(c.totalOfertas)||0),0);
+  const totMis = lista.reduce((s,c)=>s+(parseFloat(c.missoes)||0),0);
+  const totGer = lista.reduce((s,c)=>s+(parseFloat(c.totalArrecadado)||0),0);
+
+  const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
+  const logoHtml = DB.config.logo
+    ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
+    : `<div style="font-size:30px">⛪</div>`;
+
+  const linhas = lista.map(c => `
+    <tr>
+      <td>${fmtDate(c.data)}</td>
+      <td>${escapeHtml(c.tipo||'')}</td>
+      <td>${escapeHtml(c.pregador||c.pastor||'')}</td>
+      <td style="text-align:center">${c.presentes||0}</td>
+      <td style="text-align:right;color:#059669">${fmt(c.totalDizimos||0)}</td>
+      <td style="text-align:right;color:#059669">${fmt(c.totalOfertas||0)}</td>
+      <td style="text-align:right;color:#0f766e">${fmt(c.missoes||0)}</td>
+      <td style="text-align:right;font-weight:700">${fmt(c.totalArrecadado||0)}</td>
+    </tr>`).join('');
+
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Relatório de Cultos — ${periodoLabel}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;max-width:900px;margin:0 auto;padding:28px;color:#1f2937;background:#fff}
+  .header{background:linear-gradient(135deg,#1e3a5f,#2d5a8f);color:white;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  .header h1{font-size:19px;margin:0}
+  .header .tag{margin-top:8px;font-size:13px;letter-spacing:2px;color:#c8a951;font-weight:700}
+  table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);font-size:12px}
+  th{background:#1e3a5f;color:white;padding:8px 10px;text-align:left}
+  td{padding:7px 10px;border-bottom:1px solid #eee}
+  tr:nth-child(even) td{background:#f9fafb}
+  .total-row td{font-weight:700;background:#f1f5f9!important;border-top:2px solid #1e3a5f}
+  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb}
+  .print-btn{display:block;margin:24px auto 0;background:#1e3a5f;color:white;border:none;padding:12px 36px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600}
+  @media print{ @page{margin:10mm;size:A4} body{padding:0;max-width:100%} .no-print{display:none!important} *{-webkit-print-color-adjust:exact!important} tr{break-inside:avoid} }
+</style></head>
+<body>
+  <div class="header">
+    ${logoHtml}
+    <div><h1>${nomeIgreja}</h1><p class="tag">RELATÓRIO DE CULTOS — ${periodoLabel.toUpperCase()}</p></div>
+  </div>
+  <table>
+    <tr><th>Data</th><th>Tipo</th><th>Pregador</th><th style="text-align:center">Pres.</th><th style="text-align:right">Dízimos</th><th style="text-align:right">Ofertas</th><th style="text-align:right">Missões</th><th style="text-align:right">Total</th></tr>
+    ${linhas}
+    <tr class="total-row">
+      <td colspan="4">TOTAL (${lista.length} cultos)</td>
+      <td style="text-align:right">${fmt(totDiz)}</td>
+      <td style="text-align:right">${fmt(totOf)}</td>
+      <td style="text-align:right">${fmt(totMis)}</td>
+      <td style="text-align:right">${fmt(totGer)}</td>
+    </tr>
+  </table>
+  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
+  <div class="no-print" style="text-align:center"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
+</body></html>`);
+  w.document.close();
+}
 
 
     // ============================================================
