@@ -909,30 +909,45 @@
 
 
     <!-- HISTÓRICO -->
-    <div class="page" id="page-historico">
-      <div class="card p-4 mb-4">
-        <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:600px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-              <th class="p-2 font-semibold">Mês</th>
-              <th class="p-2 font-semibold">Saldo Ant.</th>
-              <th class="p-2 font-semibold">Entradas</th>
-              <th class="p-2 font-semibold">Saídas</th>
-              <th class="p-2 font-semibold">Saldo Final</th>
-              <th class="p-2 font-semibold">Ceia</th>
-              <th class="p-2 font-semibold">Status</th>
-            </tr></thead>
-            <tbody id="tabelaHistorico"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card p-4"><h3 class="font-bold text-gray-800 mb-4 text-sm">Evolução de Saldos</h3><canvas id="chartSaldos"></canvas></div>
+   <div class="page" id="page-historico">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+        <i class="fas fa-history text-blue-500"></i> Histórico Financeiro
+      </h2>
+      <p class="text-xs text-gray-500">Acompanhe os resultados mensais e a evolução dos saldos</p>
     </div>
+  </div>
+
+  <div class="card p-4 mb-4">
+    <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full" style="min-width:600px">
+        <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
+          <th class="p-2 font-semibold">Mês</th>
+          <th class="p-2 font-semibold">Saldo Ant.</th>
+          <th class="p-2 font-semibold">Entradas</th>
+          <th class="p-2 font-semibold">Saídas</th>
+          <th class="p-2 font-semibold">Saldo Final</th>
+          <th class="p-2 font-semibold">Ceia</th>
+          <th class="p-2 font-semibold">Status</th>
+        </tr></thead>
+        <tbody id="tabelaHistorico"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card p-4">
+    <h3 class="font-bold text-gray-800 mb-4 text-sm">Evolução de Saldos</h3>
+    <div style="height:300px">
+      <canvas id="chartSaldos"></canvas>
+    </div>
+  </div>
+</div>
 
     <!-- CONFIGURAÇÕES -->
     <div class="page" id="page-configuracoes">
-      <div class="max-w-2xl mx-auto space-y-5">
+      <div class="max-w-4xl mx-auto space-y-5">
         <div class="card p-5">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-image text-yellow-500"></i> Logo da Igreja</h3>
           <p class="text-xs text-gray-400 mb-4">A logo será exibida na sidebar e nos relatórios.</p>
