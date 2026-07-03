@@ -534,15 +534,20 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-line text-blue-600"></i> Evolução Financeira 2026</h3>
-          <canvas id="chartEvolucao"></canvas>
+                <div class="card p-4">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
+          <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
+          <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
+          <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <input type="month" class="input-field text-sm" id="relCultoIni">
+            <input type="month" class="input-field text-sm" id="relCultoFim">
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
+            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
         </div>
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-pie text-yellow-600"></i> Despesas por Categoria (mês)</h3>
-          <canvas id="chartDespesas"></canvas>
-        </div>
-      </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div class="card p-4 lg:col-span-2">
