@@ -806,7 +806,7 @@
     </div>
 
     <!-- RELATÓRIOS -->
-        <!-- RELATÓRIOS -->
+
     <div class="page" id="page-relatorios">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card p-4">
@@ -818,7 +818,8 @@
             <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
           </div>
         </div>
-        <div class="card p-4">
+        
+                <div class="card p-4">
           <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
           <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
           <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
@@ -827,6 +828,11 @@
             <input type="month" class="input-field text-sm" id="relCultoIni">
             <input type="month" class="input-field text-sm" id="relCultoFim">
           </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
+            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </div>
 
                   <!-- RELATÓRIO DE DIZIMISTAS -->
         <div class="card p-4">
