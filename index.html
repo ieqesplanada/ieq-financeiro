@@ -534,20 +534,15 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
-          <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
-          <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
-          <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
-          <div class="grid grid-cols-2 gap-2 mb-3">
-            <input type="month" class="input-field text-sm" id="relCultoIni">
-            <input type="month" class="input-field text-sm" id="relCultoFim">
-          </div>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
-            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          </div>
+        <div class="card p-4">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-line text-blue-600"></i> Evolução Financeira 2026</h3>
+          <canvas id="chartEvolucao"></canvas>
         </div>
+        <div class="card p-4">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-chart-pie text-yellow-600"></i> Despesas por Categoria (mês)</h3>
+          <canvas id="chartDespesas"></canvas>
+        </div>
+      </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div class="card p-4 lg:col-span-2">
@@ -819,11 +814,9 @@
           <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês</p>
           <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
           <div class="flex gap-2">
-                      <div class="flex flex-col sm:flex-row gap-2">
             <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorio()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+            <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
           </div>
-
         </div>
         <div class="card p-4">
           <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
@@ -835,53 +828,10 @@
             <input type="month" class="input-field text-sm" id="relCultoFim">
           </div>
           <div class="flex gap-2">
-                      <div class="flex flex-col sm:flex-row gap-2">
-            <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
-            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          </div>
-        </div>
-
-                  <div class="flex gap-2">
             <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
             <button class="btn-whatsapp text-sm" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
           </div>
         </div>
-
-                     <!-- RELATÓRIO DE DIZIMISTAS -->
-        <div class="card p-4 flex flex-col">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-            <i class="fas fa-hand-holding-usd text-green-600"></i> Relatório de Dizimistas
-          </h3>
-          <p class="text-gray-500 text-sm mb-3 flex-1">Nome, data e valor de cada dízimo lançado</p>
-          <select class="input-field mb-3 text-sm" id="relDizimistasMesSelect"></select>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioDizimistas()">
-              <i class="fas fa-download mr-2"></i> Gerar Relatório
-            </button>
-            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharDizimistasWhatsApp()" title="Enviar por WhatsApp">
-              <i class="fab fa-whatsapp"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- RELATÓRIO POR FORMA DE CONTRIBUIÇÃO -->
-        <div class="card p-4 flex flex-col">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-            <i class="fas fa-wallet text-purple-600"></i> Formas de Contribuição
-          </h3>
-          <p class="text-gray-500 text-sm mb-3 flex-1">Entradas separadas por Caixa e Conta Bancária (PIX)</p>
-          <select class="input-field mb-3 text-sm" id="relFormasMesSelect"></select>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioFormasContribuicao()">
-              <i class="fas fa-download mr-2"></i> Gerar Relatório
-            </button>
-            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharFormasWhatsApp()" title="Enviar por WhatsApp">
-              <i class="fab fa-whatsapp"></i>
-            </button>
-          </div>
-        </div>
-
-        
         <div class="card p-4 md:col-span-2">
           <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-chart-bar text-purple-600"></i> Análise Comparativa 2026</h3>
           <canvas id="chartComparativo"></canvas>
@@ -3655,209 +3605,6 @@ async function salvarDespesa(e) {
 </body></html>`);
   w.document.close();
 }
-
-    // ============================================================
-  // RELATÓRIO DE DIZIMISTAS (nome, data, valor) — vindo do Sheets/DB.cultos
-  // ============================================================
-  function popularSelectMes(id) {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const now = new Date();
-    const keys = [];
-    for (let i = 12; i >= 0; i--) keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
-    keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
-    sel.innerHTML = keys.map(k => `<option value="${k}" ${k===GLOBAL_MONTH?'selected':''}>${monthLabel(k)}</option>`).join('');
-  }
-
-  function coletarDizimistasDoPeriodo(mk) {
-    const cultos = getCultosMes(mk);
-    const linhas = [];
-    cultos.forEach(c => {
-      (c.dizimistas || []).forEach(d => {
-        if (d.valor > 0 || d.nome) {
-          linhas.push({ nome: d.nome || '—', data: c.data, valor: parseFloat(d.valor) || 0, forma: d.forma || 'Caixa' });
-        }
-      });
-    });
-    linhas.sort((a,b) => (a.data||'').localeCompare(b.data||'') || (a.nome||'').localeCompare(b.nome||''));
-    return linhas;
-  }
-
-  function gerarRelatorioDizimistas() {
-    const mk = document.getElementById('relDizimistasMesSelect')?.value || GLOBAL_MONTH;
-    const lista = coletarDizimistasDoPeriodo(mk);
-    const total = lista.reduce((s,d) => s + d.valor, 0);
-    const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
-    const logoHtml = DB.config.logo
-      ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
-      : `<div style="font-size:30px">⛪</div>`;
-
-    const linhasHtml = lista.length
-      ? lista.map(d => `
-          <tr>
-            <td>${escapeHtml(d.nome)}</td>
-            <td>${fmtDate(d.data)}</td>
-            <td><span style="background:${d.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${d.forma==='PIX'?'#1d4ed8':'#065f46'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(d.forma)}</span></td>
-            <td style="text-align:right;color:#059669;font-weight:600">${fmt(d.valor)}</td>
-          </tr>`).join('')
-      : `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:16px">Nenhum dizimista no período</td></tr>`;
-
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Relatório de Dizimistas — ${monthLabel(mk)}</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;padding:28px;color:#1f2937;background:#fff}
-  .header{background:linear-gradient(135deg,#1e3a5f,#2d5a8f);color:white;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
-  .header h1{font-size:19px;margin:0}
-  .header p{font-size:12px;color:#93c5fd;margin:2px 0 0}
-  .header .tag{margin-top:8px;font-size:13px;letter-spacing:2px;color:#c8a951;font-weight:700}
-  table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
-  th{background:#1e3a5f;color:white;padding:10px 14px;text-align:left;font-size:12px}
-  td{padding:9px 14px;border-bottom:1px solid #eee;font-size:13px}
-  tr:nth-child(even) td{background:#f9fafb}
-  .total-row td{font-weight:700;background:#f1f5f9!important;font-size:14px;border-top:2px solid #1e3a5f}
-  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb}
-  .print-btn{display:block;margin:24px auto 0;background:#1e3a5f;color:white;border:none;padding:12px 36px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600}
-  @media print{ @page{margin:10mm;size:A4} body{padding:0;max-width:100%} .no-print{display:none!important} *{-webkit-print-color-adjust:exact!important} tr{break-inside:avoid} }
-</style></head>
-<body>
-  <div class="header">
-    ${logoHtml}
-    <div>
-      <h1>${nomeIgreja}</h1>
-      <p class="tag">RELATÓRIO DE DIZIMISTAS — ${monthLabel(mk).toUpperCase()}</p>
-    </div>
-  </div>
-  <table>
-    <tr><th>Nome</th><th>Data</th><th>Forma</th><th style="text-align:right">Valor</th></tr>
-    ${linhasHtml}
-    <tr class="total-row"><td colspan="3">TOTAL DE DÍZIMOS</td><td style="text-align:right;color:#059669">${fmt(total)}</td></tr>
-  </table>
-  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
-  <div class="no-print" style="text-align:center"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
-</body></html>`);
-    w.document.close();
-  }
-
-  function compartilharDizimistasWhatsApp() {
-    const mk = document.getElementById('relDizimistasMesSelect')?.value || GLOBAL_MONTH;
-    const lista = coletarDizimistasDoPeriodo(mk);
-    if (!lista.length) { showNotification('⚠️ Nenhum dizimista no período.', 'warning'); return; }
-    const total = lista.reduce((s,d) => s + d.valor, 0);
-    const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
-    let texto = '🙏 *' + nomeIgreja + ' - Relatório de Dizimistas*\n📅 *Mês:* ' + monthLabel(mk) + '\n\n';
-    lista.forEach(d => { texto += '👤 ' + d.nome + ' | ' + fmtDate(d.data) + ' | ' + fmt(d.valor) + ' (' + d.forma + ')\n'; });
-    texto += '\n💰 *Total:* ' + fmt(total) + '\n\n✨ Gerado pelo Sistema Financeiro IEQ';
-    compartilharWhatsApp(texto);
-  }
-
-  // ============================================================
-  // RELATÓRIO POR FORMA DE CONTRIBUIÇÃO (Caixa x Conta Bancária/PIX)
-  // ============================================================
-  function coletarFormasContribuicao(mk) {
-    const cultos = getCultosMes(mk);
-    const entradas = [];
-    cultos.forEach(c => {
-      (c.dizimistas || []).forEach(d => {
-        if (d.valor > 0) entradas.push({ origem:'Dízimo', nome:d.nome||'—', data:c.data, valor:parseFloat(d.valor)||0, forma:d.forma||'Caixa' });
-      });
-      (c.ofertas || []).forEach(o => {
-        if (o.valor > 0) entradas.push({ origem:'Oferta', nome:o.nome||'—', data:c.data, valor:parseFloat(o.valor)||0, forma:o.forma||'Caixa' });
-      });
-    });
-    entradas.sort((a,b) => (a.data||'').localeCompare(b.data||''));
-    return entradas;
-  }
-
-  function gerarRelatorioFormasContribuicao() {
-    const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
-    const entradas = coletarFormasContribuicao(mk);
-    const caixa = entradas.filter(e => e.forma === 'Caixa');
-    const conta = entradas.filter(e => e.forma === 'PIX');
-    const totalCaixa = caixa.reduce((s,e) => s + e.valor, 0);
-    const totalConta = conta.reduce((s,e) => s + e.valor, 0);
-    const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
-    const logoHtml = DB.config.logo
-      ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
-      : `<div style="font-size:30px">⛪</div>`;
-
-    const linhas = (lista) => lista.length
-      ? lista.map(e => `
-          <tr>
-            <td>${escapeHtml(e.origem)}</td>
-            <td>${escapeHtml(e.nome)}</td>
-            <td>${fmtDate(e.data)}</td>
-            <td style="text-align:right;color:#059669;font-weight:600">${fmt(e.valor)}</td>
-          </tr>`).join('')
-      : `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:16px">Nenhum registro</td></tr>`;
-
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Formas de Contribuição — ${monthLabel(mk)}</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;padding:28px;color:#1f2937;background:#fff}
-  .header{background:linear-gradient(135deg,#1e3a5f,#2d5a8f);color:white;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
-  .header h1{font-size:19px;margin:0}
-  .header .tag{margin-top:8px;font-size:13px;letter-spacing:2px;color:#c8a951;font-weight:700}
-  .secao-title{background:#1e3a5f;color:white;padding:10px 14px;font-size:13px;font-weight:700;border-radius:10px 10px 0 0;display:flex;justify-content:space-between}
-  table{width:100%;border-collapse:collapse;margin-bottom:20px;border-radius:0 0 10px 10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
-  th{background:#f1f5f9;color:#475569;padding:9px 14px;text-align:left;font-size:12px}
-  td{padding:9px 14px;border-bottom:1px solid #eee;font-size:13px}
-  tr:nth-child(even) td{background:#f9fafb}
-  .total-row td{font-weight:700;background:#f1f5f9!important;font-size:14px;border-top:2px solid #1e3a5f}
-  .resumo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-  .resumo div{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center}
-  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb}
-  .print-btn{display:block;margin:24px auto 0;background:#1e3a5f;color:white;border:none;padding:12px 36px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600}
-  @media print{ @page{margin:10mm;size:A4} body{padding:0;max-width:100%} .no-print{display:none!important} *{-webkit-print-color-adjust:exact!important} tr{break-inside:avoid} }
-</style></head>
-<body>
-  <div class="header">
-    ${logoHtml}
-    <div><h1>${nomeIgreja}</h1><p class="tag">FORMAS DE CONTRIBUIÇÃO — ${monthLabel(mk).toUpperCase()}</p></div>
-  </div>
-
-  <div class="resumo">
-    <div><span style="font-size:12px;color:#065f46">💵 Total CAIXA</span><br><strong style="font-size:18px;color:#059669">${fmt(totalCaixa)}</strong></div>
-    <div><span style="font-size:12px;color:#1d4ed8">🏦 Total CONTA BANCÁRIA (PIX)</span><br><strong style="font-size:18px;color:#1d4ed8">${fmt(totalConta)}</strong></div>
-  </div>
-
-  <div class="secao-title"><span>💵 CAIXA</span><span>${fmt(totalCaixa)}</span></div>
-  <table>
-    <tr><th>Origem</th><th>Nome</th><th>Data</th><th style="text-align:right">Valor</th></tr>
-    ${linhas(caixa)}
-    <tr class="total-row"><td colspan="3">TOTAL CAIXA</td><td style="text-align:right">${fmt(totalCaixa)}</td></tr>
-  </table>
-
-  <div class="secao-title"><span>🏦 CONTA BANCÁRIA (PIX)</span><span>${fmt(totalConta)}</span></div>
-  <table>
-    <tr><th>Origem</th><th>Nome</th><th>Data</th><th style="text-align:right">Valor</th></tr>
-    ${linhas(conta)}
-    <tr class="total-row"><td colspan="3">TOTAL CONTA BANCÁRIA</td><td style="text-align:right">${fmt(totalConta)}</td></tr>
-  </table>
-
-  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
-  <div class="no-print" style="text-align:center"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
-</body></html>`);
-    w.document.close();
-  }
-
-  function compartilharFormasWhatsApp() {
-    const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
-    const entradas = coletarFormasContribuicao(mk);
-    if (!entradas.length) { showNotification('⚠️ Nenhum registro no período.', 'warning'); return; }
-    const totalCaixa = entradas.filter(e => e.forma === 'Caixa').reduce((s,e) => s + e.valor, 0);
-    const totalConta = entradas.filter(e => e.forma === 'PIX').reduce((s,e) => s + e.valor, 0);
-    const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
-    let texto = '💼 *' + nomeIgreja + ' - Formas de Contribuição*\n📅 *Mês:* ' + monthLabel(mk) + '\n\n';
-    texto += '💵 *Total CAIXA:* ' + fmt(totalCaixa) + '\n';
-    texto += '🏦 *Total CONTA BANCÁRIA (PIX):* ' + fmt(totalConta) + '\n\n';
-    texto += '✨ Gerado pelo Sistema Financeiro IEQ';
-    compartilharWhatsApp(texto);
-  }
-
     function exportarCultosExcel() {
     const mesSelect = document.getElementById('relCultoMesSelect')?.value;
     let lista;
@@ -3868,8 +3615,6 @@ async function salvarDespesa(e) {
     } else {
       const ini = document.getElementById('relCultoIni')?.value || GLOBAL_MONTH;
       const fim = document.getElementById('relCultoFim')?.value || GLOBAL_MONTH;
-      popularSelectMes('relDizimistasMesSelect');
-      popularSelectMes('relFormasMesSelect');
       lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= fim + '-31');
       periodoLabel = monthLabel(ini) + ' a ' + monthLabel(fim);
     }
