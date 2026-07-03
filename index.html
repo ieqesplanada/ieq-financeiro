@@ -814,9 +814,11 @@
           <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês</p>
           <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
           <div class="flex gap-2">
+                      <div class="flex flex-col sm:flex-row gap-2">
             <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorio()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-            <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
           </div>
+
         </div>
         <div class="card p-4">
           <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
@@ -828,8 +830,9 @@
             <input type="month" class="input-field text-sm" id="relCultoFim">
           </div>
           <div class="flex gap-2">
+                      <div class="flex flex-col sm:flex-row gap-2">
             <button class="btn-secondary flex-1 text-sm" onclick="exportarCultosExcel()"><i class="fas fa-file-excel mr-2"></i> Exportar Excel</button>
-            <button class="btn-whatsapp text-sm" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
           </div>
         </div>
 
@@ -839,25 +842,37 @@
           </div>
         </div>
 
-              <!-- RELATÓRIO DE DIZIMISTAS -->
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-hand-holding-usd text-green-600"></i> Relatório de Dizimistas</h3>
-          <p class="text-gray-500 text-sm mb-3">Nome, data e valor de cada dízimo lançado</p>
+                     <!-- RELATÓRIO DE DIZIMISTAS -->
+        <div class="card p-4 flex flex-col">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
+            <i class="fas fa-hand-holding-usd text-green-600"></i> Relatório de Dizimistas
+          </h3>
+          <p class="text-gray-500 text-sm mb-3 flex-1">Nome, data e valor de cada dízimo lançado</p>
           <select class="input-field mb-3 text-sm" id="relDizimistasMesSelect"></select>
-          <div class="flex gap-2">
-            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioDizimistas()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-            <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioDizimistas()">
+              <i class="fas fa-download mr-2"></i> Gerar Relatório
+            </button>
+            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharDizimistasWhatsApp()" title="Enviar por WhatsApp">
+              <i class="fab fa-whatsapp"></i>
+            </button>
           </div>
         </div>
 
         <!-- RELATÓRIO POR FORMA DE CONTRIBUIÇÃO -->
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-wallet text-purple-600"></i> Relatório por Forma de Contribuição</h3>
-          <p class="text-gray-500 text-sm mb-3">Entradas separadas por Caixa e Conta Bancária (PIX)</p>
+        <div class="card p-4 flex flex-col">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
+            <i class="fas fa-wallet text-purple-600"></i> Formas de Contribuição
+          </h3>
+          <p class="text-gray-500 text-sm mb-3 flex-1">Entradas separadas por Caixa e Conta Bancária (PIX)</p>
           <select class="input-field mb-3 text-sm" id="relFormasMesSelect"></select>
-          <div class="flex gap-2">
-            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioFormasContribuicao()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-            <button class="btn-whatsapp text-sm" onclick="compartilharFormasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioFormasContribuicao()">
+              <i class="fas fa-download mr-2"></i> Gerar Relatório
+            </button>
+            <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharFormasWhatsApp()" title="Enviar por WhatsApp">
+              <i class="fab fa-whatsapp"></i>
+            </button>
           </div>
         </div>
 
