@@ -426,9 +426,6 @@
     <button onclick="showPage('distribuicoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-distribuicoes"><i class="fas fa-share-alt w-4"></i> Distribuições</button>
     <button onclick="showPage('relatorios')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-relatorios"><i class="fas fa-file-alt w-4"></i> Relatórios</button>
     <button onclick="showPage('historico')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-historico"><i class="fas fa-history w-4"></i> Histórico</button>
-    <button onclick="showPage('contatos')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-contatos">
-  <i class="fab fa-whatsapp w-4"></i> Contatos
-</button>
     <button onclick="showPage('configuracoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-configuracoes"><i class="fas fa-cog w-4"></i> Configurações</button>
   </nav>
 
@@ -897,73 +894,6 @@
   </div>
 </div>
 
-  <!-- CONTATOS -->
-<div class="page" id="page-contatos">
-
-  <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    <p class="text-gray-500 text-sm">Gerencie contatos e envie mensagens em lote pelo WhatsApp</p>
-    <button class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onclick="openModal('modalNovoContato')">
-      <i class="fas fa-plus"></i> Novo Contato
-    </button>
-  </div>
-
-  <!-- FILTROS -->
-  <div class="card p-4 mb-4">
-    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-      <input type="text" id="buscaContato" placeholder="Buscar por nome..." class="input-field text-sm" oninput="renderContatos()">
-      <select class="input-field text-sm sm:w-48" id="filtroGrupoContato" onchange="renderContatos()">
-        <option value="">Todos os grupos</option>
-      </select>
-      <span class="text-sm text-gray-500 sm:ml-auto"><span id="qtdSelecionados">0</span> selecionado(s)</span>
-    </div>
-  </div>
-
-  <!-- TABELA -->
-  <div class="card p-4 mb-4">
-    <div class="flex items-center justify-between mb-3">
-      <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox" id="checkTodosContatos" onchange="toggleTodosContatos(this)"> Selecionar todos
-      </label>
-      <span class="text-sm text-gray-500" id="qtdContatosLabel">0 contatos</span>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full" style="min-width:450px">
-        <thead><tr class="text-left text-xs text-gray-500 border-b">
-          <th class="p-2 w-8"></th>
-          <th class="p-2 font-semibold">Nome</th>
-          <th class="p-2 font-semibold">WhatsApp</th>
-          <th class="p-2 font-semibold hidden sm:table-cell">Grupo</th>
-          <th class="p-2 font-semibold text-center">Ações</th>
-        </tr></thead>
-        <tbody id="tabelaContatos"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ENVIO EM LOTE -->
-  <div class="card p-4">
-    <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-      <i class="fab fa-whatsapp text-green-500"></i> Envio em Lote
-    </h3>
-    <textarea id="msgLoteWhatsapp" class="input-field text-sm mb-3" rows="4"
-      placeholder="Digite a mensagem. Use {nome} para personalizar (ex: Olá {nome}, ...)"></textarea>
-    <button class="btn-whatsapp" onclick="iniciarEnvioLote()">
-      <i class="fab fa-whatsapp mr-2"></i> Iniciar Envio para Selecionados
-    </button>
-
-    <!-- Painel da fila (aparece durante o envio) -->
-    <div id="painelFilaEnvio" class="mt-4 hidden bg-gray-50 rounded-xl p-4">
-      <p class="text-sm text-gray-600 mb-2">Enviando para: <strong id="filaNomeAtual">—</strong></p>
-      <p class="text-xs text-gray-400 mb-3">Contato <span id="filaAtual">0</span> de <span id="filaTotal">0</span></p>
-      <div class="flex gap-2">
-        <button class="btn-whatsapp flex-1" onclick="abrirProximoWhatsapp()"><i class="fab fa-whatsapp mr-2"></i> Abrir WhatsApp</button>
-        <button class="btn-secondary" onclick="pularContatoFila()">Pular</button>
-        <button class="btn-danger" onclick="cancelarFilaEnvio()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
     <!-- CONFIGURAÇÕES -->
 <div class="page" id="page-configuracoes">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1254,33 +1184,6 @@
           </button>
         </div>
       </form>
-    </div>
-  </div>
-</div>
-
-  <div class="modal-overlay" id="modalNovoContato">
-  <div class="card p-5 w-full max-w-md">
-    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-      <i class="fas fa-address-book text-blue-600"></i> Novo Contato
-    </h3>
-    <div class="space-y-3">
-      <input type="hidden" id="contatoId">
-      <div>
-        <label class="text-sm text-gray-600 mb-1 block">Nome</label>
-        <input type="text" id="contatoNome" class="input-field text-sm">
-      </div>
-      <div>
-        <label class="text-sm text-gray-600 mb-1 block">WhatsApp (DDD + número)</label>
-        <input type="text" id="contatoWhats" class="input-field text-sm" placeholder="16999999999">
-      </div>
-      <div>
-        <label class="text-sm text-gray-600 mb-1 block">Grupo</label>
-        <input type="text" id="contatoGrupo" class="input-field text-sm" placeholder="Ex: Membros, Diáconos...">
-      </div>
-    </div>
-    <div class="flex gap-3 mt-5">
-      <button class="btn-secondary flex-1" onclick="closeModal('modalNovoContato')">Cancelar</button>
-      <button class="btn-primary flex-1" onclick="salvarContato()">Salvar</button>
     </div>
   </div>
 </div>
@@ -3485,95 +3388,6 @@ async function salvarDespesa(e) {
     document.getElementById('kpiQtdEntradas').textContent=lista.length;
     document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(getDespesasMes(mes),d=>d.valor));
   }
-
-  let contatos = []; // populado via fetch/sincronização com a aba "contatos"
-let filaEnvio = [];
-let filaIndex = 0;
-
-function renderContatos() {
-  const busca = document.getElementById('buscaContato').value.toLowerCase();
-  const grupo = document.getElementById('filtroGrupoContato').value;
-  const filtrados = contatos.filter(c =>
-    c.nome.toLowerCase().includes(busca) &&
-    (!grupo || c.grupo === grupo) &&
-    c.ativo === 'SIM'
-  );
-
-  document.getElementById('qtdContatosLabel').textContent = `${filtrados.length} contatos`;
-  document.getElementById('tabelaContatos').innerHTML = filtrados.map(c => `
-    <tr class="table-row border-b">
-      <td class="p-2"><input type="checkbox" class="checkContato" value="${c.id}"></td>
-      <td class="p-2">${c.nome}</td>
-      <td class="p-2">${c.whatsapp}</td>
-      <td class="p-2 hidden sm:table-cell">${c.grupo || '-'}</td>
-      <td class="p-2 text-center">
-        <button class="btn-whatsapp-sm" onclick="abrirWhatsappUnico('${c.whatsapp}','${c.nome}')" title="Enviar mensagem">
-          <i class="fab fa-whatsapp"></i>
-        </button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function toggleTodosContatos(cb) {
-  document.querySelectorAll('.checkContato').forEach(el => el.checked = cb.checked);
-}
-
-function salvarContato() {
-  const nome = document.getElementById('contatoNome').value.trim();
-  const whats = document.getElementById('contatoWhats').value.replace(/\D/g, '');
-  const grupo = document.getElementById('contatoGrupo').value.trim();
-  if (!nome || !whats) { mostrarNotificacao('Preencha nome e WhatsApp', 'error'); return; }
-
-  // Envie para o Google Sheets via sua função de sincronização existente (ex: salvarNaPlanilha('contatos', {...}))
-  closeModal('modalNovoContato');
-  renderContatos();
-}
-
-// ---- ENVIO EM LOTE ----
-function iniciarEnvioLote() {
-  const selecionados = [...document.querySelectorAll('.checkContato:checked')].map(el => el.value);
-  filaEnvio = contatos.filter(c => selecionados.includes(String(c.id)));
-  if (filaEnvio.length === 0) { mostrarNotificacao('Selecione ao menos um contato', 'warning'); return; }
-
-  filaIndex = 0;
-  document.getElementById('painelFilaEnvio').classList.remove('hidden');
-  document.getElementById('filaTotal').textContent = filaEnvio.length;
-  atualizarFila();
-}
-
-function atualizarFila() {
-  const c = filaEnvio[filaIndex];
-  document.getElementById('filaNomeAtual').textContent = c ? c.nome : '—';
-  document.getElementById('filaAtual').textContent = filaIndex + 1;
-}
-
-function abrirProximoWhatsapp() {
-  const c = filaEnvio[filaIndex];
-  if (!c) return;
-  const msg = document.getElementById('msgLoteWhatsapp').value.replace(/{nome}/g, c.nome);
-  window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
-  filaIndex++;
-  if (filaIndex >= filaEnvio.length) { cancelarFilaEnvio(); mostrarNotificacao('Envio concluído!', 'success'); }
-  else atualizarFila();
-}
-
-function pularContatoFila() {
-  filaIndex++;
-  if (filaIndex >= filaEnvio.length) cancelarFilaEnvio();
-  else atualizarFila();
-}
-
-function cancelarFilaEnvio() {
-  document.getElementById('painelFilaEnvio').classList.add('hidden');
-  filaEnvio = []; filaIndex = 0;
-}
-
-function abrirWhatsappUnico(whats, nome) {
-  const msg = document.getElementById('msgLoteWhatsapp').value.replace(/{nome}/g, nome) || `Olá ${nome}!`;
-  window.open(`https://wa.me/${whats}?text=${encodeURIComponent(msg)}`, '_blank');
-}
-
   function limparFiltroEntradas(){
     document.getElementById('filtroEntradaMes').value='';
     const b=document.getElementById('buscaEntrada'); if(b)b.value='';
