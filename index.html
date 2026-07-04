@@ -865,31 +865,38 @@
 
 
     <!-- HISTÓRICO -->
-    <div class="page" id="page-historico">
-      <div class="card p-4 mb-4">
-        <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full" style="min-width:600px">
-            <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-              <th class="p-2 font-semibold">Mês</th>
-              <th class="p-2 font-semibold">Saldo Ant.</th>
-              <th class="p-2 font-semibold">Entradas</th>
-              <th class="p-2 font-semibold">Saídas</th>
-              <th class="p-2 font-semibold">Saldo Final</th>
-              <th class="p-2 font-semibold">Ceia</th>
-              <th class="p-2 font-semibold">Status</th>
-            </tr></thead>
-            <tbody id="tabelaHistorico"></tbody>
-          </table>
-        </div>
+    <!-- HISTÓRICO -->
+<div class="page" id="page-historico">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="card p-4 lg:col-span-2">
+      <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full" style="min-width:600px">
+          <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
+            <th class="p-2 font-semibold">Mês</th>
+            <th class="p-2 font-semibold">Saldo Ant.</th>
+            <th class="p-2 font-semibold">Entradas</th>
+            <th class="p-2 font-semibold">Saídas</th>
+            <th class="p-2 font-semibold">Saldo Final</th>
+            <th class="p-2 font-semibold">Ceia</th>
+            <th class="p-2 font-semibold">Status</th>
+          </tr></thead>
+          <tbody id="tabelaHistorico"></tbody>
+        </table>
       </div>
-      <div class="card p-4"><h3 class="font-bold text-gray-800 mb-4 text-sm">Evolução de Saldos</h3><canvas id="chartSaldos"></canvas></div>
     </div>
+
+    <div class="card p-4">
+      <h3 class="font-bold text-gray-800 mb-4 text-sm">Evolução de Saldos</h3>
+      <canvas id="chartSaldos"></canvas>
+    </div>
+  </div>
+</div>
 
     <!-- CONFIGURAÇÕES -->
     <div class="page" id="page-configuracoes">
-      <div class="max-w-2xl mx-auto space-y-5">
-        <div class="card p-5">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="lg:col-span-2">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-image text-yellow-500"></i> Logo da Igreja</h3>
           <p class="text-xs text-gray-400 mb-4">A logo será exibida na sidebar e nos relatórios.</p>
           <div class="flex items-center gap-4 mb-4">
@@ -914,6 +921,7 @@
             <button class="btn-danger text-sm px-4" onclick="removerLogo()" id="btnRemoverLogo" style="display:none"><i class="fas fa-trash mr-1"></i> Remover</button>
           </div>
         </div>
+      </div>
 
         <div class="card p-5">
           <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Informações da Igreja</h3>
@@ -956,24 +964,22 @@
           </div>
         </div>
 
-        <div class="card p-5">
-          <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-database text-purple-600"></i> Dados do Sistema</h3>
-          <p class="text-xs text-gray-400 mb-4">Gerencie o cache local do sistema.</p>
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-blue-600" id="cfgQtdCultos">0</p><p class="text-xs text-gray-500">Cultos</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-red-600" id="cfgQtdDespesas">0</p><p class="text-xs text-gray-500">Despesas</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-green-600" id="cfgQtdEntradas">0</p><p class="text-xs text-gray-500">Entradas</p></div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-yellow-600" id="cfgVersao">v3.7</p><p class="text-xs text-gray-500">Versão</p></div>
-          </div>
-          <button class="w-full py-2 border-2 border-red-200 text-red-500 rounded-lg hover:bg-red-50 text-sm font-semibold transition" onclick="limparCacheLocal()">
-            <i class="fas fa-trash mr-2"></i> Limpar Cache Local
-          </button>
+                    <div class="card p-5 lg:col-span-2">
+              <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-database text-purple-600"></i> Dados do Sistema</h3>
+              <p class="text-xs text-gray-400 mb-4">Gerencie o cache local do sistema.</p>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-blue-600" id="cfgQtdCultos">0</p><p class="text-xs text-gray-500">Cultos</p></div>
+                <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-red-600" id="cfgQtdDespesas">0</p><p class="text-xs text-gray-500">Despesas</p></div>
+                <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-green-600" id="cfgQtdEntradas">0</p><p class="text-xs text-gray-500">Entradas</p></div>
+                <div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xl font-bold text-yellow-600" id="cfgVersao">v3.7</p><p class="text-xs text-gray-500">Versão</p></div>
+              </div>
+              <button class="w-full py-2 border-2 border-red-200 text-red-500 rounded-lg hover:bg-red-50 text-sm font-semibold transition" onclick="limparCacheLocal()">
+                <i class="fas fa-trash mr-2"></i> Limpar Cache Local
+              </button>
+            </div>
+          </div> <!-- ✅ fecha grid grid-cols-1 lg:grid-cols-2 -->
         </div>
-      </div>
-    </div>
 
-  </div>
-</main>
 
 <!-- ============================================================
      MODAL: NOVO/EDITAR CULTO
