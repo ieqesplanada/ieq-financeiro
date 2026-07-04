@@ -808,98 +808,54 @@
     <!-- RELATÓRIOS -->
 
     <div class="page" id="page-relatorios">
-      <!-- GRID DE RELATÓRIOS -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-  <!-- RELATÓRIO MENSAL -->
-  <div class="card p-4">
-    <div class="flex items-center gap-2 mb-1">
-      <i class="fas fa-file-invoice-dollar text-blue-600"></i>
-      <h3 class="font-semibold text-sm">Relatório Mensal</h3>
-    </div>
-    <p class="text-xs text-gray-500 mb-3">Gere o relatório completo do mês</p>
-
-    <select id="relatorioMesSelect" class="input-field w-full mb-3 text-sm"></select>
-
-    <div class="flex gap-2">
-      <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioMensalPDF()">
-        <i class="fas fa-download mr-2"></i> Gerar Relatório
-      </button>
-      <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-      </button>
-    </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card p-4">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-file-pdf text-red-600"></i> Relatório Mensal</h3>
+          <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês</p>
+          <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
+          <div class="flex gap-2">
+            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorio()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+            <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </div>
+        
+                <div class="card p-4">
+  <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
+  <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
+  <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
+  <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
+  <div class="grid grid-cols-2 gap-2 mb-3">
+    <input type="month" class="input-field text-sm" id="relCultoIni">
+    <input type="month" class="input-field text-sm" id="relCultoFim">
   </div>
-
-  <!-- RELATÓRIO DE CULTOS -->
-  <div class="card p-4">
-    <div class="flex items-center gap-2 mb-1">
-      <i class="fas fa-church text-blue-600"></i>
-      <h3 class="font-semibold text-sm">Relatório de Cultos</h3>
-    </div>
-    <p class="text-xs text-gray-500 mb-3">Exportar REFCs do período</p>
-
-    <select id="relCultoMesSelect" class="input-field w-full mb-2 text-sm">
-      <option value="">-- Intervalo abaixo --</option>
-    </select>
-
-    <p class="text-xs text-gray-500 mb-1">Ou selecione um intervalo:</p>
-    <div class="flex gap-2 mb-3">
-      <input type="month" id="relCultoIni" class="input-field flex-1 text-sm">
-      <input type="month" id="relCultoFim" class="input-field flex-1 text-sm">
-    </div>
-
-    <div class="flex gap-2">
-      <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCultosPDF()">
-        <i class="fas fa-download mr-2"></i> Gerar Relatório
-      </button>
-      <button class="btn-whatsapp text-sm" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-      </button>
-    </div>
+  <div class="flex flex-col sm:flex-row gap-2">
+    <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCultosPDF()"><i class="fas fa-file-pdf mr-2"></i> Gerar PDF</button>
+    <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
   </div>
-
-  <!-- RELATÓRIO DE DIZIMISTAS -->
-  <div class="card p-4">
-    <div class="flex items-center gap-2 mb-1">
-      <i class="fas fa-hand-holding-heart text-emerald-600"></i>
-      <h3 class="font-semibold text-sm">Relatório de Dizimistas</h3>
-    </div>
-    <p class="text-xs text-gray-500 mb-3">Nome, data e valor de cada dízimo lançado</p>
-
-    <select id="relDizimistasMesSelect" class="input-field w-full mb-3 text-sm"></select>
-
-    <div class="flex gap-2">
-      <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioDizimistas()">
-        <i class="fas fa-download mr-2"></i> Gerar Relatório
-      </button>
-      <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()" title="Enviar por WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- RELATÓRIO POR FORMA DE CONTRIBUIÇÃO -->
-  <div class="card p-4">
-    <div class="flex items-center gap-2 mb-1">
-      <i class="fas fa-wallet text-purple-600"></i>
-      <h3 class="font-semibold text-sm">Relatório por Forma de Contribuição</h3>
-    </div>
-    <p class="text-xs text-gray-500 mb-3">Entradas separadas por Caixa e Conta Bancária (PIX)</p>
-
-    <select id="relFormasMesSelect" class="input-field w-full mb-3 text-sm"></select>
-
-    <div class="flex gap-2">
-      <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioFormasContribuicao()">
-        <i class="fas fa-download mr-2"></i> Gerar Relatório
-      </button>
-      <button class="btn-whatsapp text-sm" onclick="compartilharFormasWhatsApp()" title="Enviar por WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-      </button>
-    </div>
-  </div>
-
 </div>
+
+                  <!-- RELATÓRIO DE DIZIMISTAS -->
+        <div class="card p-4">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-hand-holding-usd text-green-600"></i> Relatório de Dizimistas</h3>
+          <p class="text-gray-500 text-sm mb-3">Nome, data e valor de cada dízimo lançado</p>
+          <select class="input-field mb-3 text-sm" id="relDizimistasMesSelect"></select>
+          <div class="flex gap-2">
+            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioDizimistas()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+            <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </div>
+
+        <!-- RELATÓRIO POR FORMA DE CONTRIBUIÇÃO -->
+        <div class="card p-4">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-wallet text-purple-600"></i> Relatório por Forma de Contribuição</h3>
+          <p class="text-gray-500 text-sm mb-3">Entradas separadas por Caixa e Conta Bancária (PIX)</p>
+          <select class="input-field mb-3 text-sm" id="relFormasMesSelect"></select>
+          <div class="flex gap-2">
+            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioFormasContribuicao()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+            <button class="btn-whatsapp text-sm" onclick="compartilharFormasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </div>
+
         <div class="card p-4 md:col-span-2">
           <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-chart-bar text-purple-600"></i> Análise Comparativa 2026</h3>
           <canvas id="chartComparativo"></canvas>
@@ -909,36 +865,26 @@
 
 
     <!-- HISTÓRICO -->
-<div class="page" id="page-historico">
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-        <i class="fas fa-history text-blue-500"></i> Histórico Financeiro
-      </h2>
-      <p class="text-xs text-gray-500">Acompanhe os resultados mensais e a evolução dos saldos</p>
+    <div class="page" id="page-historico">
+      <div class="card p-4 mb-4">
+        <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full" style="min-width:600px">
+            <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
+              <th class="p-2 font-semibold">Mês</th>
+              <th class="p-2 font-semibold">Saldo Ant.</th>
+              <th class="p-2 font-semibold">Entradas</th>
+              <th class="p-2 font-semibold">Saídas</th>
+              <th class="p-2 font-semibold">Saldo Final</th>
+              <th class="p-2 font-semibold">Ceia</th>
+              <th class="p-2 font-semibold">Status</th>
+            </tr></thead>
+            <tbody id="tabelaHistorico"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card p-4"><h3 class="font-bold text-gray-800 mb-4 text-sm">Evolução de Saldos</h3><canvas id="chartSaldos"></canvas></div>
     </div>
-  </div>
-
-  <div class="card p-4 mb-4">
-    <h3 class="font-bold text-gray-800 mb-4 text-sm">Histórico Financeiro — 2026</h3>
-    <div class="overflow-x-auto">
-      <table class="w-full" style="min-width:600px">
-        <thead><tr class="text-left text-xs text-gray-500 border-b bg-gray-50">
-          <th class="p-2 font-semibold">Mês</th>
-          <th class="p-2 font-semibold">Saldo Ant.</th>
-          <th class="p-2 font-semibold">Entradas</th>
-          <th class="p-2 font-semibold">Saídas</th>
-          <th class="p-2 font-semibold">Saldo Final</th>
-          <th class="p-2 font-semibold">Ceia</th>
-          <th class="p-2 font-semibold">Status</th>
-        </tr></thead>
-        <tbody id="tabelaHistorico"></tbody>
-      </table>
-    </div>
-  </div>
-
-
-</div><!-- fecha page-historico -->
 
     <!-- CONFIGURAÇÕES -->
     <div class="page" id="page-configuracoes">
