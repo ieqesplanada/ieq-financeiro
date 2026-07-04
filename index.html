@@ -805,66 +805,55 @@
       </div>
     </div>
 
-    <!-- RELATÓRIOS -->
-
-    <div class="page" id="page-relatorios">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-file-pdf text-red-600"></i> Relatório Mensal</h3>
-          <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês</p>
-          <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
-          <div class="flex gap-2">
-            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorio()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-            <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          </div>
-        </div>
-        
-                <div class="card p-4">
-  <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
-  <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
-  <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
-  <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
-  <div class="grid grid-cols-2 gap-2 mb-3">
-    <input type="month" class="input-field text-sm" id="relCultoIni">
-    <input type="month" class="input-field text-sm" id="relCultoFim">
-  </div>
-  <div class="flex flex-col sm:flex-row gap-2">
-    <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCultosPDF()"><i class="fas fa-file-pdf mr-2"></i> Gerar PDF</button>
-    <button class="btn-whatsapp text-sm sm:w-auto w-full" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
-  </div>
-</div>
-
-                  <!-- RELATÓRIO DE DIZIMISTAS -->
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-hand-holding-usd text-green-600"></i> Relatório de Dizimistas</h3>
-          <p class="text-gray-500 text-sm mb-3">Nome, data e valor de cada dízimo lançado</p>
-          <select class="input-field mb-3 text-sm" id="relDizimistasMesSelect"></select>
-          <div class="flex gap-2">
-            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioDizimistas()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-            <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          </div>
-        </div>
-
-        <!-- RELATÓRIO POR FORMA DE CONTRIBUIÇÃO -->
-        <div class="card p-4">
-          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-wallet text-purple-600"></i> Relatório por Forma de Contribuição</h3>
-          <p class="text-gray-500 text-sm mb-3">Entradas separadas por Caixa e Conta Bancária (PIX)</p>
-          <select class="input-field mb-3 text-sm" id="relFormasMesSelect"></select>
-          <div class="flex gap-2">
-            <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioFormasContribuicao()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-            <button class="btn-whatsapp text-sm" onclick="compartilharFormasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          </div>
-        </div>
-
-        <div class="card p-4 md:col-span-2">
-          <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-chart-bar text-purple-600"></i> Análise Comparativa 2026</h3>
-          <canvas id="chartComparativo"></canvas>
-        </div>
+        <!-- RELATÓRIO MENSAL -->
+    <div class="card p-4 flex flex-col h-full">
+      <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-file-pdf text-red-600"></i> Relatório Mensal</h3>
+      <p class="text-gray-500 text-sm mb-3">Gere o relatório completo do mês</p>
+      <select class="input-field mb-3 text-sm" id="relatorioMesSelect"></select>
+      <div class="flex gap-2 mt-auto">
+        <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorio()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+        <button class="btn-whatsapp text-sm" onclick="compartilharRelatorioMensal()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
       </div>
     </div>
 
+    <!-- RELATÓRIO DE CULTOS -->
+    <div class="card p-4 flex flex-col h-full">
+      <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Relatório de Cultos</h3>
+      <p class="text-gray-500 text-sm mb-3">Exportar REFCs do período</p>
+      <select class="input-field mb-2 text-sm" id="relCultoMesSelect"></select>
+      <p class="text-xs text-gray-400 mb-3">Ou selecione um intervalo:</p>
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <input type="month" class="input-field text-sm" id="relCultoIni">
+        <input type="month" class="input-field text-sm" id="relCultoFim">
+      </div>
+      <div class="flex gap-2 mt-auto">
+        <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCultosPDF()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+        <button class="btn-whatsapp text-sm" onclick="compartilharCultosWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+      </div>
+    </div>
 
-    <!-- HISTÓRICO -->
+    <!-- RELATÓRIO DE DIZIMISTAS -->
+    <div class="card p-4 flex flex-col h-full">
+      <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-hand-holding-usd text-green-600"></i> Relatório de Dizimistas</h3>
+      <p class="text-gray-500 text-sm mb-3">Nome, data e valor de cada dízimo lançado</p>
+      <select class="input-field mb-3 text-sm" id="relDizimistasMesSelect"></select>
+      <div class="flex gap-2 mt-auto">
+        <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioDizimistas()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+        <button class="btn-whatsapp text-sm" onclick="compartilharDizimistasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+      </div>
+    </div>
+
+    <!-- RELATÓRIO POR FORMA DE CONTRIBUIÇÃO -->
+    <div class="card p-4 flex flex-col h-full">
+      <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-wallet text-purple-600"></i> Relatório por Forma de Contribuição</h3>
+      <p class="text-gray-500 text-sm mb-3">Entradas separadas por Caixa e Conta Bancária (PIX)</p>
+      <select class="input-field mb-3 text-sm" id="relFormasMesSelect"></select>
+      <div class="flex gap-2 mt-auto">
+        <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioFormasContribuicao()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+        <button class="btn-whatsapp text-sm" onclick="compartilharFormasWhatsApp()" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
+      </div>
+    </div>
+
     <!-- HISTÓRICO -->
 <div class="page" id="page-historico">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
