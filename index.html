@@ -1592,30 +1592,17 @@ function getSegundoDomingoDoMes(mk){
     return resultado;
 }
 
-
- function getPresentesCeia(mk){
-    const segundoDom = getSegundoDomingoDoMes(mk);
-    if(!segundoDom) return {presentes:0, data:null, encontrado:false};
-    
+  function getPresentesCeia(mk){
     const cultos = getCultosMes(mk);
-    if(!cultos.length) return {presentes:0, data:segundoDom, encontrado:false};
-    
-    // ✅ Comparação normalizada (ignora timestamp se existir)
-    const exato = cultos.find(c => {
-        const cd = String(c.data || '').split('T')[0]; // "2026-06-14T..." → "2026-06-14"
-        return cd === segundoDom;
-    });
-    
-    if(exato) return {presentes:exato.presentes||0, data:exato.data, encontrado:true};
-    
-    // ❌ REMOVIDO: busca por cultos próximos (dias 8-14)
-    // Agora só conta se houver culto EXATAMENTE no 2º domingo
-    
-    return {presentes:0, data:segundoDom, encontrado:false};
+    if(!cultos.length) return {presentes:0, data:null, encontrado:false};
+
+    // ✅ Busca pelo TIPO DE CULTO = "Culto de Santa Ceia" (não mais pela data do 2º domingo)
+    const cultoCeia = cultos.find(c => (c.tipo || '').trim() === 'Culto de Santa Ceia');
+
+    if(cultoCeia) return {presentes:cultoCeia.presentes||0, data:cultoCeia.data, encontrado:true};
+
+    return {presentes:0, data:null, encontrado:false};
 }
-
-
-  let GLOBAL_MONTH = monthKeyFromDate(new Date());
 
   function setGlobalMonth(mk){
     GLOBAL_MONTH=mk;
