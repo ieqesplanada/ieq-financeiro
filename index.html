@@ -1505,25 +1505,41 @@ async function apiDeleteSeguro(sheet, id) {
   // ============================================================
   // NORMALIZAÇÃO
   // ============================================================
-  function normalizarCulto(c) {
-    return { ...c,
-      totalDizimos:parseFloat(c.totalDizimos)||0,
-      totalOfertas:parseFloat(c.totalOfertas)||0,
-      // CORREÇÃO 1: totalArrecadado = dizimos + ofertas (SEM missões)
-      totalArrecadado:parseFloat(c.totalArrecadado)||0,
-      missoes:parseFloat(c.missoes)||0,
-      especiais:parseFloat(c.especiais)||0,
-      outras:parseFloat(c.outras)||0,
-      presentes:parseInt(c.presentes)||0,
-      visitantes:parseInt(c.visitantes)||0,
-      criancas:parseInt(c.criancas)||0,
-      caixaLocal:parseFloat(c.caixaLocal)||0,
-      contaCorrente:parseFloat(c.contaCorrente)||0,
-      dizimistas:parseJsonSafe(c.dizimistas,[]),
-      ofertas:parseJsonSafe(c.ofertas,[]),
-      observacoes: c.observacoes || '',
-    };
+ function normalizarCulto(c) {
+  // Normaliza a data para yyyy-mm-dd (input type="date")
+  let dataNormalizada = (c.data || '');
+  if (dataNormalizada && dataNormalizada.includes('T')) {
+    dataNormalizada = dataNormalizada.split('T')[0];
   }
+
+  // Normaliza o horário para HH:mm (input type="time")
+  let horarioNormalizado = (c.horario || '19:30');
+  if (horarioNormalizado.includes('T')) {
+    // Extrai HH:mm da parte de hora do ISO string (ex: 1899-12-30T19:30:00.000Z)
+    const match = horarioNormalizado.match(/T(\d{2}:\d{2})/);
+    horarioNormalizado = match ? match[1] : '19:30';
+  }
+
+  return { ...c,
+    data: dataNormalizada,
+    horario: horarioNormalizado,
+    totalDizimos:parseFloat(c.totalDizimos)||0,
+    totalOfertas:parseFloat(c.totalOfertas)||0,
+    totalArrecadado:parseFloat(c.totalArrecadado)||0,
+    missoes:parseFloat(c.missoes)||0,
+    especiais:parseFloat(c.especiais)||0,
+    outras:parseFloat(c.outras)||0,
+    presentes:parseInt(c.presentes)||0,
+    visitantes:parseInt(c.visitantes)||0,
+    criancas:parseInt(c.criancas)||0,
+    caixaLocal:parseFloat(c.caixaLocal)||0,
+    contaCorrente:parseFloat(c.contaCorrente)||0,
+    dizimistas:parseJsonSafe(c.dizimistas,[]),
+    ofertas:parseJsonSafe(c.ofertas,[]),
+    observacoes: c.observacoes || '',
+  };
+}
+
   function normalizarDespesa(d){
   // Garante que a data fique no formato yyyy-mm-dd para o input[type=date]
   let dataNormalizada = (d.data || '');
