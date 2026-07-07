@@ -2509,7 +2509,7 @@ function invalidarCacheResumo() {
     resetFormCulto();
     document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
     document.getElementById('c-id').value        =c.id||'';
-    document.getElementById('c-data').value      =c.data||'';
+    document.getElementById('c-data').value = (c.data || '').split('T')[0];
     document.getElementById('c-horario').value   =c.horario||'19:30';
     document.getElementById('c-pastor').value    =c.pastor||'';
     document.getElementById('c-pregador').value  =c.pregador||'';
@@ -2565,36 +2565,57 @@ function invalidarCacheResumo() {
       criadoEm:nowIso
     };
 
-    setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
+       setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
     try {
+      let idFinal;
       if (isEdit) {
-  await apiUpdate('cultos', cultoIdEx, cultoData);
-} else {
-  const rc = await apiSave('cultos', cultoData);
-  cultoData.id = rc.id;
-}
-      const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
-      DB.cultos.unshift(culto);
+        await apiUpdate('cultos', cultoIdEx, cultoData);
+        idFinal = cultoIdEx;
+      } else {
+        const rc = await apiSave('cultos', cultoData);
+        idFinal = rc.id;
+      }
+
+      const culto={...cultoData,id:idFinal,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
+
+      if (isEdit) {
+        const cIdx = DB.cultos.findIndex(x => String(x.id) === String(cultoIdEx));
+        if (cIdx !== -1) DB.cultos[cIdx] = culto; else DB.cultos.unshift(culto);
+      } else {
+        DB.cultos.unshift(culto);
+      }
+
       // CORREÇÃO 1: Entrada registra apenas dízimos+ofertas (sem missões)
+      const entIdx = DB.entradas.findIndex(x => String(x.cultoId) === String(idFinal));
       if(total>0){
         const ed={
           descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
           valor:total, // total sem missões
           data:culto.data,
           origem:'culto',
-          cultoId:rc.id,
+          cultoId:idFinal,
           criadoEm:nowIso
         };
-        const re=await apiSave('entradas',ed);
-        DB.entradas.unshift({...ed,id:re.id});
+        if (isEdit && entIdx !== -1) {
+          await apiUpdate('entradas', DB.entradas[entIdx].id, ed);
+          DB.entradas[entIdx] = {...DB.entradas[entIdx], ...ed};
+        } else {
+          const re=await apiSave('entradas',ed);
+          DB.entradas.unshift({...ed,id:re.id});
+        }
+      } else if (isEdit && entIdx !== -1) {
+        await apiDelete('entradas', DB.entradas[entIdx].id);
+        DB.entradas.splice(entIdx, 1);
       }
+
       // CORREÇÃO 1: Missões são salvas separadamente (só para dashboards)
       // Não gera entrada separada — apenas o campo missoes no culto alimenta distribuições e dashboard
       DB.saveLocal();
       closeModal('modalNovoCulto'); resetFormCulto();
       setSyncStatus('synced');
       showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
-    } catch(err){
+        } catch(err){
+      console.error('Erro ao salvar culto:', err);
       const lid=Date.now();
       const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
       DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
