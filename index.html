@@ -1505,41 +1505,25 @@ async function apiDeleteSeguro(sheet, id) {
   // ============================================================
   // NORMALIZAÇÃO
   // ============================================================
- function normalizarCulto(c) {
-  // Normaliza a data para yyyy-mm-dd (input type="date")
-  let dataNormalizada = (c.data || '');
-  if (dataNormalizada && dataNormalizada.includes('T')) {
-    dataNormalizada = dataNormalizada.split('T')[0];
+  function normalizarCulto(c) {
+    return { ...c,
+      totalDizimos:parseFloat(c.totalDizimos)||0,
+      totalOfertas:parseFloat(c.totalOfertas)||0,
+      // CORREÇÃO 1: totalArrecadado = dizimos + ofertas (SEM missões)
+      totalArrecadado:parseFloat(c.totalArrecadado)||0,
+      missoes:parseFloat(c.missoes)||0,
+      especiais:parseFloat(c.especiais)||0,
+      outras:parseFloat(c.outras)||0,
+      presentes:parseInt(c.presentes)||0,
+      visitantes:parseInt(c.visitantes)||0,
+      criancas:parseInt(c.criancas)||0,
+      caixaLocal:parseFloat(c.caixaLocal)||0,
+      contaCorrente:parseFloat(c.contaCorrente)||0,
+      dizimistas:parseJsonSafe(c.dizimistas,[]),
+      ofertas:parseJsonSafe(c.ofertas,[]),
+      observacoes: c.observacoes || '',
+    };
   }
-
-  // Normaliza o horário para HH:mm (input type="time")
-  let horarioNormalizado = (c.horario || '19:30');
-  if (horarioNormalizado.includes('T')) {
-    // Extrai HH:mm da parte de hora do ISO string (ex: 1899-12-30T19:30:00.000Z)
-    const match = horarioNormalizado.match(/T(\d{2}:\d{2})/);
-    horarioNormalizado = match ? match[1] : '19:30';
-  }
-
-  return { ...c,
-    data: dataNormalizada,
-    horario: horarioNormalizado,
-    totalDizimos:parseFloat(c.totalDizimos)||0,
-    totalOfertas:parseFloat(c.totalOfertas)||0,
-    totalArrecadado:parseFloat(c.totalArrecadado)||0,
-    missoes:parseFloat(c.missoes)||0,
-    especiais:parseFloat(c.especiais)||0,
-    outras:parseFloat(c.outras)||0,
-    presentes:parseInt(c.presentes)||0,
-    visitantes:parseInt(c.visitantes)||0,
-    criancas:parseInt(c.criancas)||0,
-    caixaLocal:parseFloat(c.caixaLocal)||0,
-    contaCorrente:parseFloat(c.contaCorrente)||0,
-    dizimistas:parseJsonSafe(c.dizimistas,[]),
-    ofertas:parseJsonSafe(c.ofertas,[]),
-    observacoes: c.observacoes || '',
-  };
-}
-
   function normalizarDespesa(d){
   // Garante que a data fique no formato yyyy-mm-dd para o input[type=date]
   let dataNormalizada = (d.data || '');
@@ -1549,17 +1533,8 @@ async function apiDeleteSeguro(sheet, id) {
   return {...d, valor:parseFloat(d.valor)||0, data: dataNormalizada};
 }
 
- function parseJsonSafe(value, fallback) {
-  if (value === '' || value === null || value === undefined) return fallback;
-  if (typeof value === 'object') return value; // já é array/objeto, retorna direto
-  try {
-    const parsed = JSON.parse(value);
-    return parsed;
-  } catch (err) {
-    console.warn('Falha ao parsear JSON:', value, err);
-    return fallback;
-  }
-}
+  function normalizarEntrada(e){ return {...e, valor:parseFloat(e.valor)||0}; }
+  function parseJsonSafe(v,f){ if(Array.isArray(v))return v; try{return JSON.parse(v)||f;}catch{return f;} }
 
   // ============================================================
   // UTILITÁRIOS
@@ -1976,7 +1951,6 @@ function atualizarBadgeSync() {
 }
 
 // ── Processar fila offline ────────────────────────────────────
-// ── Processar fila offline ────────────────────────────────────
 async function processarFilaOffline() {
   const fila = getFilaOffline();
   if (!fila.length) return { enviados: 0, erros: 0 };
@@ -1986,17 +1960,7 @@ async function processarFilaOffline() {
     try {
       if      (op.action === 'save')   await apiSave(op.sheet, op.data);
       else if (op.action === 'update') await apiUpdate(op.sheet, op.id, op.data);
-      else if (op.action === 'delete') {
-        await apiDelete(op.sheet, op.id);
-
-        // 👇 NOVO: remove definitivamente do array local e limpa a flag
-        if (op.sheet === 'cultos') {
-          DB.cultos = DB.cultos.filter(c => String(c.id) !== String(op.id));
-        } else if (op.sheet === 'entradas') {
-          DB.entradas = DB.entradas.filter(e => String(e.id) !== String(op.id));
-        }
-        DB.saveLocal();
-      }
+      else if (op.action === 'delete') await apiDelete(op.sheet, op.id);
       enviados++;
     } catch (err) {
       erros++;
@@ -2029,14 +1993,8 @@ async function sincronizarTudo(silencioso = false) {
 
     // 3. Sheets substitui local — ele é a fonte de verdade
     if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
-  const idsPendentesExclusao = DB.cultos
-    .filter(c => c._pendingDelete)
-    .map(c => String(c.id));
-
-  DB.cultos = cultosBrutos
-    .map(normalizarCulto)
-    .filter(c => !idsPendentesExclusao.includes(String(c.id)));
-}
+      DB.cultos = cultosBrutos.map(normalizarCulto);
+    }
 
     DB.despesas = despesasBrutos.map(normalizarDespesa);
 
@@ -2576,108 +2534,82 @@ function invalidarCacheResumo() {
   }
 
   async function salvarCulto(e){
-  e.preventDefault();
-  const{totalDiz,totalOf,total}=calcTotalCulto();
-  const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
-  const cultoIdEx=document.getElementById('c-id').value;
-  const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
+    e.preventDefault();
+    const{totalDiz,totalOf,total}=calcTotalCulto();
+    const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
+    const cultoIdEx=document.getElementById('c-id').value;
+    const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
 
-  const cultoData={
-    data:document.getElementById('c-data').value,
-    horario:document.getElementById('c-horario').value,
-    pastor:document.getElementById('c-pastor').value,
-    pregador:document.getElementById('c-pregador').value,
-    tipo:document.getElementById('c-tipo').value,
-    cura:+document.getElementById('c-cura').value||0,
-    presentes:+document.getElementById('c-presentes').value||0,
-    visitantes:+document.getElementById('c-visitantes').value||0,
-    criancas:+document.getElementById('c-criancas').value||0,
-    dizimistas:JSON.stringify(coletarDizimistas()),
-    totalDizimos:totalDiz,
-    ofertas:JSON.stringify(coletarOfertas()),
-    totalOfertas:totalOf,
-    missoes: missoes,
-    especiais:parseFloat(document.getElementById('c-especiais').value)||0,
-    outras:parseFloat(document.getElementById('c-outras').value)||0,
-    totalArrecadado:total,
-    caixaLocal:+document.getElementById('c-caixa').value||0,
-    contaCorrente:+document.getElementById('c-conta').value||0,
-    observacoes:document.getElementById('c-observacoes').value||'',
-    atualizadoEm:nowIso,
-    criadoEm:isEdit ? (DB.cultos.find(c=>String(c.id)===String(cultoIdEx))?.criadoEm || nowIso) : nowIso
-  };
+    const cultoData={
+      data:document.getElementById('c-data').value,
+      horario:document.getElementById('c-horario').value,
+      pastor:document.getElementById('c-pastor').value,
+      pregador:document.getElementById('c-pregador').value,
+      tipo:document.getElementById('c-tipo').value,
+      cura:+document.getElementById('c-cura').value||0,
+      presentes:+document.getElementById('c-presentes').value||0,
+      visitantes:+document.getElementById('c-visitantes').value||0,
+      criancas:+document.getElementById('c-criancas').value||0,
+      dizimistas:JSON.stringify(coletarDizimistas()),
+      totalDizimos:totalDiz,
+      ofertas:JSON.stringify(coletarOfertas()),
+      totalOfertas:totalOf,
+      // CORREÇÃO 1: missões salva separado, totalArrecadado sem missões
+      missoes: missoes,
+      especiais:parseFloat(document.getElementById('c-especiais').value)||0,
+      outras:parseFloat(document.getElementById('c-outras').value)||0,
+      totalArrecadado:total, // total = diz + of + especiais + outras (SEM missoes)
+      caixaLocal:+document.getElementById('c-caixa').value||0,
+      contaCorrente:+document.getElementById('c-conta').value||0,
+      observacoes:document.getElementById('c-observacoes').value||'', // CORREÇÃO 4
+      atualizadoEm:nowIso,
+      criadoEm:nowIso
+    };
 
-  setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
-  try {
-    let rc;
-    if (isEdit) {
-      // ATUALIZA o registro existente — não exclui!
-      await apiUpdate('cultos', cultoIdEx, cultoData);
-      rc = { id: cultoIdEx };
-    } else {
-      rc = await apiSave('cultos', cultoData);
-    }
-
-    const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
-    const idxLocal = DB.cultos.findIndex(c=>String(c.id)===String(rc.id));
-    if (idxLocal !== -1) DB.cultos[idxLocal] = culto;
-    else DB.cultos.unshift(culto);
-
-    // Trata a entrada financeira vinculada
-    const entradaExistente = DB.entradas.findIndex(e => String(e.cultoId) === String(rc.id));
-    if (total > 0) {
-      const ed={
-        descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
-        valor:total,
-        data:culto.data,
-        origem:'culto',
-        cultoId:rc.id,
-        criadoEm:nowIso
-      };
-      if (entradaExistente !== -1) {
-        const entradaId = DB.entradas[entradaExistente].id;
-        await apiUpdate('entradas', entradaId, ed);
-        DB.entradas[entradaExistente] = {...ed, id: entradaId};
-      } else {
+    setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
+    try {
+      if(isEdit) await excluirCultoPorId(cultoIdEx,{silent:true});
+      const rc=await apiSave('cultos',cultoData);
+      const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
+      DB.cultos.unshift(culto);
+      // CORREÇÃO 1: Entrada registra apenas dízimos+ofertas (sem missões)
+      if(total>0){
+        const ed={
+          descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
+          valor:total, // total sem missões
+          data:culto.data,
+          origem:'culto',
+          cultoId:rc.id,
+          criadoEm:nowIso
+        };
         const re=await apiSave('entradas',ed);
         DB.entradas.unshift({...ed,id:re.id});
       }
-    } else if (entradaExistente !== -1) {
-      // total ficou zero, remove a entrada antiga vinculada
-      await apiDelete('entradas', DB.entradas[entradaExistente].id);
-      DB.entradas.splice(entradaExistente, 1);
+      // CORREÇÃO 1: Missões são salvas separadamente (só para dashboards)
+      // Não gera entrada separada — apenas o campo missoes no culto alimenta distribuições e dashboard
+      DB.saveLocal();
+      closeModal('modalNovoCulto'); resetFormCulto();
+      setSyncStatus('synced');
+      showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
+    } catch(err){
+      const lid=Date.now();
+      const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
+      DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
+      if(total>0) DB.entradas.unshift({
+        id:lid+1,
+        descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
+        valor:total,
+        data:cultoData.data,
+        origem:'culto',
+        cultoId:lid
+      });
+      DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
+      setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
+    } finally{
+      setBtnLoading('btnSalvarCulto',false,'Salvar');
+      renderCultos(); renderEntradas(); renderDashboard();
     }
-
-    DB.saveLocal();
-    closeModal('modalNovoCulto'); resetFormCulto();
-    setSyncStatus('synced');
-    showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
-
-  } catch(err){
-    // FALHOU a sincronização — enfileira para tentar depois, NÃO perde o dado
-    const idParaFila = isEdit ? cultoIdEx : ('tmp_' + Date.now());
-    const culto = {...cultoData, id: idParaFila, dizimistas:coletarDizimistas(), ofertas:coletarOfertas()};
-
-    const idxLocal = DB.cultos.findIndex(c=>String(c.id)===String(idParaFila));
-    if (idxLocal !== -1) DB.cultos[idxLocal] = culto;
-    else DB.cultos.unshift(culto);
-
-    enfileirarOperacao({
-      id: idParaFila,
-      action: isEdit ? 'update' : 'save',
-      sheet: 'cultos',
-      data: culto
-    });
-
-    DB.saveLocal();
-    closeModal('modalNovoCulto'); resetFormCulto();
-    setSyncStatus('error');
-    showNotification('⚠️ Sem conexão — salvo localmente e na fila de sincronização','warning');
-  } finally{
-    setBtnLoading('btnSalvarCulto',false,'Salvar');
-    renderCultos(); renderEntradas(); renderDashboard();
   }
-}
 
   function resetFormCulto(){
     document.getElementById('formCulto').reset();
@@ -3098,60 +3030,26 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-   async function excluirCultoPorId(id, opts = {}) {
-  const { silent = false } = opts;
-
-  const idx = DB.cultos.findIndex(c => String(c.id) === String(id));
-  if (idx === -1) return;
-
-  const cultoRemovido = DB.cultos[idx];
-
-  try {
-    await apiDelete('cultos', id);
-
-    // Remove localmente só depois de confirmar exclusão remota
-    DB.cultos.splice(idx, 1);
-
-    // Remove entrada financeira vinculada, se existir
-    const entradaIdx = DB.entradas.findIndex(e => String(e.cultoId) === String(id));
-    if (entradaIdx !== -1) {
-      try {
-        await apiDelete('entradas', DB.entradas[entradaIdx].id);
-      } catch (errEntrada) {
-        // Se falhar, enfileira a exclusão da entrada também
-        enfileirarOperacao({
-          id: DB.entradas[entradaIdx].id,
-          action: 'delete',
-          sheet: 'entradas',
-          data: null
-        });
-      }
-      DB.entradas.splice(entradaIdx, 1);
-    }
-
-    DB.saveLocal();
-    if (!silent) showNotification('🗑️ Culto excluído!', 'success');
-
-  } catch (err) {
-    // Falha de rede: NÃO remove localmente de forma "muda" — enfileira
-    enfileirarOperacao({
-      id: id,
-      action: 'delete',
-      sheet: 'cultos',
-      data: null
+   async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    const c=DB.cultos[idx]; if(!c)return;
+    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
+      await excluirCultoPorId(c.id);
+      renderCultos(); renderEntradas(); renderDashboard();
     });
+  }
 
-    // Remove da UI local (assume-se que será removido do Sheets depois)
-    // mas marca como pendente para não reaparecer na sincronização
-    cultoRemovido._pendingDelete = true;
-    DB.saveLocal();
-
-    if (!silent) showNotification('⚠️ Sem conexão — exclusão enfileirada', 'warning');
-    else console.warn('Exclusão de culto enfileirada (silent):', id);
-  } finally {
+  async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    if(!confirm('Excluir este culto?'))return;
+    const c=DB.cultos[idx]; if(!c)return;
+    await excluirCultoPorId(c.id);
     renderCultos(); renderEntradas(); renderDashboard();
   }
-}
+
+  // ============================================================
+  // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
+  // ============================================================
  // ============================================================
 // DESPESAS
 // ============================================================
