@@ -1573,17 +1573,49 @@ async function apiDeleteSeguro(sheet, id) {
   }
   function prevMonthKey(mk){ const[y,m]=mk.split('-').map(Number); return monthKeyFromDate(new Date(y,m-2,1)); }
 
-  function getPresentesCeia(mk){
-    const cultos = getCultosMes(mk);
-    if(!cultos.length) return {presentes:0, data:null, encontrado:false};
-
-    // ✅ Busca pelo TIPO DE CULTO = "Culto de Santa Ceia" (não mais pela data do 2º domingo)
-    const cultoCeia = cultos.find(c => (c.tipo || '').trim() === 'Culto de Santa Ceia');
-
-    if(cultoCeia) return {presentes:cultoCeia.presentes||0, data:cultoCeia.data, encontrado:true};
-
-    return {presentes:0, data:null, encontrado:false};
+function getSegundoDomingoDoMes(mk){
+    const[y,m]=mk.split('-').map(Number);
+    
+    let primeiroDom = null;
+    for(let d=1;d<=7;d++){
+        if(new Date(y,m-1,d).getDay()===0){
+            primeiroDom = d;
+            break;
+        }
+    }
+    
+    const segundo = primeiroDom + 7;
+    const resultado = `${y}-${String(m).padStart(2,'0')}-${String(segundo).padStart(2,'0')}`;
+    
+   
+    console.log('getSegundoDomingoDoMes:', {mk, y, m, primeiroDom, segundo, resultado});
+    return resultado;
 }
+
+
+ function getPresentesCeia(mk){
+    const segundoDom = getSegundoDomingoDoMes(mk);
+    if(!segundoDom) return {presentes:0, data:null, encontrado:false};
+    
+    const cultos = getCultosMes(mk);
+    if(!cultos.length) return {presentes:0, data:segundoDom, encontrado:false};
+    
+    // ✅ Comparação normalizada (ignora timestamp se existir)
+    const exato = cultos.find(c => {
+        const cd = String(c.data || '').split('T')[0]; // "2026-06-14T..." → "2026-06-14"
+        return cd === segundoDom;
+    });
+    
+    if(exato) return {presentes:exato.presentes||0, data:exato.data, encontrado:true};
+    
+    // ❌ REMOVIDO: busca por cultos próximos (dias 8-14)
+    // Agora só conta se houver culto EXATAMENTE no 2º domingo
+    
+    return {presentes:0, data:segundoDom, encontrado:false};
+}
+
+
+  let GLOBAL_MONTH = monthKeyFromDate(new Date());
 
   function setGlobalMonth(mk){
     GLOBAL_MONTH=mk;
@@ -2490,8 +2522,8 @@ function invalidarCacheResumo() {
     resetFormCulto();
     document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
     document.getElementById('c-id').value        =c.id||'';
-    document.getElementById('c-data').value = (c.data || '').split('T')[0];
-    document.getElementById('c-horario').value   =(c.horario||'19:30').toString().slice(0,5);
+    document.getElementById('c-data').value      =c.data||'';
+    document.getElementById('c-horario').value   =c.horario||'19:30';
     document.getElementById('c-pastor').value    =c.pastor||'';
     document.getElementById('c-pregador').value  =c.pregador||'';
     document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
@@ -2546,57 +2578,32 @@ function invalidarCacheResumo() {
       criadoEm:nowIso
     };
 
-       setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
+    setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
     try {
-      let idFinal;
-      if (isEdit) {
-        await apiUpdate('cultos', cultoIdEx, cultoData);
-        idFinal = cultoIdEx;
-      } else {
-        const rc = await apiSave('cultos', cultoData);
-        idFinal = rc.id;
-      }
-
-      const culto={...cultoData,id:idFinal,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
-
-      if (isEdit) {
-        const cIdx = DB.cultos.findIndex(x => String(x.id) === String(cultoIdEx));
-        if (cIdx !== -1) DB.cultos[cIdx] = culto; else DB.cultos.unshift(culto);
-      } else {
-        DB.cultos.unshift(culto);
-      }
-
+      if(isEdit) await excluirCultoPorId(cultoIdEx,{silent:true});
+      const rc=await apiSave('cultos',cultoData);
+      const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
+      DB.cultos.unshift(culto);
       // CORREÇÃO 1: Entrada registra apenas dízimos+ofertas (sem missões)
-      const entIdx = DB.entradas.findIndex(x => String(x.cultoId) === String(idFinal));
       if(total>0){
         const ed={
           descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
           valor:total, // total sem missões
           data:culto.data,
           origem:'culto',
-          cultoId:idFinal,
+          cultoId:rc.id,
           criadoEm:nowIso
         };
-        if (isEdit && entIdx !== -1) {
-          await apiUpdate('entradas', DB.entradas[entIdx].id, ed);
-          DB.entradas[entIdx] = {...DB.entradas[entIdx], ...ed};
-        } else {
-          const re=await apiSave('entradas',ed);
-          DB.entradas.unshift({...ed,id:re.id});
-        }
-      } else if (isEdit && entIdx !== -1) {
-        await apiDelete('entradas', DB.entradas[entIdx].id);
-        DB.entradas.splice(entIdx, 1);
+        const re=await apiSave('entradas',ed);
+        DB.entradas.unshift({...ed,id:re.id});
       }
-
       // CORREÇÃO 1: Missões são salvas separadamente (só para dashboards)
       // Não gera entrada separada — apenas o campo missoes no culto alimenta distribuições e dashboard
       DB.saveLocal();
       closeModal('modalNovoCulto'); resetFormCulto();
       setSyncStatus('synced');
       showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
-        } catch(err){
-      console.error('Erro ao salvar culto:', err);
+    } catch(err){
       const lid=Date.now();
       const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
       DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
@@ -2640,6 +2647,7 @@ function invalidarCacheResumo() {
   function renderCultos(){
     const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
     const mes=document.getElementById('filtroCultoMes')?.value||GLOBAL_MONTH;
+    const ceiaDom=getSegundoDomingoDoMes(mes);
     const lista=DB.cultos.filter(c=>{
       const mM=mes?(c.data||'').startsWith(mes):true;
       const mT=!busca||(c.data||'').includes(busca)||(c.tipo||'').toLowerCase().includes(busca)||(c.pregador||'').toLowerCase().includes(busca)||(c.pastor||'').toLowerCase().includes(busca);
@@ -2653,9 +2661,9 @@ function invalidarCacheResumo() {
       return;
     }
     const podeEd=temPermissao('podeEditar'), podeEx=temPermissao('podeExcluir');
-        tbody.innerHTML = lista.map(c => {
+    tbody.innerHTML = lista.map(c => {
   const idx = DB.cultos.indexOf(c);
-  const isCeia = (c.tipo || '').trim() === 'Culto de Santa Ceia';
+  const isCeia = ceiaDom && c.data === ceiaDom;
   const ceiaTag = isCeia
     ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">🍞 Ceia</span>`
     : '';
@@ -3044,9 +3052,20 @@ function invalidarCacheResumo() {
     });
   }
 
+  async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    if(!confirm('Excluir este culto?'))return;
+    const c=DB.cultos[idx]; if(!c)return;
+    await excluirCultoPorId(c.id);
+    renderCultos(); renderEntradas(); renderDashboard();
+  }
+
   // ============================================================
   // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
   // ============================================================
+ // ============================================================
+// DESPESAS
+// ============================================================
 
 function abrirNovaDespesa() {
   if (!temPermissao('podeLancar')) {
@@ -3867,8 +3886,8 @@ async function salvarDespesa(e) {
   const linhas = lista.map(c => `
     <tr>
       <td>${fmtDate(c.data)}</td>
-      <td>${escapeHtml(c.local || '')}</td>
-      <td>${escapeHtml(c.observacoes || '')}</td>
+      <td>${escapeHtml(c.tipo||'')}</td>
+      <td>${escapeHtml(c.pregador||c.pastor||'')}</td>
       <td style="text-align:center">${c.presentes||0}</td>
       <td style="text-align:right;color:#059669">${fmt(c.totalDizimos||0)}</td>
       <td style="text-align:right;color:#059669">${fmt(c.totalOfertas||0)}</td>
@@ -4074,7 +4093,7 @@ async function salvarDespesa(e) {
       if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
     });
 
-    let GLOBAL_MONTH = monthKeyFromDate(new Date()); // declare no topo do script
+    GLOBAL_MONTH=monthKeyFromDate(new Date());
     console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
   });
 </script>
