@@ -2634,7 +2634,6 @@ function invalidarCacheResumo() {
   function renderCultos(){
     const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
     const mes=document.getElementById('filtroCultoMes')?.value||GLOBAL_MONTH;
-    const ceiaDom=getSegundoDomingoDoMes(mes);
     const lista=DB.cultos.filter(c=>{
       const mM=mes?(c.data||'').startsWith(mes):true;
       const mT=!busca||(c.data||'').includes(busca)||(c.tipo||'').toLowerCase().includes(busca)||(c.pregador||'').toLowerCase().includes(busca)||(c.pastor||'').toLowerCase().includes(busca);
@@ -2648,9 +2647,9 @@ function invalidarCacheResumo() {
       return;
     }
     const podeEd=temPermissao('podeEditar'), podeEx=temPermissao('podeExcluir');
-    tbody.innerHTML = lista.map(c => {
+        tbody.innerHTML = lista.map(c => {
   const idx = DB.cultos.indexOf(c);
-  const isCeia = ceiaDom && c.data === ceiaDom;
+  const isCeia = (c.tipo || '').trim() === 'Culto de Santa Ceia';
   const ceiaTag = isCeia
     ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">🍞 Ceia</span>`
     : '';
