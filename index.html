@@ -2107,11 +2107,36 @@ window.addEventListener('offline', () => {
   // Se não encontrou, calcula dinamicamente
   const entMes = sum(getEntradasMes(mk), e => e.valor);
   const saiMes = sum(getDespesasMes(mk), d => d.valor);
-  const prevKey = prevMonthKey(mk);
-  const prev = getHistoricoRow(prevKey); // recursivo para meses anteriores
-  const saldoAnt = prev ? prev.saldoFinal : 0;
-
-  return {
+ function calcularResumoAnual(ano) {
+  const cacheKey = String(ano);
+  if (_cacheResumoAnual && _cacheResumoAnualKey === cacheKey) {
+    return _cacheResumoAnual;
+  }
+  
+  const meses = [];
+  
+  // ✅ Busca o saldo final de dezembro do ano anterior (ou 0 se não existir histórico)
+  const dezembroAnterior = getHistoricoRow(`${ano - 1}-12`);
+  let saldoAnt = dezembroAnterior ? dezembroAnterior.saldoFinal : 0;
+  
+  for (let m = 1; m <= 12; m++) {
+    const mk = `${ano}-${String(m).padStart(2, '0')}`;
+    const entMes = sum(getEntradasMes(mk), e => e.valor);
+    const saiMes = sum(getDespesasMes(mk), d => d.valor);
+    const saldoFinal = saldoAnt + entMes - saiMes;
+    const ceia = getPresentesCeia(mk).presentes;
+    meses.push({
+      mes: m, ano, mk,
+      nome: new Date(ano, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}).replace(/^\w/, c=>c.toUpperCase()),
+      saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia
+    });
+    saldoAnt = saldoFinal;
+  }
+  
+  _cacheResumoAnual = meses;
+  _cacheResumoAnualKey = cacheKey;
+  return meses;
+}
     mes: m,
     ano: y,
     nome: new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
