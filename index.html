@@ -3030,22 +3030,46 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-   async function excluirCulto(idx){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    const c=DB.cultos[idx]; if(!c)return;
-    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
-      await excluirCultoPorId(c.id);
-      renderCultos(); renderEntradas(); renderDashboard();
-    });
-  }
-
-  async function excluirCulto(idx){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    if(!confirm('Excluir este culto?'))return;
-    const c=DB.cultos[idx]; if(!c)return;
+   // Mantenha SOMENTE esta versão de excluirCulto:
+async function excluirCulto(idx){
+  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+  const c=DB.cultos[idx]; if(!c)return;
+  confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
     await excluirCultoPorId(c.id);
     renderCultos(); renderEntradas(); renderDashboard();
+  });
+}
+
+// Função que faltava:
+async function excluirCultoPorId(id, opts = {}) {
+  const { silent = false } = opts;
+
+  // Remove o culto do array local
+  const idxCulto = DB.cultos.findIndex(c => String(c.id) === String(id));
+  if (idxCulto !== -1) DB.cultos.splice(idxCulto, 1);
+
+  // Remove a entrada financeira vinculada a esse culto
+  const idxEntrada = DB.entradas.findIndex(e => String(e.cultoId) === String(id));
+  if (idxEntrada !== -1) DB.entradas.splice(idxEntrada, 1);
+
+  DB.saveLocal();
+
+  try {
+    await apiDelete('cultos', id);
+    if (!silent) {
+      setSyncStatus('synced');
+      showNotification('🗑️ Culto excluído!', 'info');
+    }
+  } catch (err) {
+    if (!silent) {
+      setSyncStatus('error');
+      showNotification('⚠️ Excluído localmente (será sincronizado depois)', 'warning');
+    }
+    // guarda na fila offline para tentar de novo depois
+    enfileirarOperacao({ action: 'delete', sheet: 'cultos', id, data: { id } });
+    throw err; // deixa o chamador (salvarCulto) saber, se precisar
   }
+}
 
   // ============================================================
   // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
