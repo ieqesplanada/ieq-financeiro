@@ -2623,13 +2623,14 @@ function invalidarCacheResumo() {
     }
   }
 
+// ===== FUNÇÕES DE CULTO =====
+
 async function excluirCultoPorId(id, opts = {}) {
   const { silent = false } = opts;
 
   const idx = DB.cultos.findIndex(c => c.id === id);
   if (idx === -1) return;
 
-  // Remove a(s) entrada(s) financeira(s) vinculada(s) a este culto
   const entradasVinculadas = DB.entradas.filter(e => e.origem === 'culto' && e.cultoId === id);
   for (const ent of entradasVinculadas) {
     try {
@@ -2640,7 +2641,6 @@ async function excluirCultoPorId(id, opts = {}) {
   }
   DB.entradas = DB.entradas.filter(e => !(e.origem === 'culto' && e.cultoId === id));
 
-  // Remove o culto em si
   try {
     await apiDelete('cultos', id);
   } catch (err) {
@@ -2653,6 +2653,19 @@ async function excluirCultoPorId(id, opts = {}) {
   if (!silent) {
     showNotification('🗑️ Culto excluído com sucesso!', 'info');
   }
+}
+
+async function excluirCulto(idx){
+  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+  const c=DB.cultos[idx]; if(!c)return;
+  confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
+    await excluirCultoPorId(c.id);
+    renderCultos(); renderEntradas(); renderDashboard();
+  });
+}
+
+async function salvarCulto(e){
+  // ... seu código existente ...
 }
   
   function resetFormCulto(){
