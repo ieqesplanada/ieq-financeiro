@@ -1967,6 +1967,7 @@ function atualizarBadgeSync() {
 }
 
 // ── Processar fila offline ────────────────────────────────────
+// ── Processar fila offline ────────────────────────────────────
 async function processarFilaOffline() {
   const fila = getFilaOffline();
   if (!fila.length) return { enviados: 0, erros: 0 };
@@ -1976,7 +1977,17 @@ async function processarFilaOffline() {
     try {
       if      (op.action === 'save')   await apiSave(op.sheet, op.data);
       else if (op.action === 'update') await apiUpdate(op.sheet, op.id, op.data);
-      else if (op.action === 'delete') await apiDelete(op.sheet, op.id);
+      else if (op.action === 'delete') {
+        await apiDelete(op.sheet, op.id);
+
+        // 👇 NOVO: remove definitivamente do array local e limpa a flag
+        if (op.sheet === 'cultos') {
+          DB.cultos = DB.cultos.filter(c => String(c.id) !== String(op.id));
+        } else if (op.sheet === 'entradas') {
+          DB.entradas = DB.entradas.filter(e => String(e.id) !== String(op.id));
+        }
+        DB.saveLocal();
+      }
       enviados++;
     } catch (err) {
       erros++;
@@ -2009,8 +2020,14 @@ async function sincronizarTudo(silencioso = false) {
 
     // 3. Sheets substitui local — ele é a fonte de verdade
     if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
-      DB.cultos = cultosBrutos.map(normalizarCulto);
-    }
+  const idsPendentesExclusao = DB.cultos
+    .filter(c => c._pendingDelete)
+    .map(c => String(c.id));
+
+  DB.cultos = cultosBrutos
+    .map(normalizarCulto)
+    .filter(c => !idsPendentesExclusao.includes(String(c.id)));
+}
 
     DB.despesas = despesasBrutos.map(normalizarDespesa);
 
@@ -3072,14 +3089,60 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-   async function excluirCulto(idx){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    const c=DB.cultos[idx]; if(!c)return;
-    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
-      await excluirCultoPorId(c.id);
-      renderCultos(); renderEntradas(); renderDashboard();
+   async function excluirCultoPorId(id, opts = {}) {
+  const { silent = false } = opts;
+
+  const idx = DB.cultos.findIndex(c => String(c.id) === String(id));
+  if (idx === -1) return;
+
+  const cultoRemovido = DB.cultos[idx];
+
+  try {
+    await apiDelete('cultos', id);
+
+    // Remove localmente só depois de confirmar exclusão remota
+    DB.cultos.splice(idx, 1);
+
+    // Remove entrada financeira vinculada, se existir
+    const entradaIdx = DB.entradas.findIndex(e => String(e.cultoId) === String(id));
+    if (entradaIdx !== -1) {
+      try {
+        await apiDelete('entradas', DB.entradas[entradaIdx].id);
+      } catch (errEntrada) {
+        // Se falhar, enfileira a exclusão da entrada também
+        enfileirarOperacao({
+          id: DB.entradas[entradaIdx].id,
+          action: 'delete',
+          sheet: 'entradas',
+          data: null
+        });
+      }
+      DB.entradas.splice(entradaIdx, 1);
+    }
+
+    DB.saveLocal();
+    if (!silent) showNotification('🗑️ Culto excluído!', 'success');
+
+  } catch (err) {
+    // Falha de rede: NÃO remove localmente de forma "muda" — enfileira
+    enfileirarOperacao({
+      id: id,
+      action: 'delete',
+      sheet: 'cultos',
+      data: null
     });
+
+    // Remove da UI local (assume-se que será removido do Sheets depois)
+    // mas marca como pendente para não reaparecer na sincronização
+    cultoRemovido._pendingDelete = true;
+    DB.saveLocal();
+
+    if (!silent) showNotification('⚠️ Sem conexão — exclusão enfileirada', 'warning');
+    else console.warn('Exclusão de culto enfileirada (silent):', id);
+  } finally {
+    renderCultos(); renderEntradas(); renderDashboard();
   }
+}
  // ============================================================
 // DESPESAS
 // ============================================================
