@@ -2550,82 +2550,108 @@ function invalidarCacheResumo() {
   }
 
   async function salvarCulto(e){
-    e.preventDefault();
-    const{totalDiz,totalOf,total}=calcTotalCulto();
-    const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
-    const cultoIdEx=document.getElementById('c-id').value;
-    const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
+  e.preventDefault();
+  const{totalDiz,totalOf,total}=calcTotalCulto();
+  const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
+  const cultoIdEx=document.getElementById('c-id').value;
+  const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
 
-    const cultoData={
-      data:document.getElementById('c-data').value,
-      horario:document.getElementById('c-horario').value,
-      pastor:document.getElementById('c-pastor').value,
-      pregador:document.getElementById('c-pregador').value,
-      tipo:document.getElementById('c-tipo').value,
-      cura:+document.getElementById('c-cura').value||0,
-      presentes:+document.getElementById('c-presentes').value||0,
-      visitantes:+document.getElementById('c-visitantes').value||0,
-      criancas:+document.getElementById('c-criancas').value||0,
-      dizimistas:JSON.stringify(coletarDizimistas()),
-      totalDizimos:totalDiz,
-      ofertas:JSON.stringify(coletarOfertas()),
-      totalOfertas:totalOf,
-      // CORREÇÃO 1: missões salva separado, totalArrecadado sem missões
-      missoes: missoes,
-      especiais:parseFloat(document.getElementById('c-especiais').value)||0,
-      outras:parseFloat(document.getElementById('c-outras').value)||0,
-      totalArrecadado:total, // total = diz + of + especiais + outras (SEM missoes)
-      caixaLocal:+document.getElementById('c-caixa').value||0,
-      contaCorrente:+document.getElementById('c-conta').value||0,
-      observacoes:document.getElementById('c-observacoes').value||'', // CORREÇÃO 4
-      atualizadoEm:nowIso,
-      criadoEm:nowIso
-    };
+  const cultoData={
+    data:document.getElementById('c-data').value,
+    horario:document.getElementById('c-horario').value,
+    pastor:document.getElementById('c-pastor').value,
+    pregador:document.getElementById('c-pregador').value,
+    tipo:document.getElementById('c-tipo').value,
+    cura:+document.getElementById('c-cura').value||0,
+    presentes:+document.getElementById('c-presentes').value||0,
+    visitantes:+document.getElementById('c-visitantes').value||0,
+    criancas:+document.getElementById('c-criancas').value||0,
+    dizimistas:JSON.stringify(coletarDizimistas()),
+    totalDizimos:totalDiz,
+    ofertas:JSON.stringify(coletarOfertas()),
+    totalOfertas:totalOf,
+    missoes: missoes,
+    especiais:parseFloat(document.getElementById('c-especiais').value)||0,
+    outras:parseFloat(document.getElementById('c-outras').value)||0,
+    totalArrecadado:total,
+    caixaLocal:+document.getElementById('c-caixa').value||0,
+    contaCorrente:+document.getElementById('c-conta').value||0,
+    observacoes:document.getElementById('c-observacoes').value||'',
+    atualizadoEm:nowIso,
+    criadoEm:isEdit ? (DB.cultos.find(c=>String(c.id)===String(cultoIdEx))?.criadoEm || nowIso) : nowIso
+  };
 
-    setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
-    try {
-      if(isEdit) await excluirCultoPorId(cultoIdEx,{silent:true});
-      const rc=await apiSave('cultos',cultoData);
-      const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
-      DB.cultos.unshift(culto);
-      // CORREÇÃO 1: Entrada registra apenas dízimos+ofertas (sem missões)
-      if(total>0){
-        const ed={
-          descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
-          valor:total, // total sem missões
-          data:culto.data,
-          origem:'culto',
-          cultoId:rc.id,
-          criadoEm:nowIso
-        };
+  setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
+  try {
+    let rc;
+    if (isEdit) {
+      // ATUALIZA o registro existente — não exclui!
+      await apiUpdate('cultos', cultoIdEx, cultoData);
+      rc = { id: cultoIdEx };
+    } else {
+      rc = await apiSave('cultos', cultoData);
+    }
+
+    const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
+    const idxLocal = DB.cultos.findIndex(c=>String(c.id)===String(rc.id));
+    if (idxLocal !== -1) DB.cultos[idxLocal] = culto;
+    else DB.cultos.unshift(culto);
+
+    // Trata a entrada financeira vinculada
+    const entradaExistente = DB.entradas.findIndex(e => String(e.cultoId) === String(rc.id));
+    if (total > 0) {
+      const ed={
+        descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
+        valor:total,
+        data:culto.data,
+        origem:'culto',
+        cultoId:rc.id,
+        criadoEm:nowIso
+      };
+      if (entradaExistente !== -1) {
+        const entradaId = DB.entradas[entradaExistente].id;
+        await apiUpdate('entradas', entradaId, ed);
+        DB.entradas[entradaExistente] = {...ed, id: entradaId};
+      } else {
         const re=await apiSave('entradas',ed);
         DB.entradas.unshift({...ed,id:re.id});
       }
-      // CORREÇÃO 1: Missões são salvas separadamente (só para dashboards)
-      // Não gera entrada separada — apenas o campo missoes no culto alimenta distribuições e dashboard
-      DB.saveLocal();
-      closeModal('modalNovoCulto'); resetFormCulto();
-      setSyncStatus('synced');
-      showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
-    } catch(err){
-      const lid=Date.now();
-      const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
-      DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
-      if(total>0) DB.entradas.unshift({
-        id:lid+1,
-        descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
-        valor:total,
-        data:cultoData.data,
-        origem:'culto',
-        cultoId:lid
-      });
-      DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
-      setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
-    } finally{
-      setBtnLoading('btnSalvarCulto',false,'Salvar');
-      renderCultos(); renderEntradas(); renderDashboard();
+    } else if (entradaExistente !== -1) {
+      // total ficou zero, remove a entrada antiga vinculada
+      await apiDelete('entradas', DB.entradas[entradaExistente].id);
+      DB.entradas.splice(entradaExistente, 1);
     }
+
+    DB.saveLocal();
+    closeModal('modalNovoCulto'); resetFormCulto();
+    setSyncStatus('synced');
+    showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
+
+  } catch(err){
+    // FALHOU a sincronização — enfileira para tentar depois, NÃO perde o dado
+    const idParaFila = isEdit ? cultoIdEx : ('tmp_' + Date.now());
+    const culto = {...cultoData, id: idParaFila, dizimistas:coletarDizimistas(), ofertas:coletarOfertas()};
+
+    const idxLocal = DB.cultos.findIndex(c=>String(c.id)===String(idParaFila));
+    if (idxLocal !== -1) DB.cultos[idxLocal] = culto;
+    else DB.cultos.unshift(culto);
+
+    enfileirarOperacao({
+      id: idParaFila,
+      action: isEdit ? 'update' : 'save',
+      sheet: 'cultos',
+      data: culto
+    });
+
+    DB.saveLocal();
+    closeModal('modalNovoCulto'); resetFormCulto();
+    setSyncStatus('error');
+    showNotification('⚠️ Sem conexão — salvo localmente e na fila de sincronização','warning');
+  } finally{
+    setBtnLoading('btnSalvarCulto',false,'Salvar');
+    renderCultos(); renderEntradas(); renderDashboard();
   }
+}
 
   function resetFormCulto(){
     document.getElementById('formCulto').reset();
