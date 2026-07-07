@@ -1196,13 +1196,6 @@
       <button onclick="closeModal('modalNovaEntrada')" class="text-white hover:text-green-200"><i class="fas fa-times text-xl"></i></button>
     </div>
     <div class="p-4">
-      <div>
-  <label class="text-sm text-gray-600 mb-1 block">Tipo de Lançamento</label>
-  <select id="e-tipo" class="input-field text-sm">
-    <option value="entrada">Entrada (receita real)</option>
-    <option value="transferencia">Transferência Caixa → Banco</option>
-  </select>
-</div>
       <form id="formEntrada" onsubmit="salvarEntrada(event)">
         <div class="space-y-3">
           <div><label class="text-sm text-gray-600 mb-1 block">Descrição*</label><input type="text" id="e-descricao" class="input-field text-sm" required></div>
@@ -2091,10 +2084,7 @@ window.addEventListener('offline', () => {
     saldos: null,
   };
 
-  const getEntradasMes = mk =>
-  DB.entradas.filter(e => (e.data||'').startsWith(mk) && e.tipoMov !== 'transferencia');
-  const getTransferenciasMes = mk =>
-  DB.entradas.filter(e => (e.data||'').startsWith(mk) && e.tipoMov === 'transferencia');
+  const getEntradasMes=mk=>DB.entradas.filter(e=>(e.data||'').startsWith(mk));
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
   const sum=(arr,fn)=>arr.reduce((a,x)=>a+(fn?fn(x):x),0);
@@ -2107,36 +2097,11 @@ window.addEventListener('offline', () => {
   // Se não encontrou, calcula dinamicamente
   const entMes = sum(getEntradasMes(mk), e => e.valor);
   const saiMes = sum(getDespesasMes(mk), d => d.valor);
- function calcularResumoAnual(ano) {
-  const cacheKey = String(ano);
-  if (_cacheResumoAnual && _cacheResumoAnualKey === cacheKey) {
-    return _cacheResumoAnual;
-  }
-  
-  const meses = [];
-  
-  // ✅ Busca o saldo final de dezembro do ano anterior (ou 0 se não existir histórico)
-  const dezembroAnterior = getHistoricoRow(`${ano - 1}-12`);
-  let saldoAnt = dezembroAnterior ? dezembroAnterior.saldoFinal : 0;
-  
-  for (let m = 1; m <= 12; m++) {
-    const mk = `${ano}-${String(m).padStart(2, '0')}`;
-    const entMes = sum(getEntradasMes(mk), e => e.valor);
-    const saiMes = sum(getDespesasMes(mk), d => d.valor);
-    const saldoFinal = saldoAnt + entMes - saiMes;
-    const ceia = getPresentesCeia(mk).presentes;
-    meses.push({
-      mes: m, ano, mk,
-      nome: new Date(ano, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}).replace(/^\w/, c=>c.toUpperCase()),
-      saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia
-    });
-    saldoAnt = saldoFinal;
-  }
-  
-  _cacheResumoAnual = meses;
-  _cacheResumoAnualKey = cacheKey;
-  return meses;
-}
+  const prevKey = prevMonthKey(mk);
+  const prev = getHistoricoRow(prevKey); // recursivo para meses anteriores
+  const saldoAnt = prev ? prev.saldoFinal : 0;
+
+  return {
     mes: m,
     ano: y,
     nome: new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
@@ -2539,63 +2504,34 @@ function invalidarCacheResumo() {
     document.getElementById('modalNovoCulto').classList.add('active');
   }
 
-function normalizarDataInput(valor){
-  if (!valor) return new Date().toISOString().split('T')[0];
-
-  // Já está no formato correto (yyyy-mm-dd)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) return valor;
-
-  // Formato ISO com horário: 2026-07-15T00:00:00.000Z
-  if (typeof valor === 'string' && valor.includes('T')) {
-    return valor.split('T')[0];
-  }
-
-  // Formato dd/mm/yyyy (às vezes vem do Sheets)
-  if (typeof valor === 'string' && valor.includes('/')) {
-    const [d, m, y] = valor.split('/');
-    if (d && m && y) return `${y.padStart(4,'0')}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-  }
-
-  // Fallback: tenta parsear como Date
-  const dt = new Date(valor);
-  if (!isNaN(dt.getTime())) return dt.toISOString().split('T')[0];
-
-  return '';
-}
-  
   function openEditarCulto(idx){
-  if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão para editar.','error');return;}
-  const c=DB.cultos[idx]; if(!c)return;
-  resetFormCulto();
-  document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
-  document.getElementById('c-id').value        =c.id||'';
-
-  // 🔧 CORREÇÃO: normaliza a data para o formato yyyy-mm-dd
-  document.getElementById('c-data').value      =normalizarDataInput(c.data);
-
-  // 🔧 CORREÇÃO: garante horário padrão se vier vazio
-  document.getElementById('c-horario').value   =c.horario || '19:30';
-
-  document.getElementById('c-pastor').value    =c.pastor||'';
-  document.getElementById('c-pregador').value  =c.pregador||'';
-  document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
-  document.getElementById('c-cura').value      =c.cura||0;
-  document.getElementById('c-presentes').value =c.presentes||0;
-  document.getElementById('c-visitantes').value=c.visitantes||0;
-  document.getElementById('c-criancas').value  =c.criancas||0;
-  document.getElementById('c-observacoes').value=c.observacoes||'';
-  document.getElementById('listaDizimistas').innerHTML='';
-  (c.dizimistas||[]).forEach(d=>adicionarDizimista(d.nome||'',d.valor||0,d.forma||'Caixa'));
-  if(!(c.dizimistas||[]).length) adicionarDizimista();
-  document.getElementById('listaOfertas').innerHTML='';
-  (c.ofertas||[]).forEach(o=>adicionarOferta(o.nome||'',o.valor||0,o.forma||'Caixa'));
-  if(!(c.ofertas||[]).length) adicionarOferta();
-  document.getElementById('c-missoes').value   =parseFloat(c.missoes)||0;
-  document.getElementById('c-especiais').value =parseFloat(c.especiais)||0;
-  document.getElementById('c-outras').value    =parseFloat(c.outras)||0;
-  calcTotalCulto();
-  document.getElementById('modalNovoCulto').classList.add('active');
-}
+    if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão para editar.','error');return;}
+    const c=DB.cultos[idx]; if(!c)return;
+    resetFormCulto();
+    document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
+    document.getElementById('c-id').value        =c.id||'';
+    document.getElementById('c-data').value      =c.data||'';
+    document.getElementById('c-horario').value   =c.horario||'19:30';
+    document.getElementById('c-pastor').value    =c.pastor||'';
+    document.getElementById('c-pregador').value  =c.pregador||'';
+    document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
+    document.getElementById('c-cura').value      =c.cura||0;
+    document.getElementById('c-presentes').value =c.presentes||0;
+    document.getElementById('c-visitantes').value=c.visitantes||0;
+    document.getElementById('c-criancas').value  =c.criancas||0;
+    document.getElementById('c-observacoes').value=c.observacoes||''; // CORREÇÃO 4
+    document.getElementById('listaDizimistas').innerHTML='';
+    (c.dizimistas||[]).forEach(d=>adicionarDizimista(d.nome||'',d.valor||0,d.forma||'Caixa'));
+    if(!(c.dizimistas||[]).length) adicionarDizimista();
+    document.getElementById('listaOfertas').innerHTML='';
+    (c.ofertas||[]).forEach(o=>adicionarOferta(o.nome||'',o.valor||0,o.forma||'Caixa'));
+    if(!(c.ofertas||[]).length) adicionarOferta();
+    document.getElementById('c-missoes').value   =parseFloat(c.missoes)||0;
+    document.getElementById('c-especiais').value =parseFloat(c.especiais)||0;
+    document.getElementById('c-outras').value    =parseFloat(c.outras)||0;
+    calcTotalCulto();
+    document.getElementById('modalNovoCulto').classList.add('active');
+  }
 
   async function salvarCulto(e){
     e.preventDefault();
@@ -3448,15 +3384,10 @@ async function salvarDespesa(e) {
         const delBtn=podeEx
           ?`<button onclick="excluirEntrada('${String(ent.id).replaceAll("'","")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>`
           :`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
-        const badge = ent.tipoMov === 'transferencia'
-          ? `<span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="background:#fef3c7;color:#92400e">🔄 Transferência</span>`
-          : ent.origem === 'culto'
-            ? `<span class="px-2 py-0.5 rounded-full text-xs font-semibold badge-blue">⛪ Culto</span>`
-            : `<span class="px-2 py-0.5 rounded-full text-xs font-semibold badge-green">✏️ Manual</span>`;
         return `<tr class="table-row border-b border-gray-50">
           <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
           <td class="py-2 text-sm text-gray-700">${escapeHtml(ent.descricao||'')}</td>
-          <td class="py-2 hidden sm:table-cell">${badge}</td>
+          <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
           <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
           <td class="py-2 text-center">${delBtn}</td>
         </tr>`;
@@ -3474,14 +3405,13 @@ async function salvarDespesa(e) {
     renderEntradas();
   }
 
- async function salvarEntrada(e){
+  async function salvarEntrada(e){
     e.preventDefault();
     const ed={
       descricao:document.getElementById('e-descricao').value,
       valor:+document.getElementById('e-valor').value,
       data:document.getElementById('e-data').value,
       origem:'manual',
-      tipoMov: document.getElementById('e-tipo')?.value || 'entrada',
       obs:document.getElementById('e-obs').value,
       criadoEm:new Date().toISOString()
     };
