@@ -1269,7 +1269,7 @@
   // ============================================================
 // API — com fallback para fila offline
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbwkn9bpHqL-ksZXw0UJjNEwUbUv_8d0c3-zxR0zfmTQLK0Ls0MuEpc5nGDvXEllolbu/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzIRUAfR69WB14Ku5lWImsEGmyJF83pk8dbtvvGD2qAKFx4rjP9X1Lu-bIYgP6u8En_/exec";
 
 async function apiGet(sheet) {
   const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
@@ -1593,17 +1593,29 @@ function getSegundoDomingoDoMes(mk){
 }
 
 
-  function getPresentesCeia(mk){
+ function getPresentesCeia(mk){
+    const segundoDom = getSegundoDomingoDoMes(mk);
+    if(!segundoDom) return {presentes:0, data:null, encontrado:false};
+    
     const cultos = getCultosMes(mk);
-    if(!cultos.length) return {presentes:0, data:null, encontrado:false};
-
-    // ✅ Busca pelo TIPO DE CULTO = "Culto de Santa Ceia" (não mais pela data do 2º domingo)
-    const cultoCeia = cultos.find(c => (c.tipo || '').trim() === 'Culto de Santa Ceia');
-
-    if(cultoCeia) return {presentes:cultoCeia.presentes||0, data:cultoCeia.data, encontrado:true};
-
-    return {presentes:0, data:null, encontrado:false};
+    if(!cultos.length) return {presentes:0, data:segundoDom, encontrado:false};
+    
+    // ✅ Comparação normalizada (ignora timestamp se existir)
+    const exato = cultos.find(c => {
+        const cd = String(c.data || '').split('T')[0]; // "2026-06-14T..." → "2026-06-14"
+        return cd === segundoDom;
+    });
+    
+    if(exato) return {presentes:exato.presentes||0, data:exato.data, encontrado:true};
+    
+    // ❌ REMOVIDO: busca por cultos próximos (dias 8-14)
+    // Agora só conta se houver culto EXATAMENTE no 2º domingo
+    
+    return {presentes:0, data:segundoDom, encontrado:false};
 }
+
+
+  let GLOBAL_MONTH = monthKeyFromDate(new Date());
 
   function setGlobalMonth(mk){
     GLOBAL_MONTH=mk;
@@ -2125,41 +2137,23 @@ function calcularResumoAnual(ano) {
   if (_cacheResumoAnual && _cacheResumoAnualKey === cacheKey) {
     return _cacheResumoAnual;
   }
-
+  
   const meses = [];
   let saldoAnt = 0;
-
   for (let m = 1; m <= 12; m++) {
     const mk = `${ano}-${String(m).padStart(2, '0')}`;
-
-    // ✅ CORREÇÃO: se existir registro fixo no histórico, usa ele como fonte de verdade
-    const fixo = DB.historico.find(h => h.ano === ano && h.mes === m);
-
-    let entMes, saiMes, saldoFinal, ceia, nome;
-
-    if (fixo) {
-      entMes     = fixo.entradas;
-      saiMes     = fixo.saidas;
-      saldoAnt   = fixo.saldoAnt;      // usa o saldoAnt fixo também, garante consistência
-      saldoFinal = fixo.saldoFinal;
-      ceia       = fixo.ceia;
-      nome       = fixo.nome;
-    } else {
-      entMes = sum(getEntradasMes(mk), e => e.valor);
-      saiMes = sum(getDespesasMes(mk), d => d.valor);
-      saldoFinal = saldoAnt + entMes - saiMes;
-      ceia = getPresentesCeia(mk).presentes;
-      nome = new Date(ano, m - 1, 1)
-        .toLocaleDateString('pt-BR', { month: 'long' })
-        .replace(/^\w/, c => c.toUpperCase());
-    }
-
-    meses.push({ mes: m, ano, mk, nome, saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia });
-
-    // ✅ Propaga o saldo final (fixo ou calculado) para o próximo mês
+    const entMes = sum(getEntradasMes(mk), e => e.valor);
+    const saiMes = sum(getDespesasMes(mk), d => d.valor);
+    const saldoFinal = saldoAnt + entMes - saiMes;
+    const ceia = getPresentesCeia(mk).presentes;
+    meses.push({
+      mes: m, ano, mk,
+      nome: new Date(ano, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}).replace(/^\w/, c=>c.toUpperCase()),
+      saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia
+    });
     saldoAnt = saldoFinal;
   }
-
+  
   _cacheResumoAnual = meses;
   _cacheResumoAnualKey = cacheKey;
   return meses;
@@ -2653,6 +2647,7 @@ function invalidarCacheResumo() {
   function renderCultos(){
     const busca=(document.getElementById('buscaCulto')?.value||'').toLowerCase();
     const mes=document.getElementById('filtroCultoMes')?.value||GLOBAL_MONTH;
+    const ceiaDom=getSegundoDomingoDoMes(mes);
     const lista=DB.cultos.filter(c=>{
       const mM=mes?(c.data||'').startsWith(mes):true;
       const mT=!busca||(c.data||'').includes(busca)||(c.tipo||'').toLowerCase().includes(busca)||(c.pregador||'').toLowerCase().includes(busca)||(c.pastor||'').toLowerCase().includes(busca);
@@ -2666,9 +2661,9 @@ function invalidarCacheResumo() {
       return;
     }
     const podeEd=temPermissao('podeEditar'), podeEx=temPermissao('podeExcluir');
-        tbody.innerHTML = lista.map(c => {
+    tbody.innerHTML = lista.map(c => {
   const idx = DB.cultos.indexOf(c);
-  const isCeia = (c.tipo || '').trim() === 'Culto de Santa Ceia';
+  const isCeia = ceiaDom && c.data === ceiaDom;
   const ceiaTag = isCeia
     ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">🍞 Ceia</span>`
     : '';
@@ -3048,46 +3043,22 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-   // Mantenha SOMENTE esta versão de excluirCulto:
-async function excluirCulto(idx){
-  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-  const c=DB.cultos[idx]; if(!c)return;
-  confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
+   async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    const c=DB.cultos[idx]; if(!c)return;
+    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
+      await excluirCultoPorId(c.id);
+      renderCultos(); renderEntradas(); renderDashboard();
+    });
+  }
+
+  async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    if(!confirm('Excluir este culto?'))return;
+    const c=DB.cultos[idx]; if(!c)return;
     await excluirCultoPorId(c.id);
     renderCultos(); renderEntradas(); renderDashboard();
-  });
-}
-
-// Função que faltava:
-async function excluirCultoPorId(id, opts = {}) {
-  const { silent = false } = opts;
-
-  // Remove o culto do array local
-  const idxCulto = DB.cultos.findIndex(c => String(c.id) === String(id));
-  if (idxCulto !== -1) DB.cultos.splice(idxCulto, 1);
-
-  // Remove a entrada financeira vinculada a esse culto
-  const idxEntrada = DB.entradas.findIndex(e => String(e.cultoId) === String(id));
-  if (idxEntrada !== -1) DB.entradas.splice(idxEntrada, 1);
-
-  DB.saveLocal();
-
-  try {
-    await apiDelete('cultos', id);
-    if (!silent) {
-      setSyncStatus('synced');
-      showNotification('🗑️ Culto excluído!', 'info');
-    }
-  } catch (err) {
-    if (!silent) {
-      setSyncStatus('error');
-      showNotification('⚠️ Excluído localmente (será sincronizado depois)', 'warning');
-    }
-    // guarda na fila offline para tentar de novo depois
-    enfileirarOperacao({ action: 'delete', sheet: 'cultos', id, data: { id } });
-    throw err; // deixa o chamador (salvarCulto) saber, se precisar
   }
-}
 
   // ============================================================
   // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
