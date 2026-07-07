@@ -2125,23 +2125,41 @@ function calcularResumoAnual(ano) {
   if (_cacheResumoAnual && _cacheResumoAnualKey === cacheKey) {
     return _cacheResumoAnual;
   }
-  
+
   const meses = [];
   let saldoAnt = 0;
+
   for (let m = 1; m <= 12; m++) {
     const mk = `${ano}-${String(m).padStart(2, '0')}`;
-    const entMes = sum(getEntradasMes(mk), e => e.valor);
-    const saiMes = sum(getDespesasMes(mk), d => d.valor);
-    const saldoFinal = saldoAnt + entMes - saiMes;
-    const ceia = getPresentesCeia(mk).presentes;
-    meses.push({
-      mes: m, ano, mk,
-      nome: new Date(ano, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}).replace(/^\w/, c=>c.toUpperCase()),
-      saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia
-    });
+
+    // ✅ CORREÇÃO: se existir registro fixo no histórico, usa ele como fonte de verdade
+    const fixo = DB.historico.find(h => h.ano === ano && h.mes === m);
+
+    let entMes, saiMes, saldoFinal, ceia, nome;
+
+    if (fixo) {
+      entMes     = fixo.entradas;
+      saiMes     = fixo.saidas;
+      saldoAnt   = fixo.saldoAnt;      // usa o saldoAnt fixo também, garante consistência
+      saldoFinal = fixo.saldoFinal;
+      ceia       = fixo.ceia;
+      nome       = fixo.nome;
+    } else {
+      entMes = sum(getEntradasMes(mk), e => e.valor);
+      saiMes = sum(getDespesasMes(mk), d => d.valor);
+      saldoFinal = saldoAnt + entMes - saiMes;
+      ceia = getPresentesCeia(mk).presentes;
+      nome = new Date(ano, m - 1, 1)
+        .toLocaleDateString('pt-BR', { month: 'long' })
+        .replace(/^\w/, c => c.toUpperCase());
+    }
+
+    meses.push({ mes: m, ano, mk, nome, saldoAnt, entradas: entMes, saidas: saiMes, saldoFinal, ceia });
+
+    // ✅ Propaga o saldo final (fixo ou calculado) para o próximo mês
     saldoAnt = saldoFinal;
   }
-  
+
   _cacheResumoAnual = meses;
   _cacheResumoAnualKey = cacheKey;
   return meses;
