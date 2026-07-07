@@ -2567,8 +2567,12 @@ function invalidarCacheResumo() {
 
     setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
     try {
-      if(isEdit) await excluirCultoPorId(cultoIdEx,{silent:true});
-      const rc=await apiSave('cultos',cultoData);
+      if (isEdit) {
+  await apiUpdate('cultos', cultoIdEx, cultoData);
+} else {
+  const rc = await apiSave('cultos', cultoData);
+  cultoData.id = rc.id;
+}
       const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
       DB.cultos.unshift(culto);
       // CORREÇÃO 1: Entrada registra apenas dízimos+ofertas (sem missões)
@@ -3861,8 +3865,8 @@ async function salvarDespesa(e) {
   const linhas = lista.map(c => `
     <tr>
       <td>${fmtDate(c.data)}</td>
-      <td>${escapeHtml(c.tipo||'')}</td>
-      <td>${escapeHtml(c.pregador||c.pastor||'')}</td>
+      <td>${escapeHtml(c.local || '')}</td>
+      <td>${escapeHtml(c.observacoes || '')}</td>
       <td style="text-align:center">${c.presentes||0}</td>
       <td style="text-align:right;color:#059669">${fmt(c.totalDizimos||0)}</td>
       <td style="text-align:right;color:#059669">${fmt(c.totalOfertas||0)}</td>
