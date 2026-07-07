@@ -2623,6 +2623,38 @@ function invalidarCacheResumo() {
     }
   }
 
+async function excluirCultoPorId(id, opts = {}) {
+  const { silent = false } = opts;
+
+  const idx = DB.cultos.findIndex(c => c.id === id);
+  if (idx === -1) return;
+
+  // Remove a(s) entrada(s) financeira(s) vinculada(s) a este culto
+  const entradasVinculadas = DB.entradas.filter(e => e.origem === 'culto' && e.cultoId === id);
+  for (const ent of entradasVinculadas) {
+    try {
+      await apiDelete('entradas', ent.id);
+    } catch (err) {
+      console.warn('Falha ao excluir entrada vinculada ao culto:', err);
+    }
+  }
+  DB.entradas = DB.entradas.filter(e => !(e.origem === 'culto' && e.cultoId === id));
+
+  // Remove o culto em si
+  try {
+    await apiDelete('cultos', id);
+  } catch (err) {
+    console.warn('Falha ao excluir culto remotamente:', err);
+  }
+  DB.cultos.splice(idx, 1);
+
+  DB.saveLocal();
+
+  if (!silent) {
+    showNotification('🗑️ Culto excluído com sucesso!', 'info');
+  }
+}
+  
   function resetFormCulto(){
     document.getElementById('formCulto').reset();
     document.getElementById('c-id').value='';
