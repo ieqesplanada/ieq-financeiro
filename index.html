@@ -2510,7 +2510,7 @@ function invalidarCacheResumo() {
     document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
     document.getElementById('c-id').value        =c.id||'';
     document.getElementById('c-data').value = (c.data || '').split('T')[0];
-    document.getElementById('c-horario').value   =c.horario||'19:30';
+    document.getElementById('c-horario').value   =(c.horario||'19:30').toString().slice(0,5);
     document.getElementById('c-pastor').value    =c.pastor||'';
     document.getElementById('c-pregador').value  =c.pregador||'';
     document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
