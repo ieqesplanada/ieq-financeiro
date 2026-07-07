@@ -1196,6 +1196,13 @@
       <button onclick="closeModal('modalNovaEntrada')" class="text-white hover:text-green-200"><i class="fas fa-times text-xl"></i></button>
     </div>
     <div class="p-4">
+      <div>
+  <label class="text-sm text-gray-600 mb-1 block">Tipo de Lançamento</label>
+  <select id="e-tipo" class="input-field text-sm">
+    <option value="entrada">Entrada (receita real)</option>
+    <option value="transferencia">Transferência Caixa → Banco</option>
+  </select>
+</div>
       <form id="formEntrada" onsubmit="salvarEntrada(event)">
         <div class="space-y-3">
           <div><label class="text-sm text-gray-600 mb-1 block">Descrição*</label><input type="text" id="e-descricao" class="input-field text-sm" required></div>
@@ -2084,7 +2091,10 @@ window.addEventListener('offline', () => {
     saldos: null,
   };
 
-  const getEntradasMes=mk=>DB.entradas.filter(e=>(e.data||'').startsWith(mk));
+  const getEntradasMes = mk =>
+  DB.entradas.filter(e => (e.data||'').startsWith(mk) && e.tipoMov !== 'transferencia');
+  const getTransferenciasMes = mk =>
+  DB.entradas.filter(e => (e.data||'').startsWith(mk) && e.tipoMov === 'transferencia');
   const getDespesasMes=mk=>DB.despesas.filter(d=>(d.data||'').startsWith(mk));
   const getCultosMes  =mk=>DB.cultos.filter(c=>(c.data||'').startsWith(mk));
   const sum=(arr,fn)=>arr.reduce((a,x)=>a+(fn?fn(x):x),0);
@@ -3413,10 +3423,15 @@ async function salvarDespesa(e) {
         const delBtn=podeEx
           ?`<button onclick="excluirEntrada('${String(ent.id).replaceAll("'","")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>`
           :`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
+        const badge = ent.tipoMov === 'transferencia'
+          ? `<span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="background:#fef3c7;color:#92400e">🔄 Transferência</span>`
+          : ent.origem === 'culto'
+            ? `<span class="px-2 py-0.5 rounded-full text-xs font-semibold badge-blue">⛪ Culto</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-xs font-semibold badge-green">✏️ Manual</span>`;
         return `<tr class="table-row border-b border-gray-50">
           <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
           <td class="py-2 text-sm text-gray-700">${escapeHtml(ent.descricao||'')}</td>
-          <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
+          <td class="py-2 hidden sm:table-cell">${badge}</td>
           <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
           <td class="py-2 text-center">${delBtn}</td>
         </tr>`;
@@ -3434,13 +3449,14 @@ async function salvarDespesa(e) {
     renderEntradas();
   }
 
-  async function salvarEntrada(e){
+ async function salvarEntrada(e){
     e.preventDefault();
     const ed={
       descricao:document.getElementById('e-descricao').value,
       valor:+document.getElementById('e-valor').value,
       data:document.getElementById('e-data').value,
       origem:'manual',
+      tipoMov: document.getElementById('e-tipo')?.value || 'entrada',
       obs:document.getElementById('e-obs').value,
       criadoEm:new Date().toISOString()
     };
