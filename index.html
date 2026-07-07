@@ -2504,34 +2504,63 @@ function invalidarCacheResumo() {
     document.getElementById('modalNovoCulto').classList.add('active');
   }
 
-  function openEditarCulto(idx){
-    if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão para editar.','error');return;}
-    const c=DB.cultos[idx]; if(!c)return;
-    resetFormCulto();
-    document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
-    document.getElementById('c-id').value        =c.id||'';
-    document.getElementById('c-data').value      =c.data||'';
-    document.getElementById('c-horario').value   =c.horario||'19:30';
-    document.getElementById('c-pastor').value    =c.pastor||'';
-    document.getElementById('c-pregador').value  =c.pregador||'';
-    document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
-    document.getElementById('c-cura').value      =c.cura||0;
-    document.getElementById('c-presentes').value =c.presentes||0;
-    document.getElementById('c-visitantes').value=c.visitantes||0;
-    document.getElementById('c-criancas').value  =c.criancas||0;
-    document.getElementById('c-observacoes').value=c.observacoes||''; // CORREÇÃO 4
-    document.getElementById('listaDizimistas').innerHTML='';
-    (c.dizimistas||[]).forEach(d=>adicionarDizimista(d.nome||'',d.valor||0,d.forma||'Caixa'));
-    if(!(c.dizimistas||[]).length) adicionarDizimista();
-    document.getElementById('listaOfertas').innerHTML='';
-    (c.ofertas||[]).forEach(o=>adicionarOferta(o.nome||'',o.valor||0,o.forma||'Caixa'));
-    if(!(c.ofertas||[]).length) adicionarOferta();
-    document.getElementById('c-missoes').value   =parseFloat(c.missoes)||0;
-    document.getElementById('c-especiais').value =parseFloat(c.especiais)||0;
-    document.getElementById('c-outras').value    =parseFloat(c.outras)||0;
-    calcTotalCulto();
-    document.getElementById('modalNovoCulto').classList.add('active');
+function normalizarDataInput(valor){
+  if (!valor) return new Date().toISOString().split('T')[0];
+
+  // Já está no formato correto (yyyy-mm-dd)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) return valor;
+
+  // Formato ISO com horário: 2026-07-15T00:00:00.000Z
+  if (typeof valor === 'string' && valor.includes('T')) {
+    return valor.split('T')[0];
   }
+
+  // Formato dd/mm/yyyy (às vezes vem do Sheets)
+  if (typeof valor === 'string' && valor.includes('/')) {
+    const [d, m, y] = valor.split('/');
+    if (d && m && y) return `${y.padStart(4,'0')}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+
+  // Fallback: tenta parsear como Date
+  const dt = new Date(valor);
+  if (!isNaN(dt.getTime())) return dt.toISOString().split('T')[0];
+
+  return '';
+}
+  
+  function openEditarCulto(idx){
+  if(!temPermissao('podeEditar')){showNotification('🔒 Sem permissão para editar.','error');return;}
+  const c=DB.cultos[idx]; if(!c)return;
+  resetFormCulto();
+  document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
+  document.getElementById('c-id').value        =c.id||'';
+
+  // 🔧 CORREÇÃO: normaliza a data para o formato yyyy-mm-dd
+  document.getElementById('c-data').value      =normalizarDataInput(c.data);
+
+  // 🔧 CORREÇÃO: garante horário padrão se vier vazio
+  document.getElementById('c-horario').value   =c.horario || '19:30';
+
+  document.getElementById('c-pastor').value    =c.pastor||'';
+  document.getElementById('c-pregador').value  =c.pregador||'';
+  document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
+  document.getElementById('c-cura').value      =c.cura||0;
+  document.getElementById('c-presentes').value =c.presentes||0;
+  document.getElementById('c-visitantes').value=c.visitantes||0;
+  document.getElementById('c-criancas').value  =c.criancas||0;
+  document.getElementById('c-observacoes').value=c.observacoes||'';
+  document.getElementById('listaDizimistas').innerHTML='';
+  (c.dizimistas||[]).forEach(d=>adicionarDizimista(d.nome||'',d.valor||0,d.forma||'Caixa'));
+  if(!(c.dizimistas||[]).length) adicionarDizimista();
+  document.getElementById('listaOfertas').innerHTML='';
+  (c.ofertas||[]).forEach(o=>adicionarOferta(o.nome||'',o.valor||0,o.forma||'Caixa'));
+  if(!(c.ofertas||[]).length) adicionarOferta();
+  document.getElementById('c-missoes').value   =parseFloat(c.missoes)||0;
+  document.getElementById('c-especiais').value =parseFloat(c.especiais)||0;
+  document.getElementById('c-outras').value    =parseFloat(c.outras)||0;
+  calcTotalCulto();
+  document.getElementById('modalNovoCulto').classList.add('active');
+}
 
   async function salvarCulto(e){
     e.preventDefault();
