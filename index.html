@@ -3052,17 +3052,6 @@ function invalidarCacheResumo() {
     });
   }
 
-  async function excluirCulto(idx){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    if(!confirm('Excluir este culto?'))return;
-    const c=DB.cultos[idx]; if(!c)return;
-    await excluirCultoPorId(c.id);
-    renderCultos(); renderEntradas(); renderDashboard();
-  }
-
-  // ============================================================
-  // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
-  // ============================================================
  // ============================================================
 // DESPESAS
 // ============================================================
