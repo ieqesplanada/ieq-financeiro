@@ -419,10 +419,6 @@
   </div>
 
   <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-    <!-- Botão no menu lateral/topo, junto dos outros botões de navegação -->
-   <button class="nav-btn" onclick="mostrarSecao('usuarios')" id="navUsuarios">
-  👥 Usuários
-  </button>
     <button onclick="showPage('dashboard')" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-dashboard"><i class="fas fa-chart-pie w-4"></i> Dashboard</button>
     <button onclick="showPage('culto')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-culto"><i class="fas fa-bible w-4"></i> Relatório de Culto</button>
     <button onclick="showPage('entradas')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-entradas"><i class="fas fa-arrow-down w-4"></i> Entradas</button>
@@ -432,65 +428,6 @@
     <button onclick="showPage('historico')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-historico"><i class="fas fa-history w-4"></i> Histórico</button>
     <button onclick="showPage('configuracoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-configuracoes"><i class="fas fa-cog w-4"></i> Configurações</button>
   </nav>
-
-  <!-- Seção principal, seguindo o mesmo padrão de outras seções (ex: secao-relatorios) -->
-<div id="secao-usuarios" class="secao" style="display:none">
-  <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-    <h2>👥 Gerenciamento de Usuários</h2>
-    <button class="btn-primary" onclick="abrirModalUsuario()">➕ Novo Usuário</button>
-  </div>
-
-  <table class="tabela-padrao" style="width:100%">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Login</th>
-        <th>Status</th>
-        <th>Permissões</th>
-        <th style="text-align:right">Ações</th>
-      </tr>
-    </thead>
-    <tbody id="listaUsuarios"></tbody>
-  </table>
-</div>
-
-  <!-- Modal de cadastro/edição, seguindo o padrão de modalNovaDespesa / modalNovaEntrada -->
-<div id="modalNovoUsuario" class="modal">
-  <div class="modal-content">
-    <h3 id="tituloModalUsuario">Novo Usuário</h3>
-    <form id="formUsuario">
-      <input type="hidden" id="u-id">
-
-      <label>Nome completo</label>
-      <input type="text" id="u-nome" required>
-
-      <label>Login</label>
-      <input type="text" id="u-login" required>
-
-      <label>Senha</label>
-      <input type="password" id="u-senha" placeholder="Deixe em branco para não alterar">
-
-      <label style="display:flex;align-items:center;gap:8px;margin-top:10px">
-        <input type="checkbox" id="u-ativo" checked> Usuário ativo
-      </label>
-
-      <h4 style="margin-top:16px">Permissões</h4>
-      <div class="permissoes-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-        <label><input type="checkbox" id="perm-podeCriar"> Criar registros</label>
-        <label><input type="checkbox" id="perm-podeEditar"> Editar registros</label>
-        <label><input type="checkbox" id="perm-podeExcluir"> Excluir registros</label>
-        <label><input type="checkbox" id="perm-podeVerRelatorios"> Ver relatórios</label>
-        <label><input type="checkbox" id="perm-podeGerenciarUsuarios"> Gerenciar usuários</label>
-        <label><input type="checkbox" id="perm-isAdmin"> Administrador (acesso total)</label>
-      </div>
-
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
-        <button type="button" class="btn-secondary" onclick="closeModal('modalNovoUsuario')">Cancelar</button>
-        <button type="submit" class="btn-primary" id="btnSalvarUsuario">Salvar</button>
-      </div>
-    </form>
-  </div>
-</div>
 
   <div class="p-4 border-t border-blue-800">
     <div class="flex items-center gap-3 mb-2">
@@ -1424,11 +1361,10 @@ async function apiDeleteSeguro(sheet, id) {
     podeConfig:  ['admin'],
   };
 
-  function temPermissao(chave) {
-  if (!SESSAO || !SESSAO.permissoes) return false;
-  if (SESSAO.permissoes.isAdmin) return true;   // 👈 ADICIONE ESTA LINHA NO TOPO
-  return !!SESSAO.permissoes[chave];
-}
+  function temPermissao(acao) {
+    if (!SESSAO) return false;
+    return (PERMISSOES[acao] || []).includes(SESSAO.permissao);
+  }
 
   function salvarSessao(dados) {
     const sessao = { ...dados, loginEm: Date.now() };
@@ -3547,218 +3483,6 @@ async function salvarDespesa(e) {
 }
 
   // ============================================================
-// USUÁRIOS — CADASTRO E PERMISSÕES
-// ============================================================
-
-function renderUsuarios() {
-  const tbody = document.getElementById('listaUsuarios');
-  if (!tbody) return;
-
-  if (!DB.usuarios.length) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:16px">Nenhum usuário cadastrado</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = DB.usuarios.map((u, idx) => {
-    const badges = permissoesParaBadges(u.permissoes);
-    return `
-      <tr>
-        <td>${escapeHtml(u.nome)}</td>
-        <td>${escapeHtml(u.login)}</td>
-        <td>
-          <span style="background:${u.ativo ? '#d1fae5' : '#fee2e2'};color:${u.ativo ? '#065f46' : '#991b1b'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">
-            ${u.ativo ? 'Ativo' : 'Inativo'}
-          </span>
-        </td>
-        <td>${badges}</td>
-        <td style="text-align:right">
-          <button class="btn-icon" title="Editar" onclick="editarUsuario(${idx})">✏️</button>
-          <button class="btn-icon" title="Excluir" onclick="excluirUsuario(${idx})">🗑️</button>
-        </td>
-      </tr>`;
-  }).join('');
-}
-
-function permissoesParaBadges(perm) {
-  if (!perm) return '—';
-  if (perm.isAdmin) {
-    return `<span style="background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">👑 Admin</span>`;
-  }
-  const labels = [];
-  if (perm.podeCriar) labels.push('Criar');
-  if (perm.podeEditar) labels.push('Editar');
-  if (perm.podeExcluir) labels.push('Excluir');
-  if (perm.podeVerRelatorios) labels.push('Relatórios');
-  if (perm.podeGerenciarUsuarios) labels.push('Usuários');
-  return labels.length
-    ? labels.map(l => `<span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:11px;margin-right:4px">${l}</span>`).join('')
-    : '<span style="color:#9ca3af;font-size:12px">Sem permissões</span>';
-}
-
-function abrirModalUsuario() {
-  if (!temPermissao('podeGerenciarUsuarios')) {
-    showNotification('🔒 Sem permissão para gerenciar usuários.', 'error');
-    return;
-  }
-  document.getElementById('tituloModalUsuario').textContent = 'Novo Usuário';
-  document.getElementById('formUsuario').reset();
-  document.getElementById('u-id').value = '';
-  document.getElementById('u-ativo').checked = true;
-  openModal('modalNovoUsuario');
-}
-
-function editarUsuario(idx) {
-  if (!temPermissao('podeGerenciarUsuarios')) {
-    showNotification('🔒 Sem permissão para gerenciar usuários.', 'error');
-    return;
-  }
-  const u = DB.usuarios[idx];
-  if (!u) return;
-
-  document.getElementById('tituloModalUsuario').textContent = 'Editar Usuário';
-  document.getElementById('u-id').value = u.id;
-  document.getElementById('u-nome').value = u.nome;
-  document.getElementById('u-login').value = u.login;
-  document.getElementById('u-senha').value = '';
-  document.getElementById('u-ativo').checked = u.ativo;
-
-  const p = u.permissoes || {};
-  document.getElementById('perm-podeCriar').checked = !!p.podeCriar;
-  document.getElementById('perm-podeEditar').checked = !!p.podeEditar;
-  document.getElementById('perm-podeExcluir').checked = !!p.podeExcluir;
-  document.getElementById('perm-podeVerRelatorios').checked = !!p.podeVerRelatorios;
-  document.getElementById('perm-podeGerenciarUsuarios').checked = !!p.podeGerenciarUsuarios;
-  document.getElementById('perm-isAdmin').checked = !!p.isAdmin;
-
-  openModal('modalNovoUsuario');
-}
-
-document.getElementById('formUsuario')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  await salvarUsuario();
-});
-
-async function salvarUsuario() {
-  const idExistente = document.getElementById('u-id').value;
-  const nome = document.getElementById('u-nome').value.trim();
-  const login = document.getElementById('u-login').value.trim();
-  const senha = document.getElementById('u-senha').value;
-  const ativo = document.getElementById('u-ativo').checked;
-
-  if (!nome || !login) {
-    showNotification('⚠️ Preencha nome e login.', 'warning');
-    return;
-  }
-
-  // Bloqueia login duplicado (exceto o próprio usuário em edição)
-  const duplicado = DB.usuarios.some(u =>
-    u.login.toLowerCase() === login.toLowerCase() && String(u.id) !== String(idExistente)
-  );
-  if (duplicado) {
-    showNotification('⚠️ Este login já está em uso.', 'warning');
-    return;
-  }
-
-  const permissoes = {
-    podeCriar: document.getElementById('perm-podeCriar').checked,
-    podeEditar: document.getElementById('perm-podeEditar').checked,
-    podeExcluir: document.getElementById('perm-podeExcluir').checked,
-    podeVerRelatorios: document.getElementById('perm-podeVerRelatorios').checked,
-    podeGerenciarUsuarios: document.getElementById('perm-podeGerenciarUsuarios').checked,
-    isAdmin: document.getElementById('perm-isAdmin').checked
-  };
-
-  setBtnLoading('btnSalvarUsuario', true);
-
-  const dadosUsuario = {
-    nome, login, ativo, permissoes,
-    ...(senha ? { senha } : {})
-  };
-
-  try {
-    if (idExistente) {
-      // EDIÇÃO
-      const idx = DB.usuarios.findIndex(u => String(u.id) === String(idExistente));
-      const usuarioAtualizado = { ...DB.usuarios[idx], ...dadosUsuario };
-      await apiUpdate('usuarios', idExistente, usuarioAtualizado);
-      DB.usuarios[idx] = usuarioAtualizado;
-      showNotification('✅ Usuário atualizado!', 'success');
-    } else {
-      // CRIAÇÃO
-      const novoUsuario = { ...dadosUsuario, id: Date.now(), criadoEm: new Date().toISOString() };
-      const r = await apiSave('usuarios', novoUsuario);
-      novoUsuario.id = r?.id || novoUsuario.id;
-      DB.usuarios.push(novoUsuario);
-      showNotification('✅ Usuário criado!', 'success');
-    }
-
-    salvarCacheLocal('usuarios_cache', DB.usuarios);
-    closeModal('modalNovoUsuario');
-    renderUsuarios();
-
-  } catch (err) {
-    console.error('Erro ao salvar usuário, salvando localmente:', err);
-
-    const registroLocal = { ...dadosUsuario, id: idExistente || Date.now() };
-    if (idExistente) {
-      const idx = DB.usuarios.findIndex(u => String(u.id) === String(idExistente));
-      if (idx > -1) DB.usuarios[idx] = { ...DB.usuarios[idx], ...registroLocal };
-    } else {
-      DB.usuarios.push(registroLocal);
-    }
-
-    salvarCacheLocal('usuarios_cache', DB.usuarios);
-    enfileirarOperacao({
-      tipo: 'usuario',
-      acao: idExistente ? 'update' : 'create',
-      id: registroLocal.id,
-      dados: registroLocal
-    });
-
-    closeModal('modalNovoUsuario');
-    renderUsuarios();
-    atualizarBadgeSync();
-    showNotification('⚠️ Usuário salvo localmente. Sincronizará depois.', 'warning');
-
-  } finally {
-    setBtnLoading('btnSalvarUsuario', false, 'Salvar');
-  }
-}
-
-function excluirUsuario(idx) {
-  if (!temPermissao('podeGerenciarUsuarios')) {
-    showNotification('🔒 Sem permissão para gerenciar usuários.', 'error');
-    return;
-  }
-
-  const u = DB.usuarios[idx];
-  if (!u) return;
-
-  if (SESSAO && String(SESSAO.id) === String(u.id)) {
-    showNotification('⚠️ Você não pode excluir seu próprio usuário.', 'warning');
-    return;
-  }
-
-  confirmarExclusao(`Deseja excluir o usuário "${u.nome}"?`, async () => {
-    try {
-      if (u.id) await apiDelete('usuarios', u.id);
-      DB.usuarios.splice(idx, 1);
-      salvarCacheLocal('usuarios_cache', DB.usuarios);
-      renderUsuarios();
-      showNotification('🗑️ Usuário excluído com sucesso.', 'success');
-    } catch (err) {
-      console.error('Erro ao excluir usuário:', err);
-      enfileirarOperacao({ tipo: 'usuario', acao: 'delete', id: u.id });
-      DB.usuarios.splice(idx, 1);
-      salvarCacheLocal('usuarios_cache', DB.usuarios);
-      renderUsuarios();
-      atualizarBadgeSync();
-      showNotification('⚠️ Excluído localmente. Será sincronizado depois.', 'warning');
-    }
-  });
-}
-
-  // ============================================================
   // RELATÓRIOS
   // ============================================================
        function renderRelatorios(){
@@ -4348,8 +4072,6 @@ function excluirUsuario(idx) {
   DB.despesas = [];
   DB.cultos   = [];
   DB.entradas = [];
-  DB.usuarios = DB.usuarios || [];
-  
 
   atualizarBadgeSync();
   showNotification('🗑️ Cache limpo. Sincronizando...', 'info');
@@ -4376,12 +4098,6 @@ function excluirUsuario(idx) {
     SESSAO=carregarSessao();
     if(SESSAO){ entrarNoSistema(); }
     else { document.getElementById('loginScreen').classList.add('active'); }
-
-    if (temPermissao('podeGerenciarUsuarios')) {
-  renderUsuarios();
-} else {
-  document.getElementById('navUsuarios')?.remove(); // esconde o menu para quem não tem permissão
-}
 
     document.getElementById('loginUser').addEventListener('keydown', e=>{
       if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
