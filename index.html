@@ -3094,7 +3094,25 @@ async function excluirCultoPorId(id, options = {}) {
   DB.saveLocal();
   invalidarCacheResumo();
 }
+async function excluirCulto(idx) {
+  if (!temPermissao('podeExcluir')) {
+    showNotification('🔒 Sem permissão.', 'error');
+    return;
+  }
+  const c = DB.cultos[idx];
+  if (!c) return;
 
+  confirmarExclusao(
+    `Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`,
+    async () => {
+      await excluirCultoPorId(c.id);
+      renderCultos();
+      renderEntradas();
+      renderDashboard();
+    }
+  );
+}
+  
  // ============================================================
 // DESPESAS
 // ============================================================
