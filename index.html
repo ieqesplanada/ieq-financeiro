@@ -2511,7 +2511,7 @@ function invalidarCacheResumo() {
     resetFormCulto();
     document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
     document.getElementById('c-id').value        =c.id||'';
-    document.getElementById('c-data').value      =c.data||'';
+    document.getElementById('c-data').value = formatarDataParaInput(c.data);
     document.getElementById('c-horario').value   =c.horario||'19:30';
     document.getElementById('c-pastor').value    =c.pastor||'';
     document.getElementById('c-pregador').value  =c.pregador||'';
@@ -2612,6 +2612,20 @@ function invalidarCacheResumo() {
     }
   }
 
+  function formatarDataParaInput(data) {
+  if (!data) return '';
+  // já está em ISO (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}/.test(data)) return data.slice(0, 10);
+  // formato BR (DD/MM/YYYY)
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+    const [dia, mes, ano] = data.split('/');
+    return `${ano}-${mes}-${dia}`;
+  }
+  // objeto Date ou timestamp
+  const d = new Date(data);
+  if (!isNaN(d)) return d.toISOString().slice(0, 10);
+  return '';
+}
   function resetFormCulto(){
     document.getElementById('formCulto').reset();
     document.getElementById('c-id').value='';
