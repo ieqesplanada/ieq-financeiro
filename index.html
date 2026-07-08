@@ -2623,51 +2623,6 @@ function invalidarCacheResumo() {
     }
   }
 
-// ===== FUNÇÕES DE CULTO =====
-
-async function excluirCultoPorId(id, opts = {}) {
-  const { silent = false } = opts;
-
-  const idx = DB.cultos.findIndex(c => c.id === id);
-  if (idx === -1) return;
-
-  const entradasVinculadas = DB.entradas.filter(e => e.origem === 'culto' && e.cultoId === id);
-  for (const ent of entradasVinculadas) {
-    try {
-      await apiDelete('entradas', ent.id);
-    } catch (err) {
-      console.warn('Falha ao excluir entrada vinculada ao culto:', err);
-    }
-  }
-  DB.entradas = DB.entradas.filter(e => !(e.origem === 'culto' && e.cultoId === id));
-
-  try {
-    await apiDelete('cultos', id);
-  } catch (err) {
-    console.warn('Falha ao excluir culto remotamente:', err);
-  }
-  DB.cultos.splice(idx, 1);
-
-  DB.saveLocal();
-
-  if (!silent) {
-    showNotification('🗑️ Culto excluído com sucesso!', 'info');
-  }
-}
-
-async function excluirCulto(idx){
-  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-  const c=DB.cultos[idx]; if(!c)return;
-  confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
-    await excluirCultoPorId(c.id);
-    renderCultos(); renderEntradas(); renderDashboard();
-  });
-}
-
-async function salvarCulto(e){
-  // ... seu código existente ...
-}
-  
   function resetFormCulto(){
     document.getElementById('formCulto').reset();
     document.getElementById('c-id').value='';
@@ -3097,6 +3052,17 @@ async function salvarCulto(e){
     });
   }
 
+  async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    if(!confirm('Excluir este culto?'))return;
+    const c=DB.cultos[idx]; if(!c)return;
+    await excluirCultoPorId(c.id);
+    renderCultos(); renderEntradas(); renderDashboard();
+  }
+
+  // ============================================================
+  // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
+  // ============================================================
  // ============================================================
 // DESPESAS
 // ============================================================
