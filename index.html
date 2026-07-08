@@ -3118,6 +3118,7 @@ function abrirNovaDespesa() {
   }
   document.getElementById('formDespesa').reset();
   document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('d-formaPagamento').value = 'Caixa'; // 🆕 LINHA NOVA
   atualizarSelectsCategoria();
   document.getElementById('modalNovaDespesa').classList.add('active');
 }
@@ -3158,10 +3159,10 @@ function renderDespesas(lista, mes) {
   const podeEd = temPermissao('podeEditar');
   const podeEx = temPermissao('podeExcluir');
 
-  if (!lista.length) {
+    if (!lista.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="py-8 text-center text-gray-400 text-sm">
+        <td colspan="7" class="py-8 text-center text-gray-400 text-sm">
           <i class="fas fa-check-circle text-green-300 text-3xl block mb-2"></i>
           Nenhuma despesa encontrada
         </td>
@@ -3199,29 +3200,35 @@ function renderDespesas(lista, mes) {
                <i class="fas fa-trash"></i>
              </button>`;
 
-      return `
-        <tr class="table-row border-b border-gray-50">
-          <td class="py-2 text-sm">
-            <span class="inline-flex items-center gap-1">
-              <span>${getCatIcon(d.categoria)}</span>
-              <span class="font-medium text-gray-700">${escapeHtml(d.categoria || '')}</span>
-            </span>
-          </td>
-          <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">
-            ${escapeHtml(d.descricao || '')}
-          </td>
-          <td class="py-2 text-sm text-gray-500 hidden md:table-cell">
-            ${fmtDate(d.data)}
-          </td>
-          <td class="py-2 text-sm font-bold text-red-600 text-right">
-            ${fmt(d.valor)}
-          </td>
-          <td class="py-2 text-center">
-            <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
-          </td>
-        </tr>`;
-    }).join('');
-  }
+                return `
+            <tr class="table-row border-b border-gray-50">
+              <td class="py-2 text-sm">
+                <span class="inline-flex items-center gap-1">
+                  <span>${getCatIcon(d.categoria)}</span>
+                  <span class="font-medium text-gray-700">${escapeHtml(d.categoria || '')}</span>
+                </span>
+              </td>
+              <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">
+                ${escapeHtml(d.descricao || '')}
+              </td>
+              <td class="py-2 text-sm text-gray-500 hidden md:table-cell">
+                ${fmtDate(d.data)}
+              </td>
+              <td class="py-2 text-sm text-gray-500 hidden lg:table-cell">
+                ${escapeHtml(d.nfe || '—')}
+              </td>
+              <td class="py-2 hidden lg:table-cell">
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${d.formaPagamento==='PIX'?'badge-blue':'badge-green'}">
+                  ${escapeHtml(d.formaPagamento || 'Caixa')}
+                </span>
+              </td>
+              <td class="py-2 text-sm font-bold text-red-600 text-right">
+                ${fmt(d.valor)}
+              </td>
+              <td class="py-2 text-center">
+                <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
+              </td>
+            </tr>`;
 
   const total = lista.reduce((s, d) => s + d.valor, 0);
 
@@ -3264,6 +3271,8 @@ function abrirAlterarDespesa(id) {
   document.getElementById('alt-d-categoria').value = d.categoria  || '';
   document.getElementById('alt-d-descricao').value = d.descricao  || '';
   document.getElementById('alt-d-valor').value     = d.valor      || '';
+  document.getElementById('alt-d-nfe').value             = d.nfe || '';                      // 🆕 LINHA NOVA
+  document.getElementById('alt-d-formaPagamento').value  = d.formaPagamento || 'Caixa';       // 🆕 LINHA NOVA
   // Garante formato yyyy-mm-dd para o input date
   let dataVal = (d.data || '').split('T')[0];
   document.getElementById('alt-d-data').value      = dataVal || new Date().toISOString().split('T')[0];
@@ -3277,6 +3286,8 @@ async function confirmarAlteracaoDespesa(e) {
   const descricao = document.getElementById('alt-d-descricao').value.trim();
   const valor     = parseFloat(document.getElementById('alt-d-valor').value);
   const dataDesp  = document.getElementById('alt-d-data').value; // data da despesa
+  const nfe             = document.getElementById('alt-d-nfe').value.trim();               // 🆕 LINHA NOVA
+  const formaPagamento  = document.getElementById('alt-d-formaPagamento').value;           // 🆕 LINHA NOVA
 
   if (!categoria || !valor || valor <= 0) {
     showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
@@ -3295,24 +3306,29 @@ async function confirmarAlteracaoDespesa(e) {
     return;
   }
 
-  const despesaAtualizada = {
+    const despesaAtualizada = {
     ...DB.despesas[idx],
     categoria,
     descricao,
     valor,
     data: dataDesp,
+    nfe,                              // 🆕 LINHA NOVA
+    formaPagamento,                   // 🆕 LINHA NOVA
     atualizadoEm: new Date().toISOString()
   };
 
-  try {
-    // ATENÇÃO: o campo "data" (data da despesa) é enviado como "dataDespesa" para evitar conflito
-    await apiUpdate('despesas', idDespesa, {
-      categoria,
-      descricao,
-      valor,
-      data: dataDesp,
-      atualizadoEm: despesaAtualizada.atualizadoEm
-    });
+        try {
+        // ATENÇÃO: o campo "data" (data da despesa) é enviado como "dataDespesa" para evitar conflito
+        await apiUpdate('despesas', idDespesa, {
+          categoria,
+          descricao,
+          valor,
+          data: dataDesp,
+          nfe,                              // 🆕 LINHA NOVA
+          formaPagamento,                   // 🆕 LINHA NOVA
+          atualizadoEm: despesaAtualizada.atualizadoEm
+        });
+
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
     enfileirarOperacao({ tipo: 'despesa', acao: 'update', id: idDespesa, dados: despesaAtualizada });
@@ -3339,12 +3355,15 @@ async function salvarDespesa(e) {
   if (btn.disabled) return; // evita duplo envio
 
   const dd = {
-    categoria:  document.getElementById('d-categoria').value,
-    descricao:  document.getElementById('d-descricao').value.trim(), // CORRIGIDO
-    valor:      parseFloat(document.getElementById('d-valor').value),
-    data:       document.getElementById('d-data').value,
-    criadoEm:   new Date().toISOString()
+    categoria:       document.getElementById('d-categoria').value,
+    descricao:       document.getElementById('d-descricao').value.trim(), // CORRIGIDO
+    valor:           parseFloat(document.getElementById('d-valor').value),
+    data:            document.getElementById('d-data').value,
+    nfe:             document.getElementById('d-nfe').value.trim(),             // 🆕 LINHA NOVA
+    formaPagamento:  document.getElementById('d-formaPagamento').value,         // 🆕 LINHA NOVA
+    criadoEm:        new Date().toISOString()
   };
+
 
   if (!dd.categoria || !dd.valor || dd.valor <= 0) {
     showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
