@@ -3031,14 +3031,38 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-   async function excluirCulto(idx){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    const c=DB.cultos[idx]; if(!c)return;
-    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
-      await excluirCultoPorId(c.id);
-      renderCultos(); renderEntradas(); renderDashboard();
-    });
-  } 
+   function excluirCulto(idx) {
+  if (!temPermissao('excluir')) {
+    showNotification('⚠️ Você não tem permissão para excluir cultos.', 'warning');
+    return;
+  }
+
+  const culto = DB.cultos[idx];
+  if (!culto) return;
+
+  confirmarExclusao(
+    `Deseja realmente excluir o culto de ${fmtDate(culto.data)}?`,
+    () => {
+      // Remove a entrada financeira vinculada, se existir
+      if (culto.entradaId) {
+        DB.entradas = DB.entradas.filter(e => e.id !== culto.entradaId);
+      }
+
+      DB.cultos.splice(idx, 1);
+
+      salvarLocal('cultos_cache', DB.cultos);
+      salvarLocal('entradas_cache', DB.entradas);
+
+      renderCultos();
+      atualizarDashboard();
+
+      showNotification('🗑️ Culto excluído com sucesso.', 'success');
+
+      // Tenta sincronizar exclusão com o servidor
+      enfileirarOperacao({ tipo: 'excluirCulto', payload: { id: culto.id } });
+    }
+  );
+}
   
  // ============================================================
 // DESPESAS
