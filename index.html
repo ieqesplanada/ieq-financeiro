@@ -2195,7 +2195,7 @@ function invalidarCacheResumo() {
   function renderMetricasCultoMes(){
     const cultos=getCultosMes(GLOBAL_MONTH);
     const{presentes:pCeia,data:dCeia,encontrado}=getPresentesCeia(GLOBAL_MONTH);
-    let infoCeia='2º domingo do mês';
+    let infoCeia='1º domingo do mês';
     if(encontrado&&dCeia) infoCeia=`Culto de ${fmtDate(dCeia)}`;
     else if(dCeia)        infoCeia=`Sem culto em ${fmtDate(dCeia)}`;
     // CORREÇÃO 1: missoes acumulado separado
