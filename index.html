@@ -3043,26 +3043,38 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-   async function excluirCulto(idx){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    const c=DB.cultos[idx]; if(!c)return;
-    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
-      await excluirCultoPorId(c.id);
-      renderCultos(); renderEntradas(); renderDashboard();
-    });
-  }
+  async function excluirCultoPorId(id, options = {}) {
+  const executar = async () => {
+    try {
+      mostrarLoading(true);
+      await apiDeleteSeguro('cultos', id);
 
-  async function excluirCulto(idx){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    if(!confirm('Excluir este culto?'))return;
-    const c=DB.cultos[idx]; if(!c)return;
-    await excluirCultoPorId(c.id);
-    renderCultos(); renderEntradas(); renderDashboard();
-  }
+      const idx = DB.cultos.findIndex(c => c.id === id);
+      if (idx >= 0) DB.cultos.splice(idx, 1);
+      DB.saveLocal();
 
-  // ============================================================
-  // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
-  // ============================================================
+      if (!options.silent) {
+        showNotification('🗑️ Culto excluído com sucesso!', 'success');
+        renderCultos();
+      }
+    } catch (err) {
+      if (!options.silent) {
+        showNotification('⚠️ Excluído localmente. Será sincronizado quando online.', 'warning');
+        renderCultos();
+      }
+    } finally {
+      mostrarLoading(false);
+      atualizarBadgeSync();
+    }
+  };
+
+  if (options.silent) {
+    await executar();
+  } else {
+    confirmarExclusao('Este culto será excluído permanentemente.', executar);
+  }
+}
+
  // ============================================================
 // DESPESAS
 // ============================================================
