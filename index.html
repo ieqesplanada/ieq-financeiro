@@ -3182,7 +3182,7 @@ function renderDespesas(lista, mes) {
           Nenhuma despesa encontrada
         </td>
       </tr>`;
-  } else {
+   } else {
     tbody.innerHTML = lista.map(d => {
       const altBtn = d._fixed
         ? `<span class="w-7 h-7 inline-flex items-center justify-center"></span>`
@@ -3215,35 +3215,37 @@ function renderDespesas(lista, mes) {
                <i class="fas fa-trash"></i>
              </button>`;
 
-                return `
-            <tr class="table-row border-b border-gray-50">
-              <td class="py-2 text-sm">
-                <span class="inline-flex items-center gap-1">
-                  <span>${getCatIcon(d.categoria)}</span>
-                  <span class="font-medium text-gray-700">${escapeHtml(d.categoria || '')}</span>
-                </span>
-              </td>
-              <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">
-                ${escapeHtml(d.descricao || '')}
-              </td>
-              <td class="py-2 text-sm text-gray-500 hidden md:table-cell">
-                ${fmtDate(d.data)}
-              </td>
-              <td class="py-2 text-sm text-gray-500 hidden lg:table-cell">
-                ${escapeHtml(d.nfe || '—')}
-              </td>
-              <td class="py-2 hidden lg:table-cell">
-                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${d.formaPagamento==='PIX'?'badge-blue':'badge-green'}">
-                  ${escapeHtml(d.formaPagamento || 'Caixa')}
-                </span>
-              </td>
-              <td class="py-2 text-sm font-bold text-red-600 text-right">
-                ${fmt(d.valor)}
-              </td>
-              <td class="py-2 text-center">
-                <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
-              </td>
-            </tr>`;
+      return `
+        <tr class="table-row border-b border-gray-50">
+          <td class="py-2 text-sm">
+            <span class="inline-flex items-center gap-1">
+              <span>${getCatIcon(d.categoria)}</span>
+              <span class="font-medium text-gray-700">${escapeHtml(d.categoria || '')}</span>
+            </span>
+          </td>
+          <td class="py-2 text-sm text-gray-600 hidden sm:table-cell">
+            ${escapeHtml(d.descricao || '')}
+          </td>
+          <td class="py-2 text-sm text-gray-500 hidden md:table-cell">
+            ${fmtDate(d.data)}
+          </td>
+          <td class="py-2 text-sm text-gray-500 hidden lg:table-cell">
+            ${escapeHtml(d.nfe || '—')}
+          </td>
+          <td class="py-2 hidden lg:table-cell">
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${d.formaPagamento==='PIX'?'badge-blue':'badge-green'}">
+              ${escapeHtml(d.formaPagamento || 'Caixa')}
+            </span>
+          </td>
+          <td class="py-2 text-sm font-bold text-red-600 text-right">
+            ${fmt(d.valor)}
+          </td>
+          <td class="py-2 text-center">
+            <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
+          </td>
+        </tr>`;
+    }).join(''); // 🆕 FECHA O MAP E JUNTA O ARRAY EM STRING
+  } // 🆕 FECHA O ELSE
 
   const total = lista.reduce((s, d) => s + d.valor, 0);
 
