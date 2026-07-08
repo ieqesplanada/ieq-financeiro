@@ -1155,21 +1155,14 @@
         </div>
       </div>
 
-      <!-- 🆕 NOVO CAMPO: adicione este bloco inteiro aqui -->
-      <div>
-        <label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
-        <select id="d-formaPagamento" class="input-field text-sm">
-          <option value="Caixa">Caixa</option>
-          <option value="PIX">PIX</option>
-          <option value="Cartão">Cartão</option>
-        </select>
-      </div>
-
           <!-- 🆕 NOVO BLOCO -->
+                   <!-- 🆕 NOVO BLOCO -->
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label><input type="text" id="alt-d-nfe" class="input-field text-sm" placeholder="Ex: 000123456"></div>
+            <div><label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
+              <input type="text" id="d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
+            </div>
             <div><label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
-              <select id="alt-d-formaPagamento" class="input-field text-sm">
+              <select id="d-formaPagamento" class="input-field text-sm">
                 <option value="Caixa">Caixa</option>
                 <option value="PIX">PIX</option>
                 <option value="Cartão">Cartão</option>
@@ -1178,8 +1171,9 @@
               </select>
             </div>
           </div>
+       </div>
           <!-- FIM NOVO BLOCO -->
-        </div>
+
 
         <div class="flex gap-3 mt-4">
           <button type="button" onclick="closeModal('modalNovaDespesa')" class="flex-1 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</button>
