@@ -3272,6 +3272,7 @@ async function confirmarAlteracaoDespesa(e) {
     });
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
+    enfileirarOperacao({ tipo: 'despesa', acao: 'update', id: idDespesa, dados: despesaAtualizada });
     setSyncStatus('synced');
     showNotification('✅ Despesa alterada!', 'success');
   } catch (err) {
@@ -3322,6 +3323,7 @@ async function salvarDespesa(e) {
   } catch (err) {
     DB.despesas.push({ ...dd, id: Date.now() });
     DB.saveLocal();
+    enfileirarOperacao({ tipo: 'despesa', acao: 'create', dados: dd });
     closeModal('modalNovaDespesa');
     document.getElementById('formDespesa').reset();
     document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
@@ -3408,6 +3410,7 @@ async function salvarDespesa(e) {
     setBtnLoading('btnSalvarEntrada',true,'Registrar');
     try{
       const r=await apiSave('entradas',ed); DB.entradas.unshift({...ed,id:r.id}); DB.saveLocal();
+      enfileirarOperacao({ tipo: 'entrada', acao: 'create', dados: ed });
       closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
       renderEntradas(); setSyncStatus('synced'); showNotification(`✅ Entrada de ${fmt(ed.valor)} salva!`,'success'); renderDashboard();
     }catch(err){
@@ -3853,6 +3856,12 @@ async function salvarDespesa(e) {
     compartilharWhatsApp(texto);
   }
 
+  function ultimoDiaDoMes(mesKey) {
+  const [ano, mes] = mesKey.split('-').map(Number);
+  const ultimoDia = new Date(ano, mes, 0).getDate();
+  return `${mesKey}-${String(ultimoDia).padStart(2, '0')}`;
+}
+  
     function gerarRelatorioCultosPDF() {
   const mesSelect = document.getElementById('relCultoMesSelect')?.value;
   let lista, periodoLabel;
@@ -3863,7 +3872,7 @@ async function salvarDespesa(e) {
   } else {
     const ini = document.getElementById('relCultoIni')?.value || GLOBAL_MONTH;
     const fim = document.getElementById('relCultoFim')?.value || GLOBAL_MONTH;
-    lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= fim + '-31');
+    lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= ultimoDiaDoMes(fim));
     periodoLabel = monthLabel(ini) + ' a ' + monthLabel(fim);
   }
 
@@ -3982,7 +3991,7 @@ async function salvarDespesa(e) {
     } else {
       const ini = document.getElementById('relCultoIni')?.value || GLOBAL_MONTH;
       const fim = document.getElementById('relCultoFim')?.value || GLOBAL_MONTH;
-      lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= fim + '-31');
+      lista = DB.cultos.filter(c => (c.data || '') >= ini && (c.data || '') <= ultimoDiaDoMes(fim));
     }
     const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
 
