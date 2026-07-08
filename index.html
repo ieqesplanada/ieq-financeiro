@@ -2617,16 +2617,27 @@ function invalidarCacheResumo() {
   // Função auxiliar para extrair HH:MM de qualquer formato recebido
 function normalizarHorario(valor) {
   if (!valor) return '19:30';
-  if (valor.includes('T')) {
-    const match = valor.match(/T(\d{2}:\d{2})/);
-    return match ? match[1] : '19:30';
-  }
-  if (/^\d{2}:\d{2}:\d{2}$/.test(valor)) {
-    return valor.slice(0, 5);
-  }
+
+  // Já está no formato correto HH:MM
   if (/^\d{2}:\d{2}$/.test(valor)) {
     return valor;
   }
+
+  // Formato com segundos HH:MM:SS (sem timezone/data) -> não precisa converter
+  if (/^\d{2}:\d{2}:\d{2}$/.test(valor)) {
+    return valor.slice(0, 5);
+  }
+
+  // Se vier como data/hora ISO completa (com T), converte para horário LOCAL
+  if (valor.includes('T')) {
+    const d = new Date(valor);
+    if (!isNaN(d.getTime())) {
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+  }
+
   return '19:30';
 }
 
