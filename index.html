@@ -3664,10 +3664,11 @@ async function salvarDespesa(e) {
         <tr>
           <td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria||'')}</td>
           <td>${escapeHtml(d.descricao||'—')}</td>
+          <td>${escapeHtml(d.nfe||'—')}</td>
           <td>${fmtDate(d.data)}</td>
           <td style="text-align:right;color:#dc2626;font-weight:600">${fmt(d.valor)}</td>
         </tr>`).join('')
-    : `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:16px">Nenhuma despesa no período</td></tr>`;
+    : `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:16px">Nenhuma despesa no período</td></tr>`;
 
   const w = window.open('','_blank');
   w.document.write(`<!DOCTYPE html>
@@ -3725,16 +3726,17 @@ async function salvarDespesa(e) {
     <div class="kpi"><span>Saldo Final</span><strong style="color:#92400e">${fmt(saldoFinal)}</strong></div>
   </div>
 
-  <table>
-    <tr><th colspan="4">📄 DETALHAMENTO DE DESPESAS</th></tr>
+   <table>
+    <tr><th colspan="5">📄 DETALHAMENTO DE DESPESAS</th></tr>
     <tr style="background:#f1f5f9">
       <th style="background:#f1f5f9;color:#475569">Categoria</th>
       <th style="background:#f1f5f9;color:#475569">Descrição</th>
+      <th style="background:#f1f5f9;color:#475569">NFe/NFCe</th>
       <th style="background:#f1f5f9;color:#475569">Data</th>
       <th style="background:#f1f5f9;color:#475569;text-align:right">Valor</th>
     </tr>
     ${linhasDespesas}
-    <tr class="total-row"><td colspan="3">TOTAL DE DESPESAS</td><td style="text-align:right" class="red">${fmt(saiMes)}</td></tr>
+    <tr class="total-row"><td colspan="4">TOTAL DE DESPESAS</td><td style="text-align:right" class="red">${fmt(saiMes)}</td></tr>
   </table>
 
   <div class="footer">
