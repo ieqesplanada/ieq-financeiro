@@ -2512,7 +2512,7 @@ function invalidarCacheResumo() {
     document.getElementById('cultoModalTitulo').textContent='Alterar Relatório de Culto (REFC)';
     document.getElementById('c-id').value        =c.id||'';
     document.getElementById('c-data').value = formatarDataParaInput(c.data);
-    document.getElementById('c-horario').value   =c.horario||'19:30';
+    document.getElementById('c-horario').value   =normalizarHorario(c.horario);
     document.getElementById('c-pastor').value    =c.pastor||'';
     document.getElementById('c-pregador').value  =c.pregador||'';
     document.getElementById('c-tipo').value      =c.tipo||'Culto Regular';
@@ -2539,6 +2539,7 @@ function invalidarCacheResumo() {
     const{totalDiz,totalOf,total}=calcTotalCulto();
     const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
     const cultoIdEx=document.getElementById('c-id').value;
+    const cultoAntigo = isEdit ? DB.cultos.find(c=>c.id==cultoIdEx) : null;
     const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
 
     const cultoData={
@@ -2564,7 +2565,8 @@ function invalidarCacheResumo() {
       contaCorrente:+document.getElementById('c-conta').value||0,
       observacoes:document.getElementById('c-observacoes').value||'', // CORREÇÃO 4
       atualizadoEm:nowIso,
-      criadoEm:nowIso
+      criadoEm:cultoAntigo?.criadoEm||nowIso
+
     };
 
     setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
@@ -2611,6 +2613,22 @@ function invalidarCacheResumo() {
       renderCultos(); renderEntradas(); renderDashboard();
     }
   }
+
+  // Função auxiliar para extrair HH:MM de qualquer formato recebido
+function normalizarHorario(valor) {
+  if (!valor) return '19:30';
+  if (valor.includes('T')) {
+    const match = valor.match(/T(\d{2}:\d{2})/);
+    return match ? match[1] : '19:30';
+  }
+  if (/^\d{2}:\d{2}:\d{2}$/.test(valor)) {
+    return valor.slice(0, 5);
+  }
+  if (/^\d{2}:\d{2}$/.test(valor)) {
+    return valor;
+  }
+  return '19:30';
+}
 
   function formatarDataParaInput(data) {
   if (!data) return '';
