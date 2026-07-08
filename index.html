@@ -3043,36 +3043,62 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-  async function excluirCultoPorId(id, options = {}) {
-  const executar = async () => {
-    try {
-      mostrarLoading(true);
-      await apiDeleteSeguro('cultos', id);
+  // ============================================================
+// EXCLUSÃO DE CULTO
+// ============================================================
 
-      const idx = DB.cultos.findIndex(c => c.id === id);
-      if (idx >= 0) DB.cultos.splice(idx, 1);
-      DB.saveLocal();
-
-      if (!options.silent) {
-        showNotification('🗑️ Culto excluído com sucesso!', 'success');
-        renderCultos();
-      }
-    } catch (err) {
-      if (!options.silent) {
-        showNotification('⚠️ Excluído localmente. Será sincronizado quando online.', 'warning');
-        renderCultos();
-      }
-    } finally {
-      mostrarLoading(false);
-      atualizarBadgeSync();
-    }
-  };
-
-  if (options.silent) {
-    await executar();
-  } else {
-    confirmarExclusao('Este culto será excluído permanentemente.', executar);
+// Exclusão "de baixo nível" — usada tanto pelo botão quanto pela edição (silent)
+async function excluirCultoPorId(id, options = {}) {
+  try {
+    await apiDeleteSeguro('cultos', id);
+  } catch (err) {
+    // apiDeleteSeguro já enfileira offline; apenas repropaga se necessário
+    if (!options.silent) throw err;
   }
+  const idx = DB.cultos.findIndex(c => String(c.id) === String(id));
+  if (idx >= 0) DB.cultos.splice(idx, 1);
+
+  // Remove também a entrada financeira vinculada a este culto (se existir)
+  const idxEntrada = DB.entradas.findIndex(e => String(e.cultoId) === String(id));
+  if (idxEntrada >= 0) {
+    const entradaId = DB.entradas[idxEntrada].id;
+    DB.entradas.splice(idxEntrada, 1);
+    if (!options.silent) {
+      try { await apiDeleteSeguro('entradas', entradaId); } catch (e) {}
+    }
+  }
+
+  DB.saveLocal();
+  invalidarCacheResumo();
+}
+
+// Função chamada pelo botão da tabela (com confirmação visual)
+function excluirCulto(idx) {
+  if (!temPermissao('podeExcluir')) {
+    showNotification('🔒 Sem permissão para excluir.', 'error');
+    return;
+  }
+  const culto = DB.cultos[idx];
+  if (!culto) return;
+
+  confirmarExclusao(
+    `Excluir o culto de ${fmtDate(culto.data)}? Esta ação removerá também a entrada financeira vinculada.`,
+    async () => {
+      mostrarLoading(true);
+      try {
+        await excluirCultoPorId(culto.id);
+        showNotification('🗑️ Culto excluído com sucesso!', 'success');
+      } catch (err) {
+        showNotification('⚠️ Excluído localmente. Será sincronizado quando online.', 'warning');
+      } finally {
+        mostrarLoading(false);
+        renderCultos();
+        renderEntradas();
+        renderDashboard();
+        atualizarBadgeSync();
+      }
+    }
+  );
 }
 
  // ============================================================
