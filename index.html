@@ -1284,8 +1284,11 @@ async function apiGet(sheet) {
 }
 
 async function apiSave(sheet, data) {
-  const url = `${API_URL}?action=save&sheet=${encodeURIComponent(sheet)}&data=${encodeURIComponent(JSON.stringify(data))}`;
-  const resp = await fetch(url);
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'save', sheet, data })
+  });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const json = await resp.json();
   if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
@@ -1293,8 +1296,11 @@ async function apiSave(sheet, data) {
 }
 
 async function apiUpdate(sheet, id, data) {
-  const url = `${API_URL}?action=update&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}&data=${encodeURIComponent(JSON.stringify(data))}`;
-  const resp = await fetch(url);
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'update', sheet, id, data })
+  });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const json = await resp.json();
   if (!json.ok) throw new Error(json.error || 'Erro ao atualizar');
@@ -3037,82 +3043,26 @@ function invalidarCacheResumo() {
   w.document.close();
 }
 
-  // ============================================================
-// EXCLUSÃO DE CULTO
-// ============================================================
-
-  async function excluirCultoPorId(id, opts = {}) {
-  const idx = DB.cultos.findIndex(c => String(c.id) === String(id));
-  if (idx === -1) return;
-
-  const culto = DB.cultos[idx];
-
-  // Remove localmente o culto
-  DB.cultos.splice(idx, 1);
-
-  // Remove a entrada financeira vinculada a esse culto (se existir)
-  const idxEntrada = DB.entradas.findIndex(e => String(e.cultoId) === String(id));
-  if (idxEntrada !== -1) DB.entradas.splice(idxEntrada, 1);
-
-  DB.saveLocal();
-
-  try {
-    await apiDelete('cultos', id);
-    // Se houver endpoint separado para entradas vinculadas, apague também:
-    if (idxEntrada !== -1) {
-      // ajuste o "sheet" conforme o nome usado na sua API (ex: 'entradas')
-      await apiDelete('entradas', DB.entradas[idxEntrada]?.id || id).catch(() => {});
-    }
-    if (!opts.silent) setSyncStatus('synced');
-  } catch (err) {
-    if (!opts.silent) setSyncStatus('error');
-    // Mesmo com erro de rede, já removemos localmente — ok para modo offline
-  }
-}
-
-// Exclusão "de baixo nível" — usada tanto pelo botão quanto pela edição (silent)
-async function excluirCultoPorId(id, options = {}) {
-  try {
-    await apiDeleteSeguro('cultos', id);
-  } catch (err) {
-    // apiDeleteSeguro já enfileira offline; apenas repropaga se necessário
-    if (!options.silent) throw err;
-  }
-  const idx = DB.cultos.findIndex(c => String(c.id) === String(id));
-  if (idx >= 0) DB.cultos.splice(idx, 1);
-
-  // Remove também a entrada financeira vinculada a este culto (se existir)
-  const idxEntrada = DB.entradas.findIndex(e => String(e.cultoId) === String(id));
-  if (idxEntrada >= 0) {
-    const entradaId = DB.entradas[idxEntrada].id;
-    DB.entradas.splice(idxEntrada, 1);
-    if (!options.silent) {
-      try { await apiDeleteSeguro('entradas', entradaId); } catch (e) {}
-    }
-  }
-
-  DB.saveLocal();
-  invalidarCacheResumo();
-}
-async function excluirCulto(idx) {
-  if (!temPermissao('podeExcluir')) {
-    showNotification('🔒 Sem permissão.', 'error');
-    return;
-  }
-  const c = DB.cultos[idx];
-  if (!c) return;
-
-  confirmarExclusao(
-    `Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`,
-    async () => {
+   async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    const c=DB.cultos[idx]; if(!c)return;
+    confirmarExclusao(`Excluir o culto de ${fmtDate(c.data)}? Esta ação também removerá a entrada financeira vinculada.`, async () => {
       await excluirCultoPorId(c.id);
-      renderCultos();
-      renderEntradas();
-      renderDashboard();
-    }
-  );
-}
-  
+      renderCultos(); renderEntradas(); renderDashboard();
+    });
+  }
+
+  async function excluirCulto(idx){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    if(!confirm('Excluir este culto?'))return;
+    const c=DB.cultos[idx]; if(!c)return;
+    await excluirCultoPorId(c.id);
+    renderCultos(); renderEntradas(); renderDashboard();
+  }
+
+  // ============================================================
+  // DESPESAS — CORREÇÃO 3: botão Alterar + modal de edição
+  // ============================================================
  // ============================================================
 // DESPESAS
 // ============================================================
@@ -3467,25 +3417,23 @@ async function salvarDespesa(e) {
   }
 
    async function excluirEntrada(id){
-  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-  const idx=DB.entradas.findIndex(e=>String(e.id)===String(id));
-  if(idx===-1){ console.log('Entrada não encontrada para id:', id); return; }
-  const ent = DB.entradas[idx];
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
+    const ent = DB.entradas[idx];
 
-  if (!confirm(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`)) return;
-
-  setSyncStatus('syncing');
-  try{
-    await apiDelete('entradas',id);
-    DB.entradas.splice(idx,1); DB.saveLocal();
-    setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
-  }catch(err){
-    console.error('Erro apiDelete:', err);
-    DB.entradas.splice(idx,1); DB.saveLocal();
-    setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+    confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
+      setSyncStatus('syncing');
+      try{
+        await apiDelete('entradas',id);
+        DB.entradas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
+      }catch(err){
+        DB.entradas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+      }
+      renderEntradas(); renderDashboard();
+    });
   }
-  renderEntradas(); renderDashboard();
-}
 
   // ============================================================
   // HISTÓRICO
