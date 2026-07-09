@@ -3107,10 +3107,12 @@ function normalizarHorario(valor) {
 }
 
    function excluirCulto(idx) {
-  if (!temPermissao('excluir')) {
+  if (!temPermissao('podeExcluir')) {   // <-- corrigido
     showNotification('⚠️ Você não tem permissão para excluir cultos.', 'warning');
     return;
   }
+  // ... resto igual
+}
 
   const culto = DB.cultos[idx];
   if (!culto) return;
@@ -4043,7 +4045,6 @@ async function salvarDespesa(e) {
 </body></html>`);
   w.document.close();
 }
-
 
     // ============================================================
   // WHATSAPP SHARING
