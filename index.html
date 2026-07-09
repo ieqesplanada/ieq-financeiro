@@ -3539,32 +3539,34 @@ enfileirarOperacao({ action: 'save', sheet: 'despesas', id: idLocal, data: dd })
     renderEntradas(); setSyncStatus('synced'); showNotification(`✅ Entrada de ${fmt(ed.valor)} salva!`,'success'); renderDashboard();
   }catch(err){
     const idLocal = Date.now();
-DB.despesas.push({ ...dd, id: idLocal });
-DB.saveLocal();
-enfileirarOperacao({ action: 'save', sheet: 'despesas', id: idLocal, data: dd });
+    const edLocal = { ...ed, id: idLocal };
+    DB.entradas.push(edLocal);
+    DB.saveLocal();
+    enfileirarOperacao({ action: 'save', sheet: 'entradas', id: idLocal, data: edLocal });
     closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
     renderEntradas(); setSyncStatus('error'); showNotification('⚠️ Entrada salva localmente','warning'); renderDashboard();
   }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
 }
-   async function excluirEntrada(id){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
-    const ent = DB.entradas[idx];
 
-    confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
-      setSyncStatus('syncing');
-      try{
-        await apiDelete('entradas',id);
-        DB.entradas.splice(idx,1); DB.saveLocal();
-        setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
-     }catch(err){
-    DB.despesas.splice(idx,1); DB.saveLocal();
-    enfileirarOperacao({ action: 'delete', sheet: 'despesas', id, data: { id } }); // ✅ ADICIONAR
-    setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+async function excluirEntrada(id){
+  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+  const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
+  const ent = DB.entradas[idx];
+
+  confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
+    setSyncStatus('syncing');
+    try{
+      await apiDelete('entradas',id);
+      DB.entradas.splice(idx,1); DB.saveLocal();
+      setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
+    }catch(err){
+      DB.entradas.splice(idx,1); DB.saveLocal();
+      enfileirarOperacao({ action: 'delete', sheet: 'entradas', id, data: { id } });
+      setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+    }
+    renderEntradas(); renderDashboard();
+  });
 }
-      renderEntradas(); renderDashboard();
-    });
-  }
 
   // ============================================================
   // HISTÓRICO
