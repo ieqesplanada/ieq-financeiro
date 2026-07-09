@@ -1393,11 +1393,12 @@ async function apiSaveSeguro(sheet, data) {
 }
 
 async function apiUpdateSeguro(sheet, id, data) {
+  const snapshot = JSON.parse(JSON.stringify(data)); // 🔧 clone defensivo
   try {
     return await apiUpdate(sheet, id, data);
   } catch (err) {
-    enfileirarOperacao({ action: 'update', sheet, id, data });
-    throw err; // deixa o chamador tratar visualmente
+    enfileirarOperacao({ action: 'update', sheet, id, data: snapshot });
+    throw err;
   }
 }
 
@@ -3396,9 +3397,32 @@ async function confirmarAlteracaoDespesa(e) {
     atualizadoEm: new Date().toISOString()
   };
 
-  try {
-    // ATENÇÃO: o campo "data" (data da despesa) é enviado como "dataDespesa" para evitar conflito
-    await apiUpdate('despesas', idDespesa, {
+ try {
+  await apiUpdate('despesas', idDespesa, {
+    categoria,
+    descricao,
+    valor,
+    data: dataDesp,
+    nfe,
+    formaPagamento,
+    atualizadoEm: despesaAtualizada.atualizadoEm
+  });
+
+  DB.despesas[idx] = despesaAtualizada;
+  DB.saveLocal();
+  setSyncStatus('synced');
+  showNotification('✅ Despesa alterada!', 'success');
+
+} catch (err) {
+  // 🔧 salva localmente E enfileira corretamente para reenvio posterior
+  DB.despesas[idx] = despesaAtualizada;
+  DB.saveLocal();
+
+  enfileirarOperacao({
+    action: 'update',              // 🔧 nome correto (era "acao")
+    sheet:  'despesas',            // 🔧 nome correto (era "tipo")
+    data: {                        // 🔧 nome correto (era "dados")
+      id: idDespesa,
       categoria,
       descricao,
       valor,
@@ -3406,26 +3430,19 @@ async function confirmarAlteracaoDespesa(e) {
       nfe,
       formaPagamento,
       atualizadoEm: despesaAtualizada.atualizadoEm
-    });
+    }
+  });
 
-    DB.despesas[idx] = despesaAtualizada;
-    DB.saveLocal();
-    enfileirarOperacao({ tipo: 'despesa', acao: 'update', id: idDespesa, dados: despesaAtualizada });
-    setSyncStatus('synced');
-    showNotification('✅ Despesa alterada!', 'success');
-  } catch (err) {
-    DB.despesas[idx] = despesaAtualizada;
-    DB.saveLocal();
-    setSyncStatus('error');
-    showNotification('⚠️ Alteração salva localmente', 'warning');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
-    closeModal('modalAlterarDespesa');
-    filtrarDespesas();
-    renderDashboard();
-  }
+  setSyncStatus('error');
+  showNotification('⚠️ Alteração salva localmente', 'warning');
+} finally {
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
+  closeModal('modalAlterarDespesa');
+  filtrarDespesas();
+  renderDashboard();
 }
+
 // 👇 Exposição explícita no escopo global
 window.confirmarAlteracaoDespesa = confirmarAlteracaoDespesa;
 
