@@ -1156,7 +1156,6 @@
         </div>
       </div>
 
-          <!-- 🆕 NOVO BLOCO -->
                    <!-- 🆕 NOVO BLOCO -->
           <div class="grid grid-cols-2 gap-3">
             <div><label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
@@ -1335,7 +1334,7 @@
   // ============================================================
 // API — com fallback para fila offline
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbwkn9bpHqL-ksZXw0UJjNEwUbUv_8d0c3-zxR0zfmTQLK0Ls0MuEpc5nGDvXEllolbu/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxAOxqYPEO8T54F7gNLdenpAg8rrvrOQHSZ8ZLBpatD2QWRW00nwR2Ox5uO6JbljVnn/exec";
 
 async function apiGet(sheet) {
   const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
@@ -3429,7 +3428,6 @@ async function confirmarAlteracaoDespesa(e) {
 }
 // 👇 Exposição explícita no escopo global
 window.confirmarAlteracaoDespesa = confirmarAlteracaoDespesa;
-
 
 async function salvarDespesa(e) {
   e.preventDefault();
