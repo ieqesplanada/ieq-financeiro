@@ -3416,10 +3416,8 @@ async function confirmarAlteracaoDespesa(e) {
   } catch (err) {
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
-    enfileirarOperacao({ action: 'update', sheet: 'despesas', id: idDespesa, data: despesaAtualizada }); // ✅ ADICIONAR
     setSyncStatus('error');
     showNotification('⚠️ Alteração salva localmente', 'warning');
-}
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
@@ -3431,54 +3429,75 @@ async function confirmarAlteracaoDespesa(e) {
 // 👇 Exposição explícita no escopo global
 window.confirmarAlteracaoDespesa = confirmarAlteracaoDespesa;
 
-async function salvarDespesa(e){
+async function salvarDespesa(e) {
   e.preventDefault();
-  const dd={
-    categoria:document.getElementById('d-categoria').value,
-    descricao:document.getElementById('d-descricao').value,
-    valor:+document.getElementById('d-valor').value,
-    data:document.getElementById('d-data').value,
-    nfe:document.getElementById('d-nfe')?.value || '',
-    obs:document.getElementById('d-obs')?.value || '',
-    criadoEm:new Date().toISOString()
+  const btn = document.getElementById('btnSalvarDespesa');
+  if (btn.disabled) return; // evita duplo envio
+
+  const dd = {
+    categoria:       document.getElementById('d-categoria').value,
+    descricao:       document.getElementById('d-descricao').value.trim(), // CORRIGIDO
+    valor:           parseFloat(document.getElementById('d-valor').value),
+    data:            document.getElementById('d-data').value,
+    nfe:             document.getElementById('d-nfe').value.trim(),             // 🆕 LINHA NOVA
+    formaPagamento:  document.getElementById('d-formaPagamento').value,         // 🆕 LINHA NOVA
+    criadoEm:        new Date().toISOString()
   };
-  setBtnLoading('btnSalvarDespesa',true,'Registrar');
-  try{
-    const r=await apiSave('despesas',dd);
-    DB.despesas.unshift({...dd,id:r.id});
+
+
+  if (!dd.categoria || !dd.valor || dd.valor <= 0) {
+    showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
+    return;
+  }
+
+  setBtnLoading('btnSalvarDespesa', true, 'Registrar');
+  try {
+    const r = await apiSave('despesas', dd);
+    DB.despesas.push({ ...dd, id: r.id });
     DB.saveLocal();
-    closeModal('modalNovaDespesa'); document.getElementById('formDespesa').reset();
-    renderDespesas(); setSyncStatus('synced'); showNotification(`✅ Despesa de ${fmt(dd.valor)} salva!`,'success'); renderDashboard();
-  }catch(err){
-    const idLocal = Date.now();
-const dd = { id: idLocal, categoria, descricao, valor, data, ... }; // ✅ id dentro de dd
-DB.despesas.unshift(dd);
-DB.saveLocal();
-enfileirarOperacao({ action: 'save', sheet: 'despesas', id: idLocal, data: dd }); // ✅ agora data.id existe
-    closeModal('modalNovaDespesa'); document.getElementById('formDespesa').reset();
-    renderDespesas(); setSyncStatus('error'); showNotification('⚠️ Despesa salva localmente','warning'); renderDashboard();
-  }finally{setBtnLoading('btnSalvarDespesa',false,'Registrar');}
+    closeModal('modalNovaDespesa');
+    document.getElementById('formDespesa').reset();
+    document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+    filtrarDespesas();
+    setSyncStatus('synced');
+    showNotification(`✅ Despesa de ${fmt(dd.valor)} registrada!`, 'success');
+    renderDashboard();
+  } catch (err) {
+    DB.despesas.push({ ...dd, id: Date.now() });
+    DB.saveLocal();
+    enfileirarOperacao({ tipo: 'despesa', acao: 'create', dados: dd });
+    closeModal('modalNovaDespesa');
+    document.getElementById('formDespesa').reset();
+    document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+    filtrarDespesas();
+    setSyncStatus('error');
+    showNotification('⚠️ Despesa salva localmente', 'warning');
+    renderDashboard();
+  } finally {
+    setBtnLoading('btnSalvarDespesa', false, 'Registrar');
+  }
 }
+
     async function excluirDespesa(id){
-  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-  const idx=DB.despesas.findIndex(d=>String(d.id)===String(id)); if(idx===-1)return;
-  const desp = DB.despesas[idx];
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
+    if(idx===-1){showNotification('❌ Não encontrada.','error');return;}
+    if(DB.despesas[idx]._fixed){showNotification('❌ Registro fixo não pode ser excluído.','error');return;}
+    const d = DB.despesas[idx];
 
-  confirmarExclusao(`Excluir a despesa "${desp.descricao}" de ${fmt(desp.valor)}?`, async () => {
-    setSyncStatus('syncing');
-    try{
-      await apiDelete('despesas',id);
-      DB.despesas.splice(idx,1); DB.saveLocal();
-      setSyncStatus('synced'); showNotification('🗑️ Despesa excluída','info');
-    }catch(err){
-      DB.despesas.splice(idx,1); DB.saveLocal();
-      enfileirarOperacao({ action: 'delete', sheet: 'despesas', id, data: { id } }); // ✅ ADICIONADO
-      setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
-    }
-    renderDespesas(); renderDashboard();
-  });
-}
-
+    confirmarExclusao(`Excluir a despesa "${d.categoria}" de ${fmt(d.valor)}?`, async () => {
+      setSyncStatus('syncing');
+      try{
+        await apiDelete('despesas',id);
+        DB.despesas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('synced'); showNotification('🗑️ Despesa excluída','info');
+      }catch(err){
+        DB.despesas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+      }
+      filtrarDespesas(); renderDashboard();
+    });
+  }
 
   // ============================================================
   // ENTRADAS
@@ -3539,34 +3558,31 @@ enfileirarOperacao({ action: 'save', sheet: 'despesas', id: idLocal, data: dd })
     renderEntradas(); setSyncStatus('synced'); showNotification(`✅ Entrada de ${fmt(ed.valor)} salva!`,'success'); renderDashboard();
   }catch(err){
     const idLocal = Date.now();
-    const edLocal = { ...ed, id: idLocal };
-    DB.entradas.push(edLocal);
+    DB.entradas.unshift({...ed,id:idLocal});
     DB.saveLocal();
-    enfileirarOperacao({ action: 'save', sheet: 'entradas', id: idLocal, data: edLocal });
+    enfileirarOperacao({ id: idLocal, action: 'create', sheet: 'entradas', data: ed }); // ✅ agora no catch, com formato correto
     closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
     renderEntradas(); setSyncStatus('error'); showNotification('⚠️ Entrada salva localmente','warning'); renderDashboard();
   }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
 }
+   async function excluirEntrada(id){
+    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+    const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
+    const ent = DB.entradas[idx];
 
-async function excluirEntrada(id){
-  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-  const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
-  const ent = DB.entradas[idx];
-
-  confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
-    setSyncStatus('syncing');
-    try{
-      await apiDelete('entradas',id);
-      DB.entradas.splice(idx,1); DB.saveLocal();
-      setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
-    }catch(err){
-      DB.entradas.splice(idx,1); DB.saveLocal();
-      enfileirarOperacao({ action: 'delete', sheet: 'entradas', id, data: { id } });
-      setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
-    }
-    renderEntradas(); renderDashboard();
-  });
-}
+    confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
+      setSyncStatus('syncing');
+      try{
+        await apiDelete('entradas',id);
+        DB.entradas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
+      }catch(err){
+        DB.entradas.splice(idx,1); DB.saveLocal();
+        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+      }
+      renderEntradas(); renderDashboard();
+    });
+  }
 
   // ============================================================
   // HISTÓRICO
