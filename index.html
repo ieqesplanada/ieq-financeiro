@@ -760,44 +760,36 @@
   </div>
 
   <!-- TABELA -->
-  <div class="card p-4">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-      <h3 class="font-bold text-gray-800 text-sm">Registro de Despesas</h3>
-      <input type="text" id="buscaDespesa" placeholder="Buscar descrição ou categoria..."
-             class="input-field text-sm sm:w-56" oninput="filtrarDespesas()">
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full" style="min-width:500px">
-        <thead>
-  <tr class="text-left text-xs text-gray-500 border-b">
-    <th class="pb-2 font-semibold">Categoria</th>
-    <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
-    <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
-    <th class="pb-2 font-semibold hidden lg:table-cell">NF-e</th>
-    <th class="pb-2 font-semibold hidden lg:table-cell text-center">Forma</th>
-    <th class="pb-2 font-semibold text-right">Valor</th>
-    <th class="pb-2 font-semibold text-center">Ações</th>
-  </tr>
-</thead>
-<tbody id="tabelaDespesas"></tbody>
-<tfoot>
-  <tr class="border-t-2">
-    <td colspan="5" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
-    <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
-    <td></td>
-  </tr>
-</tfoot>
-          <tr class="border-t-2">
-            <td colspan="3" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
-            <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+<div class="card p-4">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+    <h3 class="font-bold text-gray-800 text-sm">Registro de Despesas</h3>
+    <input type="text" id="buscaDespesa" placeholder="Buscar descrição ou categoria..."
+           class="input-field text-sm sm:w-56" oninput="filtrarDespesas()">
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full" style="min-width:500px">
+      <thead>
+        <tr class="text-left text-xs text-gray-500 border-b">
+          <th class="pb-2 font-semibold">Categoria</th>
+          <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
+          <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
+          <th class="pb-2 font-semibold hidden lg:table-cell">NF-e</th>
+          <th class="pb-2 font-semibold hidden lg:table-cell text-center">Forma</th>
+          <th class="pb-2 font-semibold text-right">Valor</th>
+          <th class="pb-2 font-semibold text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaDespesas"></tbody>
+      <tfoot>
+        <tr class="border-t-2">
+          <td colspan="5" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
+          <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
   </div>
 </div>
-
 
     <!-- DISTRIBUIÇÕES -->
     <div class="page" id="page-distribuicoes">
