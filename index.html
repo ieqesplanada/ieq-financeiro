@@ -3884,6 +3884,10 @@ function coletarFormasContribuicao(mk) {
     const conta = entradas.filter(e => e.forma === 'PIX');
     const totalCaixa = caixa.reduce((s,e) => s + e.valor, 0);
     const totalConta = conta.reduce((s,e) => s + e.valor, 0);
+    const totalGeral = entradas.reduce((s,e) => s + e.valor, 0);
+    if (Math.abs(totalGeral - (totalCaixa + totalConta)) > 0.01) {
+      console.warn('⚠️ Divergência entre total geral e soma Caixa+Conta:', totalGeral, totalCaixa + totalConta);
+    }
     const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
     const logoHtml = DB.config.logo
       ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
