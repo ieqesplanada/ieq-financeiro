@@ -3315,13 +3315,16 @@ function abrirAlterarDespesa(id) {
   document.getElementById('alt-d-categoria').value = d.categoria  || '';
   document.getElementById('alt-d-descricao').value = d.descricao  || '';
   document.getElementById('alt-d-valor').value     = d.valor      || '';
-  document.getElementById('alt-d-nfe').value             = d.nfe || '';                      // 🆕 LINHA NOVA
-  document.getElementById('alt-d-formaPagamento').value  = d.formaPagamento || 'Caixa';       // 🆕 LINHA NOVA
+  document.getElementById('alt-d-nfe').value             = d.nfe || '';
+  document.getElementById('alt-d-formaPagamento').value  = d.formaPagamento || 'Caixa';
   // Garante formato yyyy-mm-dd para o input date
   let dataVal = (d.data || '').split('T')[0];
   document.getElementById('alt-d-data').value      = dataVal || new Date().toISOString().split('T')[0];
   document.getElementById('modalAlterarDespesa').classList.add('active');
 }
+// 👇 Exposição explícita no escopo global (necessário se a função estiver
+// dentro de <script type="module">, IIFE ou callback como DOMContentLoaded)
+window.abrirAlterarDespesa = abrirAlterarDespesa;
 
 async function confirmarAlteracaoDespesa(e) {
   e.preventDefault();
@@ -3329,9 +3332,9 @@ async function confirmarAlteracaoDespesa(e) {
   const categoria = document.getElementById('alt-d-categoria').value;
   const descricao = document.getElementById('alt-d-descricao').value.trim();
   const valor     = parseFloat(document.getElementById('alt-d-valor').value);
-  const dataDesp  = document.getElementById('alt-d-data').value; // data da despesa
-  const nfe             = document.getElementById('alt-d-nfe').value.trim();               // 🆕 LINHA NOVA
-  const formaPagamento  = document.getElementById('alt-d-formaPagamento').value;           // 🆕 LINHA NOVA
+  const dataDesp  = document.getElementById('alt-d-data').value;
+  const nfe             = document.getElementById('alt-d-nfe').value.trim();
+  const formaPagamento  = document.getElementById('alt-d-formaPagamento').value;
 
   if (!categoria || !valor || valor <= 0) {
     showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
@@ -3350,28 +3353,28 @@ async function confirmarAlteracaoDespesa(e) {
     return;
   }
 
-    const despesaAtualizada = {
+  const despesaAtualizada = {
     ...DB.despesas[idx],
     categoria,
     descricao,
     valor,
     data: dataDesp,
-    nfe,                              // 🆕 LINHA NOVA
-    formaPagamento,                   // 🆕 LINHA NOVA
+    nfe,
+    formaPagamento,
     atualizadoEm: new Date().toISOString()
   };
 
-        try {
-        // ATENÇÃO: o campo "data" (data da despesa) é enviado como "dataDespesa" para evitar conflito
-        await apiUpdate('despesas', idDespesa, {
-          categoria,
-          descricao,
-          valor,
-          data: dataDesp,
-          nfe,                              // 🆕 LINHA NOVA
-          formaPagamento,                   // 🆕 LINHA NOVA
-          atualizadoEm: despesaAtualizada.atualizadoEm
-        });
+  try {
+    // ATENÇÃO: o campo "data" (data da despesa) é enviado como "dataDespesa" para evitar conflito
+    await apiUpdate('despesas', idDespesa, {
+      categoria,
+      descricao,
+      valor,
+      data: dataDesp,
+      nfe,
+      formaPagamento,
+      atualizadoEm: despesaAtualizada.atualizadoEm
+    });
 
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
@@ -3391,6 +3394,8 @@ async function confirmarAlteracaoDespesa(e) {
     renderDashboard();
   }
 }
+// 👇 Exposição explícita no escopo global
+window.confirmarAlteracaoDespesa = confirmarAlteracaoDespesa;
 
 
 async function salvarDespesa(e) {
