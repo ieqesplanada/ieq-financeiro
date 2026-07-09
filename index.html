@@ -761,22 +761,30 @@
     <div class="overflow-x-auto">
       <table class="w-full" style="min-width:500px">
         <thead>
-          <tr class="text-left text-xs text-gray-500 border-b">
-            <th class="pb-2 font-semibold">Categoria</th>
-            <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
-            <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
-            <th class="pb-2 font-semibold text-right">Valor</th>
-            <th class="pb-2 font-semibold text-center">Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaDespesas"></tbody>
-        <tfoot>
-          <tr class="border-t-2">
-            <td colspan="3" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
-            <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
-            <td></td>
-          </tr>
-        </tfoot>
+  <tr class="text-left text-xs text-gray-500 border-b">
+    <th class="pb-2 font-semibold">Categoria</th>
+    <th class="pb-2 font-semibold hidden sm:table-cell">Descrição</th>
+    <th class="pb-2 font-semibold hidden md:table-cell">Data</th>
+    <th class="pb-2 font-semibold hidden lg:table-cell">NF-e</th>
+    <th class="pb-2 font-semibold hidden lg:table-cell">Pagamento</th>
+    <th class="pb-2 font-semibold text-right">Valor</th>
+    <th class="pb-2 font-semibold text-center">Ações</th>
+  </tr>
+</thead>
+<tbody id="tabelaDespesas"></tbody>
+<tfoot>
+  <tr class="border-t-2">
+    <td colspan="5" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
+    <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
+    <td></td>
+  </tr>
+<tfoot>
+  <tr class="border-t-2">
+    <td colspan="5" class="pt-3 font-bold text-gray-700 text-sm">TOTAL DESPESAS</td>
+    <td class="pt-3 font-bold text-red-600 text-right" id="totalDespesas">R$ 0,00</td>
+    <td></td>
+  </tr>
+</tfoot>
       </table>
     </div>
   </div>
@@ -3257,9 +3265,10 @@ function renderDespesas(lista, mes) {
               ${escapeHtml(d.formaPagamento || 'Caixa')}
             </span>
           </td>
-          <td class="py-2 text-sm font-bold text-red-600 text-right">
-            ${fmt(d.valor)}
+            <td class="py-2 text-sm font-bold text-red-600 text-right">
+            ${fmt(typeof d.valor === 'number' ? d.valor : parseFloat(String(d.valor).replace(/\./g, '').replace(',', '.')) || 0)}
           </td>
+
           <td class="py-2 text-center">
             <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
           </td>
@@ -3267,7 +3276,12 @@ function renderDespesas(lista, mes) {
     }).join(''); // 🆕 FECHA O MAP E JUNTA O ARRAY EM STRING
   } // 🆕 FECHA O ELSE
 
-  const total = lista.reduce((s, d) => s + d.valor, 0);
+  const total = lista.reduce((s, d) => {
+  const v = typeof d.valor === 'number'
+    ? d.valor
+    : parseFloat(String(d.valor).replace(/\./g, '').replace(',', '.')) || 0;
+  return s + v;
+}, 0);
 
   // tfoot
   const elTotal = document.getElementById('totalDespesas');
