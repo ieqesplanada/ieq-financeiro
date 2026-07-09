@@ -3416,8 +3416,10 @@ async function confirmarAlteracaoDespesa(e) {
   } catch (err) {
     DB.despesas[idx] = despesaAtualizada;
     DB.saveLocal();
+    enfileirarOperacao({ action: 'update', sheet: 'despesas', id: idDespesa, data: despesaAtualizada }); // ✅ ADICIONAR
     setSyncStatus('error');
     showNotification('⚠️ Alteração salva localmente', 'warning');
+}
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
@@ -3465,7 +3467,7 @@ async function salvarDespesa(e) {
   } catch (err) {
     DB.despesas.push({ ...dd, id: Date.now() });
     DB.saveLocal();
-    enfileirarOperacao({ tipo: 'despesa', acao: 'create', dados: dd });
+    enfileirarOperacao({ action: 'save', sheet: 'despesas', id: idLocal, data: dd }); // ✅ CORRETO
     closeModal('modalNovaDespesa');
     document.getElementById('formDespesa').reset();
     document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
@@ -3491,10 +3493,11 @@ async function salvarDespesa(e) {
         await apiDelete('despesas',id);
         DB.despesas.splice(idx,1); DB.saveLocal();
         setSyncStatus('synced'); showNotification('🗑️ Despesa excluída','info');
-      }catch(err){
-        DB.despesas.splice(idx,1); DB.saveLocal();
-        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
-      }
+     }catch(err){
+    DB.despesas.splice(idx,1); DB.saveLocal();
+    enfileirarOperacao({ action: 'delete', sheet: 'despesas', id, data: { id } }); // ✅ ADICIONAR
+    setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+}
       filtrarDespesas(); renderDashboard();
     });
   }
@@ -3558,9 +3561,9 @@ async function salvarDespesa(e) {
     renderEntradas(); setSyncStatus('synced'); showNotification(`✅ Entrada de ${fmt(ed.valor)} salva!`,'success'); renderDashboard();
   }catch(err){
     const idLocal = Date.now();
-    DB.entradas.unshift({...ed,id:idLocal});
-    DB.saveLocal();
-    enfileirarOperacao({ id: idLocal, action: 'create', sheet: 'entradas', data: ed }); // ✅ agora no catch, com formato correto
+DB.despesas.push({ ...dd, id: idLocal });
+DB.saveLocal();
+enfileirarOperacao({ action: 'save', sheet: 'despesas', id: idLocal, data: dd });
     closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
     renderEntradas(); setSyncStatus('error'); showNotification('⚠️ Entrada salva localmente','warning'); renderDashboard();
   }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
@@ -3576,10 +3579,11 @@ async function salvarDespesa(e) {
         await apiDelete('entradas',id);
         DB.entradas.splice(idx,1); DB.saveLocal();
         setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
-      }catch(err){
-        DB.entradas.splice(idx,1); DB.saveLocal();
-        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
-      }
+     }catch(err){
+    DB.despesas.splice(idx,1); DB.saveLocal();
+    enfileirarOperacao({ action: 'delete', sheet: 'despesas', id, data: { id } }); // ✅ ADICIONAR
+    setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+}
       renderEntradas(); renderDashboard();
     });
   }
