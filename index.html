@@ -1377,7 +1377,6 @@ async function apiDeleteSeguro(sheet, id) {
   }
 }
 
-
   // ============================================================
   // SESSÃO / LOGIN
   // ============================================================
@@ -2760,10 +2759,7 @@ function normalizarHorario(valor) {
 
     atualizarTotaisCultos(lista);
   }
-  // ============================================================
-  // CATEGORIAS DE DESPESAS
-  // ============================================================
-  
+ 
    // ============================================================
   // CATEGORIAS DE DESPESAS (BLOCO ÚNICO E COMPLETO)
   // ============================================================
@@ -3106,8 +3102,8 @@ function normalizarHorario(valor) {
   w.document.close();
 }
 
-   function excluirCulto(idx) {
-  if (!temPermissao('excluir')) {
+   async function excluirCulto(idx) {
+  if (!temPermissao('podeExcluir')) {
     showNotification('⚠️ Você não tem permissão para excluir cultos.', 'warning');
     return;
   }
@@ -3117,24 +3113,27 @@ function normalizarHorario(valor) {
 
   confirmarExclusao(
     `Deseja realmente excluir o culto de ${fmtDate(culto.data)}?`,
-    () => {
+    async () => {
       // Remove a entrada financeira vinculada, se existir
-      if (culto.entradaId) {
-        DB.entradas = DB.entradas.filter(e => e.id !== culto.entradaId);
-      }
+      DB.entradas = DB.entradas.filter(e => e.cultoId !== culto.id);
 
       DB.cultos.splice(idx, 1);
-
-      salvarLocal('cultos_cache', DB.cultos);
-      salvarLocal('entradas_cache', DB.entradas);
+      DB.saveLocal();
 
       renderCultos();
-      atualizarDashboard();
+      renderEntradas();
+      renderDashboard();
 
       showNotification('🗑️ Culto excluído com sucesso.', 'success');
 
-      // Tenta sincronizar exclusão com o servidor
-      enfileirarOperacao({ tipo: 'excluirCulto', payload: { id: culto.id } });
+      try {
+        await apiDelete('cultos', culto.id);
+        setSyncStatus('synced');
+      } catch (err) {
+        setSyncStatus('error');
+        enfileirarOperacao({ id: culto.id, action: 'delete', sheet: 'cultos', data: { id: culto.id } });
+        showNotification('⚠️ Exclusão salva localmente (será sincronizada depois)', 'warning');
+      }
     }
   );
 }
@@ -3494,27 +3493,31 @@ async function salvarDespesa(e) {
   }
 
   async function salvarEntrada(e){
-    e.preventDefault();
-    const ed={
-      descricao:document.getElementById('e-descricao').value,
-      valor:+document.getElementById('e-valor').value,
-      data:document.getElementById('e-data').value,
-      origem:'manual',
-      obs:document.getElementById('e-obs').value,
-      criadoEm:new Date().toISOString()
-    };
-    setBtnLoading('btnSalvarEntrada',true,'Registrar');
-    try{
-      const r=await apiSave('entradas',ed); DB.entradas.unshift({...ed,id:r.id}); DB.saveLocal();
-      enfileirarOperacao({ tipo: 'entrada', acao: 'create', dados: ed });
-      closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
-      renderEntradas(); setSyncStatus('synced'); showNotification(`✅ Entrada de ${fmt(ed.valor)} salva!`,'success'); renderDashboard();
-    }catch(err){
-      DB.entradas.unshift({...ed,id:Date.now()}); DB.saveLocal();
-      closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
-      renderEntradas(); setSyncStatus('error'); showNotification('⚠️ Entrada salva localmente','warning'); renderDashboard();
-    }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
-  }
+  e.preventDefault();
+  const ed={
+    descricao:document.getElementById('e-descricao').value,
+    valor:+document.getElementById('e-valor').value,
+    data:document.getElementById('e-data').value,
+    origem:'manual',
+    obs:document.getElementById('e-obs').value,
+    criadoEm:new Date().toISOString()
+  };
+  setBtnLoading('btnSalvarEntrada',true,'Registrar');
+  try{
+    const r=await apiSave('entradas',ed);
+    DB.entradas.unshift({...ed,id:r.id});
+    DB.saveLocal();
+    closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
+    renderEntradas(); setSyncStatus('synced'); showNotification(`✅ Entrada de ${fmt(ed.valor)} salva!`,'success'); renderDashboard();
+  }catch(err){
+    const idLocal = Date.now();
+    DB.entradas.unshift({...ed,id:idLocal});
+    DB.saveLocal();
+    enfileirarOperacao({ id: idLocal, action: 'create', sheet: 'entradas', data: ed }); // ✅ agora no catch, com formato correto
+    closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
+    renderEntradas(); setSyncStatus('error'); showNotification('⚠️ Entrada salva localmente','warning'); renderDashboard();
+  }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
+}
 
    async function excluirEntrada(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
@@ -3604,8 +3607,8 @@ async function salvarDespesa(e) {
       selCulto.innerHTML = `<option value="">-- Intervalo abaixo --</option>` + keysC.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
     }
 
-    document.getElementById('relCultoIni').value = GLOBAL_MONTH;
-    document.getElementById('relCultoFim').value = GLOBAL_MONTH;
+    document.getElementById('relCultoIni').value = GLOBAL_MONTH + '-01';
+    document.getElementById('relCultoFim').value = GLOBAL_MONTH + '-01';
     popularSelectMes('relDizimistasMesSelect');
     popularSelectMes('relFormasMesSelect');
 
@@ -3852,19 +3855,33 @@ async function salvarDespesa(e) {
   // RELATÓRIO POR FORMA DE CONTRIBUIÇÃO (Caixa x Conta Bancária/PIX)
   // ============================================================
   function coletarFormasContribuicao(mk) {
-    const cultos = getCultosMes(mk);
-    const entradas = [];
-    cultos.forEach(c => {
-      (c.dizimistas || []).forEach(d => {
-        if (d.valor > 0) entradas.push({ origem:'Dízimo', nome:d.nome||'—', data:c.data, valor:parseFloat(d.valor)||0, forma:d.forma||'Caixa' });
-      });
-      (c.ofertas || []).forEach(o => {
-        if (o.valor > 0) entradas.push({ origem:'Oferta', nome:o.nome||'—', data:c.data, valor:parseFloat(o.valor)||0, forma:o.forma||'Caixa' });
+  const cultos = getCultosMes(mk);
+  const entradas = [];
+  cultos.forEach(c => {
+    (c.dizimistas || []).forEach(d => {
+      if (d.valor > 0) entradas.push({ 
+        origem:'Dízimo', nome:d.nome||'—', data:c.data, 
+        valor:parseFloat(d.valor)||0, 
+        forma: normalizarForma(d.forma) 
       });
     });
-    entradas.sort((a,b) => (a.data||'').localeCompare(b.data||''));
-    return entradas;
-  }
+    (c.ofertas || []).forEach(o => {
+      if (o.valor > 0) entradas.push({ 
+        origem:'Oferta', nome:o.nome||'—', data:c.data, 
+        valor:parseFloat(o.valor)||0, 
+        forma: normalizarForma(o.forma) 
+      });
+    });
+  });
+  entradas.sort((a,b) => (a.data||'').localeCompare(b.data||''));
+  return entradas;
+}
+
+// Normaliza qualquer valor de forma para um dos dois grupos conhecidos
+function normalizarForma(f) {
+  const v = (f || '').toString().trim().toLowerCase();
+  return v === 'pix' ? 'PIX' : 'Caixa'; // tudo que não é PIX cai em Caixa (ajuste conforme sua regra de negócio)
+}
 
   function gerarRelatorioFormasContribuicao() {
     const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
@@ -3873,6 +3890,10 @@ async function salvarDespesa(e) {
     const conta = entradas.filter(e => e.forma === 'PIX');
     const totalCaixa = caixa.reduce((s,e) => s + e.valor, 0);
     const totalConta = conta.reduce((s,e) => s + e.valor, 0);
+    const totalGeral = entradas.reduce((s,e) => s + e.valor, 0);
+if (Math.abs(totalGeral - (totalCaixa + totalConta)) > 0.01) {
+  console.warn('⚠️ Divergência entre total geral e soma Caixa+Conta:', totalGeral, totalCaixa + totalConta);
+}
     const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
     const logoHtml = DB.config.logo
       ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
