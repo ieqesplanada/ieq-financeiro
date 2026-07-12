@@ -1334,7 +1334,7 @@
   // ============================================================
 // API — com fallback para fila offline
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxAOxqYPEO8T54F7gNLdenpAg8rrvrOQHSZ8ZLBpatD2QWRW00nwR2Ox5uO6JbljVnn/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwyp7NJhuasxBBsBRFUQdQAONHOHVK46k63-RyZs4KKi89tqwftFtumxkKgHApohORu/exec";
 
 async function apiGet(sheet, { esperarNaoVazio = false } = {}) {
   const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll&_=${Date.now()}`;
