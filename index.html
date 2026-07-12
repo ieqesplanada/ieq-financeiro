@@ -3434,22 +3434,19 @@ async function salvarDespesa(e) {
     return;
   }
 
-  setBtnLoading('btnSalvarDespesa', true, 'Registrar');
-  try {
-    const r = await apiSave('despesas', dd);
-    DB.despesas.push({ ...dd, id: r.id });
-    DB.saveLocal();
-    closeModal('modalNovaDespesa');
-    document.getElementById('formDespesa').reset();
-    document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
-    filtrarDespesas();
-    setSyncStatus('synced');
-    showNotification(`✅ Despesa de ${fmt(dd.valor)} registrada!`, 'success');
-    renderDashboard();
-  } catch (err) {
-    DB.despesas.push({ ...dd, id: Date.now() });
-    DB.saveLocal();
-    } catch (err) {
+ setBtnLoading('btnSalvarDespesa', true, 'Registrar');
+try {
+  const r = await apiSave('despesas', dd);
+  DB.despesas.push({ ...dd, id: r.id });
+  DB.saveLocal();
+  closeModal('modalNovaDespesa');
+  document.getElementById('formDespesa').reset();
+  document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+  filtrarDespesas();
+  setSyncStatus('synced');
+  showNotification(`✅ Despesa de ${fmt(dd.valor)} registrada!`, 'success');
+  renderDashboard();
+} catch (err) {
   const idLocal = Date.now();
   DB.despesas.push({ ...dd, id: idLocal });
   DB.saveLocal();
@@ -3461,10 +3458,10 @@ async function salvarDespesa(e) {
   setSyncStatus('error');
   showNotification('⚠️ Despesa salva localmente', 'warning');
   renderDashboard();
-  } finally {
-    setBtnLoading('btnSalvarDespesa', false, 'Registrar');
-  }
+} finally {
+  setBtnLoading('btnSalvarDespesa', false, 'Registrar');
 }
+
 
     async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
