@@ -3888,7 +3888,10 @@ async function salvarDespesa(e) {
   // ============================================================
   function normalizarForma(f) {
   const v = (f || '').toString().trim().toLowerCase();
-  return v === 'pix' ? 'PIX' : 'Caixa';
+  if (v === 'pix') return 'PIX';
+  if (v === 'caixa' || v === '') return 'Caixa';
+  console.warn('⚠️ Forma de pagamento não reconhecida, tratada como Caixa:', f);
+  return 'Caixa'; // ou criar uma categoria "Outros" se fizer sentido no seu domínio
 }
 
 function coletarFormasContribuicao(mk) {
@@ -4221,33 +4224,37 @@ function coletarFormasContribuicao(mk) {
 }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const hoje=new Date().toISOString().split('T')[0];
-    ['c-data','d-data','e-data','alt-d-data'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=hoje; });
-    document.getElementById('c-horario').value='19:30';
+  GLOBAL_MONTH = monthKeyFromDate(new Date()); // ✅ MOVIDO PARA O INÍCIO
 
-    const userLembrado=localStorage.getItem('ieq_lembrar_user');
-    if(userLembrado){
-      document.getElementById('loginUser').value=userLembrado;
-      document.getElementById('lembrarUser').checked=true;
-    }
-
-    try {
-      const cfg=JSON.parse(localStorage.getItem('ieq_config')||'{}');
-      if(cfg.logo)       aplicarLogoLogin(cfg.logo);
-      if(cfg.nomeIgreja) document.getElementById('loginNomeIgreja').textContent=cfg.nomeIgreja;
-    } catch(e){}
-
-    SESSAO=carregarSessao();
-    if(SESSAO){ entrarNoSistema(); }
-    else { document.getElementById('loginScreen').classList.add('active'); }
-
-    document.getElementById('loginUser').addEventListener('keydown', e=>{
-      if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
-    });
-
-    GLOBAL_MONTH=monthKeyFromDate(new Date());
-    console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
+  const hoje = new Date().toISOString().split('T')[0];
+  ['c-data','d-data','e-data','alt-d-data'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.value=hoje;
   });
+  document.getElementById('c-horario').value='19:30';
+
+  const userLembrado=localStorage.getItem('ieq_lembrar_user');
+  if(userLembrado){
+    document.getElementById('loginUser').value=userLembrado;
+    document.getElementById('lembrarUser').checked=true;
+  }
+
+  try {
+    const cfg=JSON.parse(localStorage.getItem('ieq_config')||'{}');
+    if(cfg.logo)       aplicarLogoLogin(cfg.logo);
+    if(cfg.nomeIgreja) document.getElementById('loginNomeIgreja').textContent=cfg.nomeIgreja;
+  } catch(e){}
+
+  SESSAO=carregarSessao();
+  if(SESSAO){ entrarNoSistema(); }   // ✅ agora GLOBAL_MONTH já está correto
+  else { document.getElementById('loginScreen').classList.add('active'); }
+
+  document.getElementById('loginUser').addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
+  });
+
+  console.log('✅ IEQ Financeiro v3.8 — correções aplicadas');
+});
+
 </script>
 </body>
 </html>
