@@ -3890,7 +3890,10 @@ async function salvarDespesa(e) {
   // ============================================================
   function normalizarForma(f) {
   const v = (f || '').toString().trim().toLowerCase();
-  return v === 'pix' ? 'PIX' : 'Caixa';
+  if (v === 'pix') return 'PIX';
+  if (v === 'caixa' || v === '') return 'Caixa';
+  console.warn('⚠️ Forma de pagamento não reconhecida, tratada como Caixa:', f);
+  return 'Caixa'; // ou criar uma categoria "Outros" se fizer sentido no seu domínio
 }
 
 function coletarFormasContribuicao(mk) {
