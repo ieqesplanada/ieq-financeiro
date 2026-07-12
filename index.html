@@ -1336,9 +1336,9 @@
 // ============================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbzoemiankHzoPRBH3_J5Qogl-CDXsjaVCjXersSeQrH9TTLasEBLyPahJ-eoO40DbY1/exec";
 
-async function apiGet(sheet) {
-  const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
-  const resp = await fetch(url);
+async function apiGet(sheet, { esperarNaoVazio = false } = {}) {
+  const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll&_=${Date.now()}`;
+  const resp = await fetch(url, { cache: 'no-store' });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const text = await resp.text();
   if (text.trim().startsWith('<!') || text.trim().startsWith('<html'))
@@ -1373,8 +1373,8 @@ async function apiUpdate(sheet, id, data) {
 }
 
 async function apiDelete(sheet, id) {
-  const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
-  const resp = await fetch(url);
+  const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}&_=${Date.now()}`;
+  const resp = await fetch(url, { cache: 'no-store' });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const json = await resp.json();
   if (!json.ok) throw new Error(json.error || 'Erro ao excluir');
@@ -1388,25 +1388,9 @@ async function apiSaveSeguro(sheet, data) {
   } catch (err) {
     const opId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     enfileirarOperacao({ action: 'save', sheet, data: { ...data, _tmpId: opId }, id: opId });
-    return { id: opId, _offline: true };
-  }
-}
-
-async function apiUpdateSeguro(sheet, id, data) {
-  try {
-    return await apiUpdate(sheet, id, data);
-  } catch (err) {
-    enfileirarOperacao({ action: 'update', sheet, id, data });
-    throw err; // deixa o chamador tratar visualmente
-  }
-}
-
-async function apiDeleteSeguro(sheet, id) {
-  try {
-    return await apiDelete(sheet, id);
-  } catch (err) {
-    enfileirarOperacao({ action: 'delete', sheet, id, data: { id } });
-    throw err;
+    err._offline = true;
+    err._tmpId = opId;
+    throw err; // ✅ consistente com update/delete
   }
 }
 
@@ -2064,9 +2048,11 @@ async function sincronizarTudo(silencioso = false) {
 
     DB.despesas = despesasBrutos.map(normalizarDespesa);
 
-    if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
-      DB.entradas = entradasBrutos.map(normalizarEntrada);
-    }
+    if (despesasBrutos.length > 0 || DB.despesas.length === 0) {
+  DB.despesas = despesasBrutos.map(normalizarDespesa);
+} else {
+  console.warn('⚠️ apiGet("despesas") retornou vazio mas havia dados locais — mantendo cache local para evitar perda de dados');
+}
 
     DB.saveLocal();
 invalidarCacheResumo();
@@ -4200,12 +4186,22 @@ function coletarFormasContribuicao(mk) {
   // ============================================================
   // START
   // ============================================================
-  function limparCacheLocal() {
+  async function limparCacheLocal() {
   const fila = getFilaOffline();
   const aviso = fila.length > 0
     ? `\n\n⚠️ Atenção: há ${fila.length} operação(ões) na fila offline que serão perdidas.`
     : '';
   if (!confirm(`Limpar cache local?${aviso}`)) return;
+
+  // ✅ Tenta sincronizar ANTES de apagar, para não perder dados pendentes
+  if (fila.length > 0 && navigator.onLine) {
+    showNotification('🔄 Sincronizando pendências antes de limpar...', 'info');
+    const { enviados, erros } = await processarFilaOffline();
+    if (erros > 0) {
+      const continuar = confirm(`⚠️ ${erros} operação(ões) não puderam ser sincronizadas. Limpar mesmo assim (elas serão perdidas)?`);
+      if (!continuar) return;
+    }
+  }
 
   localStorage.removeItem('despesas_cache');
   localStorage.removeItem('cultos_cache');
