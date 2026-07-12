@@ -1334,11 +1334,11 @@
   // ============================================================
 // API — com fallback para fila offline
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbzoemiankHzoPRBH3_J5Qogl-CDXsjaVCjXersSeQrH9TTLasEBLyPahJ-eoO40DbY1/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxAOxqYPEO8T54F7gNLdenpAg8rrvrOQHSZ8ZLBpatD2QWRW00nwR2Ox5uO6JbljVnn/exec";
 
-async function apiGet(sheet, { esperarNaoVazio = false } = {}) {
-  const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll&_=${Date.now()}`;
-  const resp = await fetch(url, { cache: 'no-store' });
+async function apiGet(sheet) {
+  const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
+  const resp = await fetch(url);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const text = await resp.text();
   if (text.trim().startsWith('<!') || text.trim().startsWith('<html'))
@@ -1373,8 +1373,8 @@ async function apiUpdate(sheet, id, data) {
 }
 
 async function apiDelete(sheet, id) {
-  const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}&_=${Date.now()}`;
-  const resp = await fetch(url, { cache: 'no-store' });
+  const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
+  const resp = await fetch(url);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const json = await resp.json();
   if (!json.ok) throw new Error(json.error || 'Erro ao excluir');
@@ -1388,9 +1388,25 @@ async function apiSaveSeguro(sheet, data) {
   } catch (err) {
     const opId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     enfileirarOperacao({ action: 'save', sheet, data: { ...data, _tmpId: opId }, id: opId });
-    err._offline = true;
-    err._tmpId = opId;
-    throw err; // ✅ consistente com update/delete
+    return { id: opId, _offline: true };
+  }
+}
+
+async function apiUpdateSeguro(sheet, id, data) {
+  try {
+    return await apiUpdate(sheet, id, data);
+  } catch (err) {
+    enfileirarOperacao({ action: 'update', sheet, id, data });
+    throw err; // deixa o chamador tratar visualmente
+  }
+}
+
+async function apiDeleteSeguro(sheet, id) {
+  try {
+    return await apiDelete(sheet, id);
+  } catch (err) {
+    enfileirarOperacao({ action: 'delete', sheet, id, data: { id } });
+    throw err;
   }
 }
 
@@ -2048,11 +2064,9 @@ async function sincronizarTudo(silencioso = false) {
 
     DB.despesas = despesasBrutos.map(normalizarDespesa);
 
-    if (despesasBrutos.length > 0 || DB.despesas.length === 0) {
-  DB.despesas = despesasBrutos.map(normalizarDespesa);
-} else {
-  console.warn('⚠️ apiGet("despesas") retornou vazio mas havia dados locais — mantendo cache local para evitar perda de dados');
-}
+    if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
+      DB.entradas = entradasBrutos.map(normalizarEntrada);
+    }
 
     DB.saveLocal();
 invalidarCacheResumo();
@@ -2586,70 +2600,84 @@ function invalidarCacheResumo() {
   }
 
   async function salvarCulto(e){
-  e.preventDefault();
-  const{totalDiz,totalOf,total}=calcTotalCulto();
-  const nowIso=new Date().toISOString(), isEdit=!!document.getElementById('c-id').value;
-  const cultoIdEx=document.getElementById('c-id').value;
-  const cultoAntigo = isEdit ? DB.cultos.find(c=>c.id==cultoIdEx) : null;
-  const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
+    e.preventDefault();
+    const{totalDiz,totalOf,total}=calcTotalCulto();
+    const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
+    const cultoIdEx=document.getElementById('c-id').value;
+    const cultoAntigo = isEdit ? DB.cultos.find(c=>c.id==cultoIdEx) : null;
+    const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
 
-  const cultoData={
-    // ... (mantém os mesmos campos)
-    atualizadoEm:nowIso,
-    criadoEm:cultoAntigo?.criadoEm||nowIso
-  };
+    const cultoData={
+      data:document.getElementById('c-data').value,
+      horario:document.getElementById('c-horario').value,
+      pastor:document.getElementById('c-pastor').value,
+      pregador:document.getElementById('c-pregador').value,
+      tipo:document.getElementById('c-tipo').value,
+      cura:+document.getElementById('c-cura').value||0,
+      presentes:+document.getElementById('c-presentes').value||0,
+      visitantes:+document.getElementById('c-visitantes').value||0,
+      criancas:+document.getElementById('c-criancas').value||0,
+      dizimistas:JSON.stringify(coletarDizimistas()),
+      totalDizimos:totalDiz,
+      ofertas:JSON.stringify(coletarOfertas()),
+      totalOfertas:totalOf,
+      // CORREÇÃO 1: missões salva separado, totalArrecadado sem missões
+      missoes: missoes,
+      especiais:parseFloat(document.getElementById('c-especiais').value)||0,
+      outras:parseFloat(document.getElementById('c-outras').value)||0,
+      totalArrecadado:total, // total = diz + of + especiais + outras (SEM missoes)
+      caixaLocal:+document.getElementById('c-caixa').value||0,
+      contaCorrente:+document.getElementById('c-conta').value||0,
+      observacoes:document.getElementById('c-observacoes').value||'', // CORREÇÃO 4
+      atualizadoEm:nowIso,
+      criadoEm:cultoAntigo?.criadoEm||nowIso
 
-  setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
-  try {
-    let idFinal;
-    if (isEdit) {
-      // ATUALIZA no lugar, sem excluir e recriar
-      await apiUpdateSeguro('cultos', cultoIdEx, cultoData);
-      idFinal = cultoIdEx;
-      // Remove a versão antiga do array local e insere a atualizada
-      DB.cultos = DB.cultos.filter(c => c.id != cultoIdEx);
-    } else {
-      const rc = await apiSaveSeguro('cultos', cultoData);
-      idFinal = rc.id;
-    }
+    };
 
-    const culto = { ...cultoData, id: idFinal, dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
-    DB.cultos.unshift(culto);
-
-    // Trata a entrada vinculada (dízimos+ofertas) da mesma forma:
-    // se for edição, seria melhor localizar a entrada com origem:'culto' e cultoId igual, e usar apiUpdateSeguro nela também.
-    if (total > 0) {
-      const entradaExistente = DB.entradas.find(e => e.origem === 'culto' && String(e.cultoId) === String(idFinal));
-      const ed = {
-        descricao: `Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
-        valor: total,
-        data: culto.data,
-        origem: 'culto',
-        cultoId: idFinal,
-        criadoEm: entradaExistente?.criadoEm || nowIso
-      };
-      if (entradaExistente) {
-        await apiUpdateSeguro('entradas', entradaExistente.id, ed);
-        DB.entradas = DB.entradas.filter(e => e.id != entradaExistente.id);
-        DB.entradas.unshift({ ...ed, id: entradaExistente.id });
-      } else {
-        const re = await apiSaveSeguro('entradas', ed);
-        DB.entradas.unshift({ ...ed, id: re.id });
+    setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
+    try {
+      if(isEdit) await excluirCultoPorId(cultoIdEx,{silent:true});
+      const rc=await apiSave('cultos',cultoData);
+      const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
+      DB.cultos.unshift(culto);
+      // CORREÇÃO 1: Entrada registra apenas dízimos+ofertas (sem missões)
+      if(total>0){
+        const ed={
+          descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
+          valor:total, // total sem missões
+          data:culto.data,
+          origem:'culto',
+          cultoId:rc.id,
+          criadoEm:nowIso
+        };
+        const re=await apiSave('entradas',ed);
+        DB.entradas.unshift({...ed,id:re.id});
       }
+      // CORREÇÃO 1: Missões são salvas separadamente (só para dashboards)
+      // Não gera entrada separada — apenas o campo missoes no culto alimenta distribuições e dashboard
+      DB.saveLocal();
+      closeModal('modalNovoCulto'); resetFormCulto();
+      setSyncStatus('synced');
+      showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
+    } catch(err){
+      const lid=Date.now();
+      const missoes2=parseFloat(document.getElementById('c-missoes').value)||0;
+      DB.cultos.unshift({...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()});
+      if(total>0) DB.entradas.unshift({
+        id:lid+1,
+        descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
+        valor:total,
+        data:cultoData.data,
+        origem:'culto',
+        cultoId:lid
+      });
+      DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
+      setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
+    } finally{
+      setBtnLoading('btnSalvarCulto',false,'Salvar');
+      renderCultos(); renderEntradas(); renderDashboard();
     }
-
-    DB.saveLocal();
-    closeModal('modalNovoCulto'); resetFormCulto();
-    setSyncStatus('synced');
-    showNotification(isEdit ? '✅ Culto alterado!' : `✅ Culto salvo!`, 'success');
-  } catch(err) {
-    setSyncStatus('error');
-    showNotification('⚠️ Erro ao salvar: ' + err.message, 'error');
-  } finally {
-    setBtnLoading('btnSalvarCulto', false, 'Salvar');
-    renderCultos(); renderEntradas(); renderDashboard();
   }
-}
 
   // Função auxiliar para extrair HH:MM de qualquer formato recebido
 function normalizarHorario(valor) {
@@ -3337,8 +3365,8 @@ async function confirmarAlteracaoDespesa(e) {
   const descricao = document.getElementById('alt-d-descricao').value.trim();
   const valor     = parseFloat(document.getElementById('alt-d-valor').value);
   const dataDesp  = document.getElementById('alt-d-data').value;
-  const nfe            = document.getElementById('alt-d-nfe').value.trim();
-  const formaPagamento = document.getElementById('alt-d-formaPagamento').value;
+  const nfe             = document.getElementById('alt-d-nfe').value.trim();
+  const formaPagamento  = document.getElementById('alt-d-formaPagamento').value;
 
   if (!categoria || !valor || valor <= 0) {
     showNotification('⚠️ Preencha categoria e valor corretamente.', 'warning');
@@ -3359,34 +3387,37 @@ async function confirmarAlteracaoDespesa(e) {
 
   const despesaAtualizada = {
     ...DB.despesas[idx],
-    categoria, descricao, valor, data: dataDesp, nfe, formaPagamento,
+    categoria,
+    descricao,
+    valor,
+    data: dataDesp,
+    nfe,
+    formaPagamento,
     atualizadoEm: new Date().toISOString()
   };
 
-  // Atualiza local sempre (otimista)
-  DB.despesas[idx] = despesaAtualizada;
-  DB.saveLocal();
-
   try {
+    // ATENÇÃO: o campo "data" (data da despesa) é enviado como "dataDespesa" para evitar conflito
     await apiUpdate('despesas', idDespesa, {
-      categoria, descricao, valor, data: dataDesp, nfe, formaPagamento,
+      categoria,
+      descricao,
+      valor,
+      data: dataDesp,
+      nfe,
+      formaPagamento,
       atualizadoEm: despesaAtualizada.atualizadoEm
     });
+
+    DB.despesas[idx] = despesaAtualizada;
+    DB.saveLocal();
+    enfileirarOperacao({ tipo: 'despesa', acao: 'update', id: idDespesa, dados: despesaAtualizada });
     setSyncStatus('synced');
     showNotification('✅ Despesa alterada!', 'success');
   } catch (err) {
+    DB.despesas[idx] = despesaAtualizada;
+    DB.saveLocal();
     setSyncStatus('error');
-    // ✅ AGORA enfileira corretamente, com o schema certo, e SÓ quando falha
-    enfileirarOperacao({
-      id: idDespesa,
-      action: 'update',
-      sheet: 'despesas',
-      data: {
-        categoria, descricao, valor, data: dataDesp, nfe, formaPagamento,
-        atualizadoEm: despesaAtualizada.atualizadoEm
-      }
-    });
-    showNotification('⚠️ Alteração salva localmente (será sincronizada depois)', 'warning');
+    showNotification('⚠️ Alteração salva localmente', 'warning');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
@@ -3395,7 +3426,6 @@ async function confirmarAlteracaoDespesa(e) {
     renderDashboard();
   }
 }
-
 // 👇 Exposição explícita no escopo global
 window.confirmarAlteracaoDespesa = confirmarAlteracaoDespesa;
 
@@ -3420,32 +3450,31 @@ async function salvarDespesa(e) {
     return;
   }
 
- setBtnLoading('btnSalvarDespesa', true, 'Registrar');
-try {
-  const r = await apiSave('despesas', dd);
-  DB.despesas.push({ ...dd, id: r.id });
-  DB.saveLocal();
-  closeModal('modalNovaDespesa');
-  document.getElementById('formDespesa').reset();
-  document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
-  filtrarDespesas();
-  setSyncStatus('synced');
-  showNotification(`✅ Despesa de ${fmt(dd.valor)} registrada!`, 'success');
-  renderDashboard();
-} catch (err) {
-  const idLocal = Date.now();
-  DB.despesas.push({ ...dd, id: idLocal });
-  DB.saveLocal();
-  enfileirarOperacao({ id: idLocal, action: 'save', sheet: 'despesas', data: { ...dd, id: idLocal } }); // ✅
-  closeModal('modalNovaDespesa');
-  document.getElementById('formDespesa').reset();
-  document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
-  filtrarDespesas();
-  setSyncStatus('error');
-  showNotification('⚠️ Despesa salva localmente', 'warning');
-  renderDashboard();
-} finally {
-  setBtnLoading('btnSalvarDespesa', false, 'Registrar');
+  setBtnLoading('btnSalvarDespesa', true, 'Registrar');
+  try {
+    const r = await apiSave('despesas', dd);
+    DB.despesas.push({ ...dd, id: r.id });
+    DB.saveLocal();
+    closeModal('modalNovaDespesa');
+    document.getElementById('formDespesa').reset();
+    document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+    filtrarDespesas();
+    setSyncStatus('synced');
+    showNotification(`✅ Despesa de ${fmt(dd.valor)} registrada!`, 'success');
+    renderDashboard();
+  } catch (err) {
+    DB.despesas.push({ ...dd, id: Date.now() });
+    DB.saveLocal();
+    enfileirarOperacao({ tipo: 'despesa', acao: 'create', dados: dd });
+    closeModal('modalNovaDespesa');
+    document.getElementById('formDespesa').reset();
+    document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+    filtrarDespesas();
+    setSyncStatus('error');
+    showNotification('⚠️ Despesa salva localmente', 'warning');
+    renderDashboard();
+  } finally {
+    setBtnLoading('btnSalvarDespesa', false, 'Registrar');
   }
 }
 
@@ -3873,10 +3902,7 @@ try {
   // ============================================================
   function normalizarForma(f) {
   const v = (f || '').toString().trim().toLowerCase();
-  if (v === 'pix') return 'PIX';
-  if (v === 'caixa' || v === '') return 'Caixa';
-  console.warn('⚠️ Forma de pagamento não reconhecida, tratada como Caixa:', f);
-  return 'Caixa'; // ou criar uma categoria "Outros" se fizer sentido no seu domínio
+  return v === 'pix' ? 'PIX' : 'Caixa';
 }
 
 function coletarFormasContribuicao(mk) {
@@ -4186,22 +4212,12 @@ function coletarFormasContribuicao(mk) {
   // ============================================================
   // START
   // ============================================================
-  async function limparCacheLocal() {
+  function limparCacheLocal() {
   const fila = getFilaOffline();
   const aviso = fila.length > 0
     ? `\n\n⚠️ Atenção: há ${fila.length} operação(ões) na fila offline que serão perdidas.`
     : '';
   if (!confirm(`Limpar cache local?${aviso}`)) return;
-
-  // ✅ Tenta sincronizar ANTES de apagar, para não perder dados pendentes
-  if (fila.length > 0 && navigator.onLine) {
-    showNotification('🔄 Sincronizando pendências antes de limpar...', 'info');
-    const { enviados, erros } = await processarFilaOffline();
-    if (erros > 0) {
-      const continuar = confirm(`⚠️ ${erros} operação(ões) não puderam ser sincronizadas. Limpar mesmo assim (elas serão perdidas)?`);
-      if (!continuar) return;
-    }
-  }
 
   localStorage.removeItem('despesas_cache');
   localStorage.removeItem('cultos_cache');
@@ -4218,38 +4234,34 @@ function coletarFormasContribuicao(mk) {
   sincronizarTudo(false);
 }
 
- document.addEventListener('DOMContentLoaded', () => {
-  GLOBAL_MONTH = monthKeyFromDate(new Date()); // ✅ MOVIDO PARA O INÍCIO
+  document.addEventListener('DOMContentLoaded', () => {
+    const hoje=new Date().toISOString().split('T')[0];
+    ['c-data','d-data','e-data','alt-d-data'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=hoje; });
+    document.getElementById('c-horario').value='19:30';
 
-  const hoje = new Date().toISOString().split('T')[0];
-  ['c-data','d-data','e-data','alt-d-data'].forEach(id=>{
-    const el=document.getElementById(id); if(el)el.value=hoje;
+    const userLembrado=localStorage.getItem('ieq_lembrar_user');
+    if(userLembrado){
+      document.getElementById('loginUser').value=userLembrado;
+      document.getElementById('lembrarUser').checked=true;
+    }
+
+    try {
+      const cfg=JSON.parse(localStorage.getItem('ieq_config')||'{}');
+      if(cfg.logo)       aplicarLogoLogin(cfg.logo);
+      if(cfg.nomeIgreja) document.getElementById('loginNomeIgreja').textContent=cfg.nomeIgreja;
+    } catch(e){}
+
+    SESSAO=carregarSessao();
+    if(SESSAO){ entrarNoSistema(); }
+    else { document.getElementById('loginScreen').classList.add('active'); }
+
+    document.getElementById('loginUser').addEventListener('keydown', e=>{
+      if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
+    });
+
+    GLOBAL_MONTH=monthKeyFromDate(new Date());
+    console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
   });
-  document.getElementById('c-horario').value='19:30';
-
-  const userLembrado=localStorage.getItem('ieq_lembrar_user');
-  if(userLembrado){
-    document.getElementById('loginUser').value=userLembrado;
-    document.getElementById('lembrarUser').checked=true;
-  }
-
-  try {
-    const cfg=JSON.parse(localStorage.getItem('ieq_config')||'{}');
-    if(cfg.logo)       aplicarLogoLogin(cfg.logo);
-    if(cfg.nomeIgreja) document.getElementById('loginNomeIgreja').textContent=cfg.nomeIgreja;
-  } catch(e){}
-
-  SESSAO=carregarSessao();
-  if(SESSAO){ entrarNoSistema(); }   // ✅ agora GLOBAL_MONTH já está correto
-  else { document.getElementById('loginScreen').classList.add('active'); }
-
-  document.getElementById('loginUser').addEventListener('keydown', e=>{
-    if(e.key==='Enter'){ e.preventDefault(); document.getElementById('loginPass').focus(); }
-  });
-
-  console.log('✅ IEQ Financeiro v3.8 — correções aplicadas');
-});
-
 </script>
 </body>
 </html>
