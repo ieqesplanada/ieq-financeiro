@@ -1391,6 +1391,15 @@ async function apiUpdateSeguro(sheet, id, data) {
   }
 }
 
+  async function apiSaveSeguro(sheet, data) {
+  try {
+    return await apiSave(sheet, data);
+  } catch (err) {
+    enfileirarOperacao({ action: 'save', sheet, data });
+    return { id: null, _offline: true }; // consistente com apiUpdateSeguro
+  }
+}
+
 async function apiDeleteSeguro(sheet, id) {
   try {
     return await apiDelete(sheet, id);
