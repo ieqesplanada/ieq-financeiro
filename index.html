@@ -2603,41 +2603,39 @@ function invalidarCacheResumo() {
   const cultoAntigo = isEdit ? DB.cultos.find(c=>c.id==cultoIdEx) : null;
   const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
 
-  const cultoData={
-    data:            document.getElementById('c-data').value,
-    horario:         normalizarHorario(document.getElementById('c-horario').value),
-    tipo:            document.getElementById('c-tipo').value,
-    pastor:          document.getElementById('c-pastor').value,
-    pregador:        document.getElementById('c-pregador')?.value || '',
-    presentes:       parseInt(document.getElementById('c-presentes')?.value) || 0,
-    caixa:           parseFloat(document.getElementById('c-caixa').value) || 0,
-    conta:           parseFloat(document.getElementById('c-conta').value) || 0,
-    missoes:         missoes,
-    especiais:       parseFloat(document.getElementById('c-especiais').value) || 0,
-    outras:          parseFloat(document.getElementById('c-outras').value) || 0,
-    observacoes:     document.getElementById('c-observacoes').value || '',
-    totalDizimos:    totalDiz,
-    totalOfertas:    totalOf,
-    totalArrecadado: total,
-    atualizadoEm:    nowIso,
-    criadoEm:        cultoAntigo?.criadoEm || nowIso
-  };
+  // ✅ Coleta ANTES de montar cultoData
+  const dizimistasColetados = coletarDizimistas();
+  const ofertasColetadas = coletarOfertas();
 
-  // ... resto da função permanece igual
+  const cultoData={
+    // ...demais campos (data, tipo, pastor, presentes, caixa, conta, etc.)
+    missoes,
+    totalDizimos: totalDiz,
+    totalOfertas: totalOf,
+    totalArrecadado: total,
+    dizimistas: dizimistasColetados,   // ✅ agora vai pro backend
+    ofertas: ofertasColetadas,         // ✅ agora vai pro backend
+    atualizadoEm: nowIso,
+    criadoEm: cultoAntigo?.criadoEm || nowIso
+  };
 
   setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
   try {
     let idFinal;
     if (isEdit) {
-      // ATUALIZA no lugar, sem excluir e recriar
       await apiUpdateSeguro('cultos', cultoIdEx, cultoData);
       idFinal = cultoIdEx;
-      // Remove a versão antiga do array local e insere a atualizada
       DB.cultos = DB.cultos.filter(c => c.id != cultoIdEx);
     } else {
       const rc = await apiSaveSeguro('cultos', cultoData);
       idFinal = rc.id;
     }
+
+    // ✅ Não precisa mais coletar de novo, já está em cultoData
+    const culto = { ...cultoData, id: idFinal };
+    DB.cultos.unshift(culto);
+
+    // ... resto igual
 
     const culto = { ...cultoData, id: idFinal, dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
     DB.cultos.unshift(culto);
