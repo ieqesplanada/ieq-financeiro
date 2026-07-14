@@ -2604,10 +2604,26 @@ function invalidarCacheResumo() {
   const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
 
   const cultoData={
-    // ... (mantém os mesmos campos)
-    atualizadoEm:nowIso,
-    criadoEm:cultoAntigo?.criadoEm||nowIso
+    data:            document.getElementById('c-data').value,
+    horario:         normalizarHorario(document.getElementById('c-horario').value),
+    tipo:            document.getElementById('c-tipo').value,
+    pastor:          document.getElementById('c-pastor').value,
+    pregador:        document.getElementById('c-pregador')?.value || '',
+    presentes:       parseInt(document.getElementById('c-presentes')?.value) || 0,
+    caixa:           parseFloat(document.getElementById('c-caixa').value) || 0,
+    conta:           parseFloat(document.getElementById('c-conta').value) || 0,
+    missoes:         missoes,
+    especiais:       parseFloat(document.getElementById('c-especiais').value) || 0,
+    outras:          parseFloat(document.getElementById('c-outras').value) || 0,
+    observacoes:     document.getElementById('c-observacoes').value || '',
+    totalDizimos:    totalDiz,
+    totalOfertas:    totalOf,
+    totalArrecadado: total,
+    atualizadoEm:    nowIso,
+    criadoEm:        cultoAntigo?.criadoEm || nowIso
   };
+
+  // ... resto da função permanece igual
 
   setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
   try {
@@ -3015,11 +3031,12 @@ function normalizarHorario(valor) {
         <table style="width:100%;border-collapse:collapse;margin-bottom:16px;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)" class="refc-table">
           <tr><th colspan="4" style="background:#1e3a5f;color:white;padding:10px 14px;text-align:left;font-size:13px;font-weight:700;letter-spacing:0.5px">📋 INFORMAÇÕES DO CULTO</th></tr>
           <tr>
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:22%">Data</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600">${fmtDate(c.data)} 
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:18%">Tipo</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:12px">${escapeHtml(c.tipo||'-')}</span></td>
+         <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:22%">Data</td>
+         <td style="padding:9px 14px;font-size:13px;font-weight:600">${fmtDate(c.data)}</td>
+         <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:18%">Tipo</td>
+         <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:12px">${escapeHtml(c.tipo||'-')}</span></td>
           </tr>
+
           <tr>
             <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pastor</td>
             <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pastor||'—')}</td>
@@ -3131,30 +3148,37 @@ function normalizarHorario(valor) {
   if (!culto) return;
 
   confirmarExclusao(
-    `Deseja realmente excluir o culto de ${fmtDate(culto.data)}?`,
-    async () => {
-      // Remove a entrada financeira vinculada, se existir
-      DB.entradas = DB.entradas.filter(e => e.cultoId !== culto.id);
+  `Deseja realmente excluir o culto de ${fmtDate(culto.data)}?`,
+  async () => {
+    // Localiza a entrada vinculada ANTES de remover do array local
+    const entradaVinculada = DB.entradas.find(e => e.cultoId === culto.id);
 
-      DB.cultos.splice(idx, 1);
-      DB.saveLocal();
+    DB.entradas = DB.entradas.filter(e => e.cultoId !== culto.id);
+    DB.cultos.splice(idx, 1);
+    DB.saveLocal();
 
-      renderCultos();
-      renderEntradas();
-      renderDashboard();
+    renderCultos();
+    renderEntradas();
+    renderDashboard();
 
-      showNotification('🗑️ Culto excluído com sucesso.', 'success');
+    showNotification('🗑️ Culto excluído com sucesso.', 'success');
 
-      try {
-        await apiDelete('cultos', culto.id);
-        setSyncStatus('synced');
-      } catch (err) {
-        setSyncStatus('error');
-        enfileirarOperacao({ id: culto.id, action: 'delete', sheet: 'cultos', data: { id: culto.id } });
-        showNotification('⚠️ Exclusão salva localmente (será sincronizada depois)', 'warning');
+    try {
+      await apiDelete('cultos', culto.id);
+      if (entradaVinculada) {
+        await apiDelete('entradas', entradaVinculada.id);
       }
+      setSyncStatus('synced');
+    } catch (err) {
+      setSyncStatus('error');
+      enfileirarOperacao({ id: culto.id, action: 'delete', sheet: 'cultos', data: { id: culto.id } });
+      if (entradaVinculada) {
+        enfileirarOperacao({ id: entradaVinculada.id, action: 'delete', sheet: 'entradas', data: { id: entradaVinculada.id } });
+      }
+      showNotification('⚠️ Exclusão salva localmente (será sincronizada depois)', 'warning');
     }
-  );
+  }
+);
 }
   
  // ============================================================
