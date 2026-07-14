@@ -1382,16 +1382,6 @@ async function apiDelete(sheet, id) {
 }
 
 // ── Versões seguras (com fila offline automática) ─────────────
-async function apiSaveSeguro(sheet, data) {
-  try {
-    return await apiSave(sheet, data);
-  } catch (err) {
-    const opId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    enfileirarOperacao({ action: 'save', sheet, data: { ...data, _tmpId: opId }, id: opId });
-    return { id: opId, _offline: true };
-  }
-}
-
 async function apiUpdateSeguro(sheet, id, data) {
   try {
     return await apiUpdate(sheet, id, data);
@@ -1409,6 +1399,7 @@ async function apiDeleteSeguro(sheet, id) {
     return { id, _offline: true }; // ✅
   }
 }
+
 
   // ============================================================
   // SESSÃO / LOGIN
