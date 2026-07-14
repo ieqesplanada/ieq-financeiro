@@ -2635,11 +2635,6 @@ function invalidarCacheResumo() {
     const culto = { ...cultoData, id: idFinal };
     DB.cultos.unshift(culto);
 
-    // ... resto igual
-
-    const culto = { ...cultoData, id: idFinal, dizimistas: coletarDizimistas(), ofertas: coletarOfertas() };
-    DB.cultos.unshift(culto);
-
     // Trata a entrada vinculada (dízimos+ofertas) da mesma forma:
     // se for edição, seria melhor localizar a entrada com origem:'culto' e cultoId igual, e usar apiUpdateSeguro nela também.
     if (total > 0) {
