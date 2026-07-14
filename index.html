@@ -2061,7 +2061,11 @@ async function sincronizarTudo(silencioso = false) {
       DB.cultos = cultosBrutos.map(normalizarCulto);
     }
 
-    DB.despesas = despesasBrutos.map(normalizarDespesa);
+    if (despesasBrutos.length > 0 || DB.despesas.length === 0) {
+  DB.despesas = despesasBrutos.map(normalizarDespesa);
+} else {
+  console.warn('⚠️ apiGet("despesas") retornou vazio mas havia dados locais — mantendo cache local para evitar perda de dados');
+}
 
     if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
       DB.entradas = entradasBrutos.map(normalizarEntrada);
