@@ -3208,10 +3208,10 @@ function atualizarTotaisCultos(lista){
   confirmarExclusao(
     `Deseja realmente excluir o culto de ${fmtDate(culto.data)}?`,
     async () => {
-      // ✅ CORREÇÃO BUG 4: guarda referência da entrada antes de remover localmente
-      const entradaVinculada = DB.entradas.find(e => e.cultoId === culto.id);
+      // ✅ CORREÇÃO: comparação por String() para evitar mismatch number vs string
+      const entradaVinculada = DB.entradas.find(e => String(e.cultoId) === String(culto.id));
 
-      DB.entradas = DB.entradas.filter(e => e.cultoId !== culto.id);
+      DB.entradas = DB.entradas.filter(e => String(e.cultoId) !== String(culto.id));
       DB.cultos.splice(idx, 1);
       DB.saveLocal();
 
@@ -3224,7 +3224,6 @@ function atualizarTotaisCultos(lista){
       try {
         await apiDelete('cultos', culto.id);
 
-        // ✅ CORREÇÃO BUG 4: remove também a entrada no servidor
         if (entradaVinculada) {
           await apiDelete('entradas', entradaVinculada.id);
         }
@@ -3234,7 +3233,6 @@ function atualizarTotaisCultos(lista){
         setSyncStatus('error');
         enfileirarOperacao({ id: culto.id, action: 'delete', sheet: 'cultos', data: { id: culto.id } });
 
-        // ✅ CORREÇÃO BUG 4: enfileira a exclusão da entrada também
         if (entradaVinculada) {
           enfileirarOperacao({ id: entradaVinculada.id, action: 'delete', sheet: 'entradas', data: { id: entradaVinculada.id } });
         }
