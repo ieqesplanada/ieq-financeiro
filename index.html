@@ -2610,106 +2610,130 @@ function calcTotalCulto(){
     document.getElementById('modalNovoCulto').classList.add('active');
   }
 
-  async function salvarCulto(e){
-    e.preventDefault();
-    const{totalDiz,totalOf,total}=calcTotalCulto();
-    const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
-    const cultoIdEx=document.getElementById('c-id').value;
-    const cultoAntigo = isEdit ? DB.cultos.find(c=>c.id==cultoIdEx) : null;
-    const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
+ async function salvarCulto(e){
+  e.preventDefault();
+  const{totalDiz,totalOf,total}=calcTotalCulto();
+  const nowIso=new Date().toISOString(),isEdit=!!document.getElementById('c-id').value;
+  const cultoIdEx=document.getElementById('c-id').value;
+  const cultoAntigo = isEdit ? DB.cultos.find(c=>c.id==cultoIdEx) : null;
+  const missoes = parseFloat(document.getElementById('c-missoes').value)||0;
 
-    const cultoData={
-      data:document.getElementById('c-data').value,
-      horario:document.getElementById('c-horario').value,
-      pastor:document.getElementById('c-pastor').value,
-      pregador:document.getElementById('c-pregador').value,
-      tipo:document.getElementById('c-tipo').value,
-      cura:+document.getElementById('c-cura').value||0,
-      presentes:+document.getElementById('c-presentes').value||0,
-      visitantes:+document.getElementById('c-visitantes').value||0,
-      criancas:+document.getElementById('c-criancas').value||0,
-      dizimistas:JSON.stringify(coletarDizimistas()),
-      totalDizimos:totalDiz,
-      ofertas:JSON.stringify(coletarOfertas()),
-      totalOfertas:totalOf,
-      missoes: missoes,
-      especiais:parseFloat(document.getElementById('c-especiais').value)||0,
-      outras:parseFloat(document.getElementById('c-outras').value)||0,
-      totalArrecadado:total,
-      caixaLocal:+document.getElementById('c-caixa').value||0,
-      contaCorrente:+document.getElementById('c-conta').value||0,
-      observacoes:document.getElementById('c-observacoes').value||'',
-      atualizadoEm:nowIso,
-      criadoEm:cultoAntigo?.criadoEm||nowIso
-    };
+  const cultoData={
+    data:document.getElementById('c-data').value,
+    horario:document.getElementById('c-horario').value,
+    pastor:document.getElementById('c-pastor').value,
+    pregador:document.getElementById('c-pregador').value,
+    tipo:document.getElementById('c-tipo').value,
+    cura:+document.getElementById('c-cura').value||0,
+    presentes:+document.getElementById('c-presentes').value||0,
+    visitantes:+document.getElementById('c-visitantes').value||0,
+    criancas:+document.getElementById('c-criancas').value||0,
+    dizimistas:JSON.stringify(coletarDizimistas()),
+    totalDizimos:totalDiz,
+    ofertas:JSON.stringify(coletarOfertas()),
+    totalOfertas:totalOf,
+    missoes: missoes,
+    especiais:parseFloat(document.getElementById('c-especiais').value)||0,
+    outras:parseFloat(document.getElementById('c-outras').value)||0,
+    totalArrecadado:total,
+    caixaLocal:+document.getElementById('c-caixa').value||0,
+    contaCorrente:+document.getElementById('c-conta').value||0,
+    observacoes:document.getElementById('c-observacoes').value||'',
+    atualizadoEm:nowIso,
+    criadoEm:cultoAntigo?.criadoEm||nowIso
+  };
 
-    setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
-    try {
-      // ✅ CORREÇÃO BUG 3: remove a entrada financeira antiga vinculada ao culto ANTES de excluir/recriar
-      if(isEdit){
-        const entradaAntiga = DB.entradas.find(en => en.cultoId === cultoIdEx || en.cultoId == cultoIdEx);
-        if(entradaAntiga){
-          DB.entradas = DB.entradas.filter(en => en.id !== entradaAntiga.id);
-          try{
-            await apiDelete('entradas', entradaAntiga.id);
-          }catch(errDel){
-            enfileirarOperacao({ id: entradaAntiga.id, action:'delete', sheet:'entradas', data:{id:entradaAntiga.id} });
-          }
+  setBtnLoading('btnSalvarCulto',true,isEdit?'Salvar Alterações':'Salvar');
+  try {
+    // ✅ Remove apenas a entrada financeira antiga vinculada ao culto
+    if(isEdit){
+      const entradaAntiga = DB.entradas.find(en => en.cultoId === cultoIdEx || en.cultoId == cultoIdEx);
+      if(entradaAntiga){
+        DB.entradas = DB.entradas.filter(en => en.id !== entradaAntiga.id);
+        try{
+          await apiDelete('entradas', entradaAntiga.id);
+        }catch(errDel){
+          enfileirarOperacao({ id: entradaAntiga.id, action:'delete', sheet:'entradas', data:{id:entradaAntiga.id} });
         }
-        await excluirCultoPorId(cultoIdEx,{silent:true});
       }
-
-      const rc=await apiSave('cultos',cultoData);
-      const culto={...cultoData,id:rc.id,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
-      DB.cultos.unshift(culto);
-
-      if(total>0){
-        const ed={
-          descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
-          valor:total,
-          data:culto.data,
-          origem:'culto',
-          cultoId:rc.id,
-          criadoEm:nowIso
-        };
-        const re=await apiSave('entradas',ed);
-        DB.entradas.unshift({...ed,id:re.id});
-      }
-
-      DB.saveLocal();
-      closeModal('modalNovoCulto'); resetFormCulto();
-      setSyncStatus('synced');
-      showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
-    } catch(err){
-      const lid=Date.now();
-      const cultoLocal={...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
-      DB.cultos.unshift(cultoLocal);
-
-      // ✅ CORREÇÃO BUG 2: enfileira o culto para sincronizar depois
-      enfileirarOperacao({ id: lid, action:'save', sheet:'cultos', data: cultoLocal });
-
-      if(total>0){
-        const entradaLocal={
-          id:lid+1,
-          descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
-          valor:total,
-          data:cultoData.data,
-          origem:'culto',
-          cultoId:lid
-        };
-        DB.entradas.unshift(entradaLocal);
-
-        // ✅ CORREÇÃO BUG 2: enfileira a entrada para sincronizar depois
-        enfileirarOperacao({ id: lid+1, action:'save', sheet:'entradas', data: entradaLocal });
-      }
-
-      DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
-      setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
-    } finally{
-      setBtnLoading('btnSalvarCulto',false,'Salvar');
-      renderCultos(); renderEntradas(); renderDashboard();
+      // ❌ REMOVIDO: await excluirCultoPorId(cultoIdEx,{silent:true});
     }
+
+    // ✅ CORREÇÃO PRINCIPAL: usa apiUpdate quando é edição, apiSave só quando é novo
+    let cultoId;
+    if(isEdit){
+      await apiUpdate('cultos', cultoIdEx, cultoData);
+      cultoId = cultoIdEx;
+    } else {
+      const rc = await apiSave('cultos', cultoData);
+      cultoId = rc.id;
+    }
+
+    const culto={...cultoData,id:cultoId,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
+
+    if(isEdit){
+      DB.cultos = DB.cultos.map(c => c.id==cultoIdEx ? culto : c);
+    } else {
+      DB.cultos.unshift(culto);
+    }
+
+    if(total>0){
+      const ed={
+        descricao:`Culto ${fmtDate(culto.data)} — ${culto.tipo}`,
+        valor:total,
+        data:culto.data,
+        origem:'culto',
+        cultoId:culto.id,
+        criadoEm:nowIso
+      };
+      const re=await apiSave('entradas',ed);
+      DB.entradas.unshift({...ed,id:re.id});
+    }
+
+    DB.saveLocal();
+    closeModal('modalNovoCulto'); resetFormCulto();
+    setSyncStatus('synced');
+    showNotification(isEdit?'✅ Culto alterado!':`✅ Culto salvo! Dízimos+Ofertas: ${fmt(total)} | Missões: ${fmt(missoes)}`,'success');
+  } catch(err){
+    const lid = isEdit ? cultoIdEx : Date.now();
+    const cultoLocal={...cultoData,id:lid,dizimistas:coletarDizimistas(),ofertas:coletarOfertas()};
+
+    if(isEdit){
+      DB.cultos = DB.cultos.map(c => c.id==cultoIdEx ? cultoLocal : c);
+    } else {
+      DB.cultos.unshift(cultoLocal);
+    }
+
+    // ✅ enfileira a operação correta: update se edição, save se novo
+    enfileirarOperacao({
+      id: lid,
+      action: isEdit ? 'update' : 'save',
+      sheet:'cultos',
+      data: cultoLocal
+    });
+
+    if(total>0){
+      const entradaId = isEdit ? Date.now() : lid+1;
+      const entradaLocal={
+        id:entradaId,
+        descricao:`Culto ${fmtDate(cultoData.data)} — ${cultoData.tipo}`,
+        valor:total,
+        data:cultoData.data,
+        origem:'culto',
+        cultoId:lid
+      };
+      DB.entradas.unshift(entradaLocal);
+
+      enfileirarOperacao({ id: entradaId, action:'save', sheet:'entradas', data: entradaLocal });
+    }
+
+    DB.saveLocal(); closeModal('modalNovoCulto'); resetFormCulto();
+    setSyncStatus('error'); showNotification('⚠️ Salvo localmente','warning');
+  } finally{
+    setBtnLoading('btnSalvarCulto',false,'Salvar');
+    renderCultos(); renderEntradas(); renderDashboard();
   }
+}
   
   // Função auxiliar para extrair HH:MM de qualquer formato recebido
 function normalizarHorario(valor) {
