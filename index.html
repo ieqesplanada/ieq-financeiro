@@ -4105,7 +4105,7 @@ function coletarFormasContribuicao(mk) {
   return `${mesKey}-${String(ultimoDia).padStart(2, '0')}`;
 }
   
-    function gerarRelatorioCultosPDF() {
+   function gerarRelatorioCultosPDF() {
   const mesSelect = document.getElementById('relCultoMesSelect')?.value;
   let lista, periodoLabel;
 
@@ -4116,7 +4116,6 @@ function coletarFormasContribuicao(mk) {
     const ini = document.getElementById('relCultoIni')?.value || (GLOBAL_MONTH + '-01');
     const fim = document.getElementById('relCultoFim')?.value || (GLOBAL_MONTH + '-01');
 
-    // ✅ CORREÇÃO: extrai apenas "YYYY-MM" antes de calcular o último dia do mês
     const fimMesKey = fim.slice(0, 7);
     const fimFinal = ultimoDiaDoMes(fimMesKey);
 
@@ -4141,9 +4140,11 @@ function coletarFormasContribuicao(mk) {
     ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
     : `<div style="font-size:30px">⛪</div>`;
 
+  // ✅ CORREÇÃO: incluído o horário do culto na tabela
   const linhas = lista.map(c => `
     <tr>
       <td>${fmtDate(c.data)}</td>
+      <td>${escapeHtml(c.horario || c.hora || '—')}</td>
       <td>${escapeHtml(c.tipo||'')}</td>
       <td>${escapeHtml(c.pregador||c.pastor||'')}</td>
       <td style="text-align:center">${c.presentes||0}</td>
@@ -4177,10 +4178,20 @@ function coletarFormasContribuicao(mk) {
     <div><h1>${nomeIgreja}</h1><p class="tag">RELATÓRIO DE CULTOS — ${periodoLabel.toUpperCase()}</p></div>
   </div>
   <table>
-    <tr><th>Data</th><th>Tipo</th><th>Pregador</th><th style="text-align:center">Pres.</th><th style="text-align:right">Dízimos</th><th style="text-align:right">Ofertas</th><th style="text-align:right">Missões</th><th style="text-align:right">Total</th></tr>
+    <tr>
+      <th>Data</th>
+      <th>Horário</th>
+      <th>Tipo</th>
+      <th>Pregador</th>
+      <th style="text-align:center">Pres.</th>
+      <th style="text-align:right">Dízimos</th>
+      <th style="text-align:right">Ofertas</th>
+      <th style="text-align:right">Missões</th>
+      <th style="text-align:right">Total</th>
+    </tr>
     ${linhas}
     <tr class="total-row">
-      <td colspan="4">TOTAL (${lista.length} cultos)</td>
+      <td colspan="5">TOTAL (${lista.length} cultos)</td>
       <td style="text-align:right">${fmt(totDiz)}</td>
       <td style="text-align:right">${fmt(totOf)}</td>
       <td style="text-align:right">${fmt(totMis)}</td>
