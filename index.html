@@ -3093,7 +3093,7 @@ function atualizarTotaisCultos(lista){
     <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:22%">Data</td>
     <td style="padding:9px 14px;font-size:13px;font-weight:600">${fmtDate(c.data)}</td>
     <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:18%">Horário</td>
-    <td style="padding:9px 14px;font-size:13px;font-weight:600">🕐 ${escapeHtml(c.horario||'—')}</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">🕐 ${escapeHtml(normalizarHorario(c.horario))}</td>
   </tr>
   <tr>
     <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Tipo</td>
