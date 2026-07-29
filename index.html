@@ -751,7 +751,7 @@
     </div>
   </div>
 
-  <!-- TABELA -->
+   <!-- TABELA -->
   <div class="card p-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
       <h3 class="font-bold text-gray-800 text-sm">Registro de Despesas</h3>
@@ -779,11 +779,10 @@
     <td></td>
   </tr>
 </tfoot>
-</table>
+      </table>
     </div>
   </div>
 </div>
-
 
     <!-- DISTRIBUIÇÕES -->
     <div class="page" id="page-distribuicoes">
@@ -1398,7 +1397,9 @@ async function apiUpdateSeguro(sheet, id, data) {
     return await apiUpdate(sheet, id, data);
   } catch (err) {
     enfileirarOperacao({ action: 'update', sheet, id, data });
-    throw err; // deixa o chamador tratar visualmente
+    // CORREÇÃO: não relança o erro — a operação foi enfileirada com sucesso,
+    // então tratamos como sucesso offline (consistente com apiSaveSeguro)
+    return { id, _offline: true };
   }
 }
 
@@ -1407,10 +1408,10 @@ async function apiDeleteSeguro(sheet, id) {
     return await apiDelete(sheet, id);
   } catch (err) {
     enfileirarOperacao({ action: 'delete', sheet, id, data: { id } });
-    throw err;
+    // CORREÇÃO: idem — evita erro falso ao usuário quando já está na fila offline
+    return { id, _offline: true };
   }
 }
-
 
   // ============================================================
   // SESSÃO / LOGIN
@@ -1928,9 +1929,9 @@ aplicarConfiguracoes();
     if (cR.status === 'fulfilled' && cR.value.length > 0)
       DB.cultos = cR.value.map(normalizarCulto);
 
-    if (dR.status === 'fulfilled') {
+   if (dR.status === 'fulfilled' && dR.value.length > 0)
   DB.despesas = dR.value.map(normalizarDespesa);
-}
+
 
     if (eR.status === 'fulfilled' && eR.value.length > 0)
       DB.entradas = eR.value.map(normalizarEntrada);
@@ -2062,16 +2063,18 @@ async function sincronizarTudo(silencioso = false) {
       apiGet('entradas')
     ]);
 
-    // 3. Sheets substitui local — ele é a fonte de verdade
-    if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
-      DB.cultos = cultosBrutos.map(normalizarCulto);
-    }
+   // 3. Sheets substitui local — ele é a fonte de verdade
+if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
+  DB.cultos = cultosBrutos.map(normalizarCulto);
+}
 
-    DB.despesas = despesasBrutos.map(normalizarDespesa);
+if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
+  DB.despesas = despesasBrutos.map(normalizarDespesa);
+}
 
-    if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
-      DB.entradas = entradasBrutos.map(normalizarEntrada);
-    }
+if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
+  DB.entradas = entradasBrutos.map(normalizarEntrada);
+}
 
     DB.saveLocal();
 invalidarCacheResumo();
@@ -2520,38 +2523,41 @@ function invalidarCacheResumo() {
   function removerLinha(btn,tipo){ btn.closest(tipo==='dizimista'?'.dizimista-row':'.oferta-row').remove(); calcTotalCulto(); }
 
   // CORREÇÃO 1: calcTotalCulto — totalArrecadado NÃO inclui missões
-  function calcTotalCulto(){
-    let dC=0,dP=0;
-    document.querySelectorAll('.dizimista-row').forEach(r=>{
-      const v=+r.querySelector('.diz-valor').value||0;
-      r.querySelector('.diz-forma').value==='PIX'?dP+=v:dC+=v;
-    });
-    const tD=dC+dP;
-    document.getElementById('totalDizimosLabel').textContent=fmt(tD);
+  // CORREÇÃO: totalArrecadado NÃO inclui missões, mas Caixa/Conta agora refletem especiais e outras
+function calcTotalCulto(){
+  let dC=0,dP=0;
+  document.querySelectorAll('.dizimista-row').forEach(r=>{
+    const v=+r.querySelector('.diz-valor').value||0;
+    r.querySelector('.diz-forma').value==='PIX'?dP+=v:dC+=v;
+  });
+  const tD=dC+dP;
+  document.getElementById('totalDizimosLabel').textContent=fmt(tD);
 
-    let oC=0,oP=0;
-    document.querySelectorAll('.oferta-row').forEach(r=>{
-      const v=+r.querySelector('.of-valor').value||0;
-      r.querySelector('.of-forma').value==='PIX'?oP+=v:oC+=v;
-    });
-    const tO=oC+oP;
-    document.getElementById('totalOfertasLabel').textContent=fmt(tO);
+  let oC=0,oP=0;
+  document.querySelectorAll('.oferta-row').forEach(r=>{
+    const v=+r.querySelector('.of-valor').value||0;
+    r.querySelector('.of-forma').value==='PIX'?oP+=v:oC+=v;
+  });
+  const tO=oC+oP;
+  document.getElementById('totalOfertasLabel').textContent=fmt(tO);
 
-    const es=+document.getElementById('c-especiais').value||0;
-    const ou=+document.getElementById('c-outras').value||0;
-    // missoes é lido mas NÃO soma no totalArrecadado
-    // totalArrecadado = dízimos + ofertas + especiais + outras
-    const total = tD + tO + es + ou;
-    document.getElementById('totalArrecadado').textContent=fmt(total);
+  const es=+document.getElementById('c-especiais').value||0;
+  const ou=+document.getElementById('c-outras').value||0;
+  // missoes é lido mas NÃO soma no totalArrecadado
+  // totalArrecadado = dízimos + ofertas + especiais + outras
+  const total = tD + tO + es + ou;
+  document.getElementById('totalArrecadado').textContent=fmt(total);
 
-    const tC=dC+oC, tPix=dP+oP;
-    document.getElementById('c-caixa').value=tC.toFixed(2);
-    document.getElementById('c-conta').value=tPix.toFixed(2);
-    document.getElementById('c-caixa').style.borderColor=tC>0?'#10b981':'#86efac';
-    document.getElementById('c-conta').style.borderColor=tPix>0?'#3b82f6':'#93c5fd';
+  // ✅ CORREÇÃO: especiais e outras agora entram no Caixa Local,
+  // garantindo que caixaLocal + contaCorrente = totalArrecadado
+  const tC=dC+oC+es+ou, tPix=dP+oP;
+  document.getElementById('c-caixa').value=tC.toFixed(2);
+  document.getElementById('c-conta').value=tPix.toFixed(2);
+  document.getElementById('c-caixa').style.borderColor=tC>0?'#10b981':'#86efac';
+  document.getElementById('c-conta').style.borderColor=tPix>0?'#3b82f6':'#93c5fd';
 
-    return{totalDiz:tD,totalOf:tO,total,dizCaixa:dC,dizPix:dP,ofCaixa:oC,ofPix:oP};
-  }
+  return{totalDiz:tD,totalOf:tO,total,dizCaixa:dC,dizPix:dP,ofCaixa:oC,ofPix:oP,especiais:es,outras:ou};
+}
 
   function coletarDizimistas(){
     return[...document.querySelectorAll('.dizimista-row')].map(r=>({
@@ -2994,18 +3000,19 @@ function normalizarHorario(valor) {
 
 
   // CORREÇÃO 1: totais corretos — missões acumulado separado, Total = diz+of (sem missões)
-  function atualizarTotaisCultos(lista){
-    const t=lista.reduce((a,c)=>({
-      dizimos:  a.dizimos  + (parseFloat(c.totalDizimos)||0),
-      ofertas:  a.ofertas  + (parseFloat(c.totalOfertas)||0) + (parseFloat(c.especiais)||0),
-      missoes:  a.missoes  + (parseFloat(c.missoes)||0),       // acumulado separado
-      total:    a.total    + (parseFloat(c.totalArrecadado)||0) // sem missões
-    }),{dizimos:0,ofertas:0,missoes:0,total:0});
-    document.getElementById('tot-dizimos').textContent     =fmt(t.dizimos);
-    document.getElementById('tot-ofertas').textContent     =fmt(t.ofertas);
-    document.getElementById('tot-missoes').textContent     =fmt(t.missoes);
-    document.getElementById('tot-cultos-total').textContent=fmt(t.total);
-  }
+  // CORREÇÃO: inclui "outras" também no acumulado, mantendo consistência com totalArrecadado
+function atualizarTotaisCultos(lista){
+  const t=lista.reduce((a,c)=>({
+    dizimos:  a.dizimos  + (parseFloat(c.totalDizimos)||0),
+    ofertas:  a.ofertas  + (parseFloat(c.totalOfertas)||0) + (parseFloat(c.especiais)||0) + (parseFloat(c.outras)||0),
+    missoes:  a.missoes  + (parseFloat(c.missoes)||0),       // acumulado separado
+    total:    a.total    + (parseFloat(c.totalArrecadado)||0) // sem missões
+  }),{dizimos:0,ofertas:0,missoes:0,total:0});
+  document.getElementById('tot-dizimos').textContent     =fmt(t.dizimos);
+  document.getElementById('tot-ofertas').textContent     =fmt(t.ofertas);
+  document.getElementById('tot-missoes').textContent     =fmt(t.missoes);
+  document.getElementById('tot-cultos-total').textContent=fmt(t.total);
+}
 
     function verCulto(idx){
     const c=DB.cultos[idx]; if(!c)return;
@@ -3056,27 +3063,27 @@ function normalizarHorario(valor) {
         </div>
 
         <!-- INFORMAÇÕES DO CULTO -->
-        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)" class="refc-table">
-          <tr><th colspan="4" style="background:#1e3a5f;color:white;padding:10px 14px;text-align:left;font-size:13px;font-weight:700;letter-spacing:0.5px">📋 INFORMAÇÕES DO CULTO</th></tr>
-          <tr>
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:22%">Data</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600">${fmtDate(c.data)} 
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:18%">Tipo</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:12px">${escapeHtml(c.tipo||'-')}</span></td>
-          </tr>
-          <tr>
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pastor</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pastor||'—')}</td>
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pregador</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pregador||'—')}</td>
-          </tr>
-          <tr>
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Presentes</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="font-size:16px">👥</span> ${c.presentes||0}</td>
-            <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Visitantes</td>
-            <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="font-size:14px">🕊️</span> ${c.visitantes||0} • Crianças: ${c.criancas||0}</td>
-          </tr>
-        </table>
+<table style="width:100%;border-collapse:collapse;margin-bottom:16px;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)" class="refc-table">
+  <tr><th colspan="4" style="background:#1e3a5f;color:white;padding:10px 14px;text-align:left;font-size:13px;font-weight:700;letter-spacing:0.5px">📋 INFORMAÇÕES DO CULTO</th></tr>
+  <tr>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:22%">Data</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">${fmtDate(c.data)}</td>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:18%">Tipo</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:12px">${escapeHtml(c.tipo||'-')}</span></td>
+  </tr>
+  <tr>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pastor</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pastor||'—')}</td>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pregador</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pregador||'—')}</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Presentes</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="font-size:16px">👥</span> ${c.presentes||0}</td>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Visitantes</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="font-size:14px">🕊️</span> ${c.visitantes||0} • Crianças: ${c.criancas||0}</td>
+  </tr>
+</table>
 
         <!-- DÍZIMOS -->
         <div style="margin-bottom:16px;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)">
@@ -3258,6 +3265,19 @@ function limparFiltrosDespesas() {
   renderDespesas(DB.despesas, GLOBAL_MONTH);
 }
 
+  // ✅ CORREÇÃO: centraliza o parse de valor para evitar duplicação e bugs de formato
+function parseValorSeguro(v) {
+  if (typeof v === 'number') return v;
+  if (v == null || v === '') return 0;
+  const s = String(v).trim();
+  // Se contém vírgula, assume formato BR (1.234,56)
+  if (s.includes(',')) {
+    return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+  // Caso contrário, assume formato já numérico (1234.56)
+  return parseFloat(s) || 0;
+}
+
 function renderDespesas(lista, mes) {
   if (!lista) lista = DB.despesas;
   if (!mes)   mes   = document.getElementById('filtroDespesaMes')?.value || GLOBAL_MONTH;
@@ -3330,28 +3350,23 @@ function renderDespesas(lista, mes) {
             </span>
           </td>
             <td class="py-2 text-sm font-bold text-red-600 text-right">
-            ${fmt(typeof d.valor === 'number' ? d.valor : parseFloat(String(d.valor).replace(/\./g, '').replace(',', '.')) || 0)}
+            ${fmt(parseValorSeguro(d.valor))}
           </td>
 
           <td class="py-2 text-center">
             <div class="flex gap-1 justify-center">${altBtn}${delBtn}</div>
           </td>
         </tr>`;
-    }).join(''); // 🆕 FECHA O MAP E JUNTA O ARRAY EM STRING
-  } // 🆕 FECHA O ELSE
+    }).join('');
+  }
 
-  const total = lista.reduce((s, d) => {
-  const v = typeof d.valor === 'number'
-    ? d.valor
-    : parseFloat(String(d.valor).replace(/\./g, '').replace(',', '.')) || 0;
-  return s + v;
-}, 0);
+  const total = lista.reduce((s, d) => s + parseValorSeguro(d.valor), 0);
 
   // tfoot
   const elTotal = document.getElementById('totalDespesas');
   if (elTotal) elTotal.textContent = fmt(total);
 
-  // label filtro (corrigido — elemento agora existe no HTML)
+  // label filtro
   const elFiltro = document.getElementById('totalDespesasFiltro');
   if (elFiltro) elFiltro.textContent = fmt(total);
 
@@ -3951,9 +3966,9 @@ async function salvarDespesa(e) {
   // RELATÓRIO POR FORMA DE CONTRIBUIÇÃO (Caixa x Conta Bancária/PIX)
   // ============================================================
   function normalizarForma(f) {
-  const v = (f || '').toString().trim().toLowerCase();
-  return v === 'pix' ? 'PIX' : 'Caixa';
-}
+    const v = (f || '').toString().trim().toLowerCase();
+    return v === 'pix' ? 'PIX' : 'Caixa';
+  }
 
 function coletarFormasContribuicao(mk) {
   const cultos = getCultosMes(mk);
