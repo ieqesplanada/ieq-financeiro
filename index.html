@@ -3092,20 +3092,26 @@ function atualizarTotaisCultos(lista){
   <tr>
     <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:22%">Data</td>
     <td style="padding:9px 14px;font-size:13px;font-weight:600">${fmtDate(c.data)}</td>
-    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:18%">Tipo</td>
-    <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:12px">${escapeHtml(c.tipo||'-')}</span></td>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600;width:18%">Horário</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">🕐 ${escapeHtml(c.horario||'—')}</td>
   </tr>
   <tr>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Tipo</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:12px">${escapeHtml(c.tipo||'-')}</span></td>
     <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pastor</td>
     <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pastor||'—')}</td>
-    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pregador</td>
-    <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pregador||'—')}</td>
   </tr>
   <tr>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Pregador</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">${escapeHtml(c.pregador||'—')}</td>
     <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Presentes</td>
     <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="font-size:16px">👥</span> ${c.presentes||0}</td>
+  </tr>
+  <tr>
     <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Visitantes</td>
-    <td style="padding:9px 14px;font-size:13px;font-weight:600"><span style="font-size:14px">🕊️</span> ${c.visitantes||0} • Crianças: ${c.criancas||0}</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">🕊️ ${c.visitantes||0}</td>
+    <td style="padding:9px 14px;font-size:13px;color:#6b7280;background:#f9fafb;font-weight:600">Crianças</td>
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">${c.criancas||0}</td>
   </tr>
 </table>
 
