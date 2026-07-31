@@ -3267,6 +3267,9 @@ function abrirNovaDespesa() {
   document.getElementById('modalNovaDespesa').classList.add('active');
 }
 
+  // 👇 Exposição explícita no escopo global
+window.abrirNovaDespesa = abrirNovaDespesa;
+  
 function filtrarDespesas() {
   const mes    = document.getElementById('filtroDespesaMes')?.value || GLOBAL_MONTH;
   const cat    = document.getElementById('filtroCat')?.value || '';
