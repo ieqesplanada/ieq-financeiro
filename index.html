@@ -1167,22 +1167,22 @@
       </div>
 
                    <!-- 🆕 NOVO BLOCO -->
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
-              <input type="text" id="d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
-            </div>
-            <div><label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
-              <select id="alt-d-formaPagamento" class="input-field text-sm">
-               <option value="Caixa">Caixa</option>
-               <option value="PIX">PIX</option>
-               <option value="Cartão">Cartão</option>
-               <option value="Débito Bancário">Débito Bancário</option>
-               <option value="Boleto">Boleto</option>
-               <option value="Transferência">Transferência</option>
-        </select>
-            </div>
-          </div>
-       </div>
+<div class="grid grid-cols-2 gap-3">
+  <div><label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
+    <input type="text" id="d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
+  </div>
+  <div><label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
+    <select id="d-formaPagamento" class="input-field text-sm">
+     <option value="Caixa">Caixa</option>
+     <option value="PIX">PIX</option>
+     <option value="Cartão">Cartão</option>
+     <option value="Débito Bancário">Débito Bancário</option>
+     <option value="Boleto">Boleto</option>
+     <option value="Transferência">Transferência</option>
+    </select>
+  </div>
+</div>
+
           <!-- FIM NOVO BLOCO -->
 
 
@@ -1241,7 +1241,7 @@
             </div>
             <div>
               <label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
-              <select id="alt-d-formaPagamento" class="input-field text-sm">
+              <select id="d-formaPagamento" class="input-field text-sm">
                 <option value="Caixa">Caixa</option>
                 <option value="PIX">PIX</option>
                 <option value="Cartão">Cartão</option>
@@ -3260,14 +3260,23 @@ function abrirNovaDespesa() {
     showNotification('🔒 Sem permissão para esta ação.', 'error');
     return;
   }
-  document.getElementById('formDespesa').reset();
-  document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
-  document.getElementById('d-formaPagamento').value = 'Caixa'; // 🆕 LINHA NOVA
+
+  const form = document.getElementById('formDespesa');
+  if (form) form.reset();
+
+  const elData = document.getElementById('d-data');
+  if (elData) elData.value = new Date().toISOString().split('T')[0];
+
+  const elForma = document.getElementById('d-formaPagamento');
+  if (elForma) elForma.value = 'Caixa';
+
   atualizarSelectsCategoria();
-  document.getElementById('modalNovaDespesa').classList.add('active');
+
+  const modal = document.getElementById('modalNovaDespesa');
+  if (modal) modal.classList.add('active');
 }
 
-  // 👇 Exposição explícita no escopo global
+// 👇 Exposição explícita no escopo global
 window.abrirNovaDespesa = abrirNovaDespesa;
   
 function filtrarDespesas() {
