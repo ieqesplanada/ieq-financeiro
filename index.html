@@ -3407,7 +3407,7 @@ function renderDespesas(lista, mes) {
   const elQtd = document.getElementById('kpiQtdDespesas');
   if (elQtd) elQtd.textContent = lista.length;
 
-  const entMes = sum(getEntradasMes(mes), e => e.valor);
+  const entMes = sum(getEntradasMes(mes), e => parseValorSeguro(e.valor));
   const elSaldo = document.getElementById('kpiDespesasSaldoMes');
   if (elSaldo) {
     const saldo = entMes - total;
@@ -3447,7 +3447,7 @@ async function confirmarAlteracaoDespesa(e) {
   const idDespesa = document.getElementById('alt-d-id').value;
   const categoria = document.getElementById('alt-d-categoria').value;
   const descricao = document.getElementById('alt-d-descricao').value.trim();
-  const valor     = parseFloat(document.getElementById('alt-d-valor').value);
+  const valor     = parseValorSeguro(document.getElementById('alt-d-valor').value);
   const dataDesp  = document.getElementById('alt-d-data').value;
   const nfe             = document.getElementById('alt-d-nfe').value.trim();
   const formaPagamento  = document.getElementById('alt-d-formaPagamento').value;
@@ -3524,7 +3524,7 @@ async function salvarDespesa(e) {
   const dd = {
     categoria:       document.getElementById('d-categoria').value,
     descricao:       document.getElementById('d-descricao').value.trim(),
-    valor:           parseFloat(document.getElementById('d-valor').value),
+    valor:           parseValorSeguro(document.getElementById('d-valor').value),
     data:            document.getElementById('d-data').value,
     nfe:             document.getElementById('d-nfe').value.trim(),
     formaPagamento:  document.getElementById('d-formaPagamento').value,
@@ -3569,6 +3569,10 @@ async function salvarDespesa(e) {
   }
 }
 
+// 👇 Exposição explícita no escopo global
+window.salvarDespesa = salvarDespesa;
+
+
     async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
     const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
@@ -3588,7 +3592,11 @@ async function salvarDespesa(e) {
       }
       filtrarDespesas(); renderDashboard();
     });
-  }
+}
+
+// 👇 Exposição explícita no escopo global
+window.excluirDespesa = excluirDespesa;
+
 
   // ============================================================
   // ENTRADAS
@@ -3618,12 +3626,13 @@ async function salvarDespesa(e) {
         </tr>`;
       }).join('');
     }
-    const total=lista.reduce((s,e)=>s+e.valor,0);
+    const total=lista.reduce((s,e)=>s+parseValorSeguro(e.valor),0);
     document.getElementById('totalEntradasFiltro').textContent=fmt(total);
     document.getElementById('kpiEntradasMes').textContent=fmt(total);
     document.getElementById('kpiQtdEntradas').textContent=lista.length;
-    document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(getDespesasMes(mes),d=>d.valor));
+    document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(getDespesasMes(mes),d=>parseValorSeguro(d.valor)));
   }
+  
   function limparFiltroEntradas(){
     document.getElementById('filtroEntradaMes').value='';
     const b=document.getElementById('buscaEntrada'); if(b)b.value='';
@@ -3634,7 +3643,7 @@ async function salvarDespesa(e) {
   e.preventDefault();
   const ed={
     descricao:document.getElementById('e-descricao').value,
-    valor:+document.getElementById('e-valor').value,
+    valor:parseValorSeguro(document.getElementById('e-valor').value),
     data:document.getElementById('e-data').value,
     origem:'manual',
     obs:document.getElementById('e-obs').value,
@@ -4484,6 +4493,37 @@ function gerarRelatorioCaixaConta() {
     GLOBAL_MONTH=monthKeyFromDate(new Date());
     console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
   });
+  // ============================================================
+// EXPOSIÇÃO GLOBAL — necessário pois o script está em módulo/IIFE
+// (onclick inline no HTML só acessa window.*)
+// ============================================================
+window.abrirNovaDespesa              = abrirNovaDespesa;
+window.filtrarDespesas               = filtrarDespesas;
+window.limparFiltrosDespesas         = limparFiltrosDespesas;
+window.salvarDespesa                 = salvarDespesa;
+window.excluirDespesa                = excluirDespesa;
+
+window.renderEntradas                = renderEntradas;
+window.limparFiltroEntradas          = limparFiltroEntradas;
+window.salvarEntrada                 = salvarEntrada;
+window.excluirEntrada                = excluirEntrada;
+
+window.renderHistorico               = renderHistorico;
+
+window.renderRelatorios              = renderRelatorios;
+window.gerarRelatorio                = gerarRelatorio;
+window.gerarRelatorioDizimistas      = gerarRelatorioDizimistas;
+window.compartilharDizimistasWhatsApp= compartilharDizimistasWhatsApp;
+window.gerarRelatorioFormasContribuicao = gerarRelatorioFormasContribuicao;
+window.gerarRelatorioCaixaConta      = gerarRelatorioCaixaConta;
+window.compartilharFormasWhatsApp    = compartilharFormasWhatsApp;
+window.gerarRelatorioCultosPDF       = gerarRelatorioCultosPDF;
+window.compartilharCultosWhatsApp    = compartilharCultosWhatsApp;
+window.compartilharCultoWhatsApp     = compartilharCultoWhatsApp;
+window.compartilharRelatorioMensal   = compartilharRelatorioMensal;
+
+window.limparCacheLocal              = limparCacheLocal;
+
 </script>
 </body>
 </html>
