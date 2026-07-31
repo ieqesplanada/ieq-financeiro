@@ -858,12 +858,22 @@
       </div>
     </div>
 
+     <!-- ⬇️ NOVO CARD: RECONCILIAÇÃO CAIXA x CONTA — INSERIR AQUI ⬇️ -->
+    <div class="card p-4 flex flex-col h-full">
+      <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-balance-scale text-teal-600"></i> Reconciliação Caixa x Conta</h3>
+      <p class="text-gray-500 text-sm mb-3">Cruza entradas e despesas para apurar o saldo real de cada bolso</p>
+      <select class="input-field mb-3 text-sm" id="relCaixaContaMesSelect"></select>
+      <div class="flex gap-2 mt-auto">
+        <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCaixaConta()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+      </div>
+    </div>
+    <!-- ⬆️ FIM DO NOVO CARD ⬆️ -->
+
     <!-- ANÁLISE COMPARATIVA -->
     <div class="card p-4 md:col-span-2">
       <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-chart-bar text-purple-600"></i> Análise Comparativa 2026</h3>
       <canvas id="chartComparativo"></canvas>
     </div>
-
   </div>
 </div>
 
@@ -2850,10 +2860,6 @@ function normalizarHorario(valor) {
 
     atualizarTotaisCultos(lista);
   }
-  // ============================================================
-  // CATEGORIAS DE DESPESAS
-  // ============================================================
-  
    // ============================================================
   // CATEGORIAS DE DESPESAS (BLOCO ÚNICO E COMPLETO)
   // ============================================================
@@ -3017,14 +3023,10 @@ function normalizarHorario(valor) {
     showNotification('🗑️ Categoria removida.','info');
   }
 
-
-
     // ============================================================
   // TOGGLE CATEGORIAS DE DESPESAS
   // ============================================================
 
-
-  // CORREÇÃO 1: totais corretos — missões acumulado separado, Total = diz+of (sem missões)
   // CORREÇÃO: inclui "outras" também no acumulado, mantendo consistência com totalArrecadado
 function atualizarTotaisCultos(lista){
   const t=lista.reduce((a,c)=>({
@@ -3169,7 +3171,6 @@ function atualizarTotaisCultos(lista){
       </div>`;
     openModal('modalVerCulto');
   }
-
 
   function imprimirCultoDireto(idx){ verCulto(idx); setTimeout(()=>imprimirCulto(),150); }
   function imprimirCulto(){
@@ -4015,7 +4016,7 @@ function coletarFormasContribuicao(mk) {
 }
 
   function gerarRelatorioFormasContribuicao() {
-    const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
+    const mk = document.getElementById('relCaixaContaMesSelect')?.value || GLOBAL_MONTH;
     const entradas = coletarFormasContribuicao(mk);
     const caixa = entradas.filter(e => e.forma === 'Caixa');
     const conta = entradas.filter(e => e.forma === 'PIX');
@@ -4091,6 +4092,112 @@ function coletarFormasContribuicao(mk) {
 </body></html>`);
     w.document.close();
   }
+
+  function normalizarFormaDespesa(f) {
+  const v = (f || '').toString().trim().toLowerCase();
+  return v === 'caixa' ? 'Caixa' : 'Conta';
+}
+
+function gerarRelatorioCaixaConta() {
+  const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
+
+  // Entradas (dízimos + ofertas + especiais + outras dos cultos do mês)
+  const cultosMes = getCultosMes(mk);
+  const entCaixa = cultosMes.reduce((s,c) => {
+    const dizC = (c.dizimistas||[]).filter(d=>normalizarForma(d.forma)==='Caixa').reduce((a,d)=>a+(parseFloat(d.valor)||0),0);
+    const ofC  = (c.ofertas||[]).filter(o=>normalizarForma(o.forma)==='Caixa').reduce((a,o)=>a+(parseFloat(o.valor)||0),0);
+    return s + dizC + ofC + (parseFloat(c.especiais)||0) + (parseFloat(c.outras)||0);
+  }, 0);
+  const entConta = cultosMes.reduce((s,c) => {
+    const dizP = (c.dizimistas||[]).filter(d=>normalizarForma(d.forma)==='PIX').reduce((a,d)=>a+(parseFloat(d.valor)||0),0);
+    const ofP  = (c.ofertas||[]).filter(o=>normalizarForma(o.forma)==='PIX').reduce((a,o)=>a+(parseFloat(o.valor)||0),0);
+    return s + dizP + ofP;
+  }, 0);
+
+  // Entradas manuais (sem forma definida — entram como Caixa por padrão, ajustável se necessário)
+  const entManuais = getEntradasMes(mk).filter(e => e.origem !== 'culto').reduce((s,e)=>s+e.valor,0);
+  const entCaixaTotal = entCaixa + entManuais;
+
+  // Despesas por forma
+  const despMes = getDespesasMes(mk);
+  const despCaixa = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Caixa').reduce((s,d)=>s+parseValorSeguro(d.valor),0);
+  const despConta = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Conta').reduce((s,d)=>s+parseValorSeguro(d.valor),0);
+
+  const saldoCaixa = entCaixaTotal - despCaixa;
+  const saldoConta = entConta - despConta;
+
+  const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
+  const logoHtml = DB.config.logo
+    ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
+    : `<div style="font-size:30px">⛪</div>`;
+
+  const linhasDespCaixa = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento)==='Caixa').map(d => `
+    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria||'')}</td><td>${escapeHtml(d.descricao||'—')}</td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
+  ).join('') || `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhuma despesa em Caixa</td></tr>`;
+
+  const linhasDespConta = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento)==='Conta').map(d => `
+    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria||'')}</td><td>${escapeHtml(d.descricao||'—')}</td><td><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:11px">${escapeHtml(d.formaPagamento||'—')}</span></td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
+  ).join('') || `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:12px">Nenhuma despesa em Conta</td></tr>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Reconciliação Caixa x Conta — ${monthLabel(mk)}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;padding:28px;color:#1f2937;background:#fff}
+  .header{background:linear-gradient(135deg,#1e3a5f,#2d5a8f);color:white;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  .header h1{font-size:19px;margin:0}
+  .header .tag{margin-top:8px;font-size:13px;letter-spacing:2px;color:#c8a951;font-weight:700}
+  .secao-title{background:#1e3a5f;color:white;padding:10px 14px;font-size:13px;font-weight:700;border-radius:10px 10px 0 0;display:flex;justify-content:space-between}
+  table{width:100%;border-collapse:collapse;margin-bottom:20px;border-radius:0 0 10px 10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
+  th{background:#f1f5f9;color:#475569;padding:9px 14px;text-align:left;font-size:12px}
+  td{padding:9px 14px;border-bottom:1px solid #eee;font-size:13px}
+  tr:nth-child(even) td{background:#f9fafb}
+  .total-row td{font-weight:700;background:#f1f5f9!important;font-size:14px;border-top:2px solid #1e3a5f}
+  .resumo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+  .resumo div{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center}
+  .saldo-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+  .saldo-box .caixa{background:#ecfdf5;border:2px solid #10b981;border-radius:10px;padding:14px;text-align:center}
+  .saldo-box .conta{background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:14px;text-align:center}
+  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb}
+  .print-btn{display:block;margin:24px auto 0;background:#1e3a5f;color:white;border:none;padding:12px 36px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600}
+  @media print{ @page{margin:10mm;size:A4} body{padding:0;max-width:100%} .no-print{display:none!important} *{-webkit-print-color-adjust:exact!important} tr{break-inside:avoid} }
+</style></head>
+<body>
+  <div class="header">
+    ${logoHtml}
+    <div><h1>${nomeIgreja}</h1><p class="tag">RECONCILIAÇÃO CAIXA x CONTA BANCÁRIA — ${monthLabel(mk).toUpperCase()}</p></div>
+  </div>
+
+  <div class="resumo">
+    <div><span style="font-size:12px;color:#065f46">💵 Entradas CAIXA</span><br><strong style="font-size:18px;color:#059669">${fmt(entCaixaTotal)}</strong></div>
+    <div><span style="font-size:12px;color:#1d4ed8">🏦 Entradas CONTA (PIX)</span><br><strong style="font-size:18px;color:#1d4ed8">${fmt(entConta)}</strong></div>
+  </div>
+
+  <div class="secao-title"><span>📤 Despesas pagas em CAIXA</span><span>${fmt(despCaixa)}</span></div>
+  <table>
+    <tr><th>Categoria</th><th>Descrição</th><th>Data</th><th style="text-align:right">Valor</th></tr>
+    ${linhasDespCaixa}
+    <tr class="total-row"><td colspan="3">TOTAL DESPESAS CAIXA</td><td style="text-align:right">${fmt(despCaixa)}</td></tr>
+  </table>
+
+  <div class="secao-title"><span>📤 Despesas pagas em CONTA (PIX/Cartão/Débito/Boleto/Transf.)</span><span>${fmt(despConta)}</span></div>
+  <table>
+    <tr><th>Categoria</th><th>Descrição</th><th>Forma</th><th>Data</th><th style="text-align:right">Valor</th></tr>
+    ${linhasDespConta}
+    <tr class="total-row"><td colspan="4">TOTAL DESPESAS CONTA</td><td style="text-align:right">${fmt(despConta)}</td></tr>
+  </table>
+
+  <div class="saldo-box">
+    <div class="caixa"><span style="font-size:12px;color:#065f46">SALDO CAIXA (mês)</span><br><strong style="font-size:20px;color:${saldoCaixa>=0?'#059669':'#dc2626'}">${fmt(saldoCaixa)}</strong></div>
+    <div class="conta"><span style="font-size:12px;color:#1d4ed8">SALDO CONTA (mês)</span><br><strong style="font-size:20px;color:${saldoConta>=0?'#1d4ed8':'#dc2626'}">${fmt(saldoConta)}</strong></div>
+  </div>
+
+  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
+  <div class="no-print" style="text-align:center"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
+</body></html>`);
+  w.document.close();
+}
 
   function compartilharFormasWhatsApp() {
     const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
