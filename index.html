@@ -1741,11 +1741,10 @@ function getSegundoDomingoDoMes(mk){
   
   function closeModal(id) {
   const modal = document.getElementById(id);
-  if (!modal) return;
-  modal.classList.remove('active');
-  modal.style.display = 'none';   // 🔧 garante que não fique "fantasma" na tela
+  if (modal) modal.classList.remove('active');
 }
 window.closeModal = closeModal;
+
 
 
   // ===== COLE AQUI A FUNÇÃO NOVA =====
@@ -3277,20 +3276,14 @@ function abrirNovaDespesa() {
 
   atualizarSelectsCategoria();
 
-  // 🔧 Fecha QUALQUER outro modal aberto antes de abrir este
-  document.querySelectorAll('.modal').forEach(m => {
-    m.classList.remove('active');
-    m.style.display = 'none';
-  });
+  // 🔧 CORREÇÃO: fecha todos os modal-overlay abertos
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
 
   const modal = document.getElementById('modalNovaDespesa');
-  if (modal) {
-    modal.classList.add('active');
-    modal.style.display = 'flex';
-    modal.style.zIndex  = '9999';
-  }
+  if (modal) modal.classList.add('active');
 }
 window.abrirNovaDespesa = abrirNovaDespesa;
+
   
 function filtrarDespesas() {
   const mes    = document.getElementById('filtroDespesaMes')?.value || GLOBAL_MONTH;
@@ -3462,20 +3455,13 @@ function abrirAlterarDespesa(id) {
   const dataVal = (d.data || '').split('T')[0];
   document.getElementById('alt-d-data').value = dataVal || new Date().toISOString().split('T')[0];
 
-  // 🔧 Fecha QUALQUER outro modal aberto no sistema (não só os de despesa)
-  document.querySelectorAll('.modal').forEach(m => {
-    m.classList.remove('active');
-    m.style.display = 'none';
-  });
+  // 🔧 CORREÇÃO: fecha todos os modal-overlay abertos
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
 
-  // 🔧 Abre o modal de alteração garantindo topo de tudo
-  const modal = document.getElementById('modalAlterarDespesa');
-  modal.classList.add('active');
-  modal.style.display = 'flex';
-  modal.style.zIndex  = '9999';   // força ficar acima de qualquer outro modal
+  // 🔧 abre o modal correto
+  document.getElementById('modalAlterarDespesa').classList.add('active');
 }
 window.abrirAlterarDespesa = abrirAlterarDespesa;
-
 
 async function confirmarAlteracaoDespesa(e) {
   e.preventDefault();
