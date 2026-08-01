@@ -557,12 +557,12 @@
             <div class="rounded-lg border border-green-200 bg-green-50 p-2 text-center">
               <p class="text-[10px] uppercase tracking-wide text-gray-500">Caixa Local</p>
               <p class="text-sm font-bold text-green-700" id="kpi-caixa-local">R$ 0,00</p>
-              <p class="text-[10px] text-green-600 mt-1" id="kpi-caixa-local-sub">—</p>
+              <p class="text-[10px] text-green-600 mt-1" id="kpi-caixa-local-sub">Saldo inicial • Movimento</p>
             </div>
             <div class="rounded-lg border border-blue-200 bg-blue-50 p-2 text-center">
               <p class="text-[10px] uppercase tracking-wide text-gray-500">Conta Bancária</p>
               <p class="text-sm font-bold text-blue-700" id="kpi-conta-bancaria">R$ 0,00</p>
-              <p class="text-[10px] text-blue-600 mt-1" id="kpi-conta-bancaria-sub">—</p>
+              <p class="text-[10px] text-blue-600 mt-1" id="kpi-conta-bancaria-sub">Saldo inicial • Movimento</p>
             </div>
           </div>
         </div>
@@ -2351,6 +2351,7 @@ function calcularResumoMes(mk) {
 function invalidarCacheResumo() {
   _cacheResumoAnual = null;
   _cacheResumoAnualKey = '';
+  window.__conciliacaoCache = {};
 }
 
   // ============================================================
@@ -2376,10 +2377,13 @@ function invalidarCacheResumo() {
     document.getElementById('kpi-saidas').textContent       = fmt(saiMes);
     document.getElementById('kpi-saldo').textContent        = fmt(saldoFinal);
     document.getElementById('kpi-saldo-sub').textContent    = `Mês: ${monthLabel(GLOBAL_MONTH)}`;
+    const saldoCaixaMes = conciliacao.saldoCaixaMes ?? (conciliacao.saldoCaixa - conciliacao.saldoCaixaInicial);
+    const saldoContaMes = conciliacao.saldoContaMes ?? (conciliacao.saldoConta - conciliacao.saldoContaInicial);
+
     document.getElementById('kpi-caixa-local').textContent = fmt(conciliacao.saldoCaixa);
-    document.getElementById('kpi-caixa-local-sub').textContent = `Transferido ${fmt(conciliacao.saldoCaixaInicial)} • Entradas ${fmt(conciliacao.entradasCaixa)}`;
+    document.getElementById('kpi-caixa-local-sub').textContent = `Saldo inicial ${fmt(conciliacao.saldoCaixaInicial)} • Movimento ${fmt(saldoCaixaMes)}`;
     document.getElementById('kpi-conta-bancaria').textContent = fmt(conciliacao.saldoConta);
-    document.getElementById('kpi-conta-bancaria-sub').textContent = `Transferido ${fmt(conciliacao.saldoContaInicial)} • Entradas ${fmt(conciliacao.entradasConta)}`;
+    document.getElementById('kpi-conta-bancaria-sub').textContent = `Saldo inicial ${fmt(conciliacao.saldoContaInicial)} • Movimento ${fmt(saldoContaMes)}`;
     
     const vE = (resumoPrev && resumoPrev.entradas) ? ((entMes - resumoPrev.entradas) / resumoPrev.entradas) * 100 : null;
     const vS = (resumoPrev && resumoPrev.saidas)   ? ((saiMes - resumoPrev.saidas)   / resumoPrev.saidas)   * 100 : null;
@@ -2412,14 +2416,32 @@ function invalidarCacheResumo() {
 
   function renderMovimentacoesMes(){
     const tbody=document.getElementById('tabelaMovimentacoes');
-    const ents=getEntradasMes(GLOBAL_MONTH).map(e=>({data:e.data,descricao:e.descricao,tipo:'Entrada',valor:e.valor}));
-    const desp=getDespesasMes(GLOBAL_MONTH).map(d=>({data:d.data,descricao:d.descricao?`${d.categoria} — ${d.descricao}`:d.categoria,tipo:'Saída',valor:d.valor}));
-    const movs=[...ents,...desp].filter(m=>m.data).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,8);
+    const ents=getEntradasMes(GLOBAL_MONTH)
+      .map(e => ({
+        data: (e.data || '').toString().split('T')[0],
+        descricao: e.descricao || 'Entrada manual',
+        tipo: 'Entrada',
+        valor: parseFloat(e.valor) || 0
+      }))
+      .filter(m => m.data);
+    const desp=getDespesasMes(GLOBAL_MONTH)
+      .map(d => ({
+        data: (d.data || '').toString().split('T')[0],
+        descricao: d.descricao ? `${d.categoria || 'Despesa'} — ${d.descricao}` : (d.categoria || 'Despesa'),
+        tipo: 'Saída',
+        valor: parseFloat(d.valor) || 0
+      }))
+      .filter(m => m.data);
+    const movs=[...ents,...desp]
+      .sort((a,b)=>(b.data||'').localeCompare(a.data||''))
+      .slice(0,8);
+
     if(!movs.length){tbody.innerHTML='<tr><td colspan="4" class="py-4 text-center text-gray-400">Sem movimentações no mês</td></tr>';return;}
+
     tbody.innerHTML=movs.map(m=>`
       <tr class="table-row border-b border-gray-50">
         <td class="py-2 text-sm text-gray-500">${fmtDate(m.data)}</td>
-        <td class="py-2 text-sm text-gray-700">${m.descricao||'-'}</td>
+        <td class="py-2 text-sm text-gray-700">${escapeHtml(m.descricao||'-')}</td>
         <td class="py-2"><span class="px-2 py-1 rounded-full text-xs font-semibold ${m.tipo==='Entrada'?'badge-green':'badge-red'}">${m.tipo}</span></td>
         <td class="py-2 text-sm font-semibold ${m.tipo==='Entrada'?'text-green-600':'text-red-600'} text-right">${fmt(m.valor)}</td>
       </tr>`).join('');
@@ -3876,7 +3898,7 @@ async function salvarDespesa(e) {
     const v = (valor || '').toString().trim().toLowerCase();
     if (!v) return 'CAIXA';
     if (v.includes('caixa')) return 'CAIXA';
-    if (v.includes('pix') || v.includes('cart') || v.includes('transfer') || v.includes('debito') || v.includes('banc')) return 'CONTA CORRENTE';
+    if (v.includes('conta corrente') || v.includes('conta-corrente') || v.includes('conta bancaria') || v.includes('conta-bancaria') || v.includes('banco') || v.includes('pix') || v.includes('cart') || v.includes('transfer') || v.includes('debito') || v.includes('boleto')) return 'CONTA CORRENTE';
     return 'CAIXA';
   }
 
@@ -3929,6 +3951,8 @@ async function salvarDespesa(e) {
       ...resumoAtual,
       saldoCaixaInicial,
       saldoContaInicial,
+      saldoCaixaMes: resumoAtual.saldoCaixa,
+      saldoContaMes: resumoAtual.saldoConta,
       saldoCaixa: saldoCaixaInicial + resumoAtual.saldoCaixa,
       saldoConta: saldoContaInicial + resumoAtual.saldoConta
     };
@@ -3980,9 +4004,8 @@ async function salvarDespesa(e) {
   </div>
 
   <div class="resumo">
-    <div><span style="font-size:12px;color:#065f46">💵 CAIXA LOCAL</span><br><strong style="font-size:18px;color:#059669">Entradas ${fmt(resumo.entradasCaixa)} • Despesas ${fmt(resumo.despesasCaixa)}</strong><br><span style="font-size:13px;color:#92400e">Saldo ${fmt(resumo.saldoCaixa)}</span></div>
-    <div><span style="font-size:12px;color:#1d4ed8">🏦 CONTA CORRENTE</span><br><strong style="font-size:18px;color:#1d4ed8">Entradas ${fmt(resumo.entradasConta)} • Despesas ${fmt(resumo.despesasConta)}</strong><br><span style="font-size:13px;color:#92400e">Saldo ${fmt(resumo.saldoConta)}</span></div>
-  </div>
+    <div><span style="font-size:12px;color:#065f46">💵 CAIXA LOCAL</span><br><strong style="font-size:18px;color:#059669">Saldo inicial ${fmt(resumo.saldoCaixaInicial)} • Movimento ${fmt((resumo.saldoCaixaMes ?? (resumo.saldoCaixa - resumo.saldoCaixaInicial)))}</strong><br><span style="font-size:13px;color:#92400e">Saldo final ${fmt(resumo.saldoCaixa)}</span></div>
+    <div><span style="font-size:12px;color:#1d4ed8">🏦 CONTA CORRENTE</span><br><strong style="font-size:18px;color:#1d4ed8">Saldo inicial ${fmt(resumo.saldoContaInicial)} • Movimento ${fmt((resumo.saldoContaMes ?? (resumo.saldoConta - resumo.saldoContaInicial)))}</strong><br><span style="font-size:13px;color:#92400e">Saldo final ${fmt(resumo.saldoConta)}</span></div>
 
   <table>
     <tr><th colspan="3">💵 CAIXA LOCAL</th></tr>
@@ -4012,13 +4035,13 @@ async function salvarDespesa(e) {
     const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
     let texto = '⚖️ *' + nomeIgreja + ' - Relatório de Conciliação*\n📅 *Mês:* ' + monthLabel(mk) + '\n\n';
     texto += '💵 *Caixa Local*\n';
-    texto += 'Entradas: ' + fmt(resumo.entradasCaixa) + '\n';
-    texto += 'Despesas: ' + fmt(resumo.despesasCaixa) + '\n';
-    texto += 'Saldo: ' + fmt(resumo.saldoCaixa) + '\n\n';
+    texto += 'Saldo inicial: ' + fmt(resumo.saldoCaixaInicial) + '\n';
+    texto += 'Movimento: ' + fmt((resumo.saldoCaixaMes ?? (resumo.saldoCaixa - resumo.saldoCaixaInicial))) + '\n';
+    texto += 'Saldo final: ' + fmt(resumo.saldoCaixa) + '\n\n';
     texto += '🏦 *Conta Corrente*\n';
-    texto += 'Entradas: ' + fmt(resumo.entradasConta) + '\n';
-    texto += 'Despesas: ' + fmt(resumo.despesasConta) + '\n';
-    texto += 'Saldo: ' + fmt(resumo.saldoConta) + '\n\n';
+    texto += 'Saldo inicial: ' + fmt(resumo.saldoContaInicial) + '\n';
+    texto += 'Movimento: ' + fmt((resumo.saldoContaMes ?? (resumo.saldoConta - resumo.saldoContaInicial))) + '\n';
+    texto += 'Saldo final: ' + fmt(resumo.saldoConta) + '\n\n';
     texto += '✨ Gerado pelo Sistema Financeiro IEQ';
     compartilharWhatsApp(texto);
   }
