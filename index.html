@@ -1738,10 +1738,15 @@ function getSegundoDomingoDoMes(mk){
     }
     document.getElementById(id).classList.add('active');
   }
-  function closeModal(id){ document.getElementById(id).classList.remove('active'); }
-  document.querySelectorAll('.modal-overlay').forEach(m=>{
-    m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('active'); });
-  });
+  
+  function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.style.display = 'none';   // 🔧 garante que não fique "fantasma" na tela
+}
+window.closeModal = closeModal;
+
 
   // ===== COLE AQUI A FUNÇÃO NOVA =====
   function confirmarExclusao(mensagem, callback) {
@@ -3272,11 +3277,19 @@ function abrirNovaDespesa() {
 
   atualizarSelectsCategoria();
 
-  const modal = document.getElementById('modalNovaDespesa');
-  if (modal) modal.classList.add('active');
-}
+  // 🔧 Fecha QUALQUER outro modal aberto antes de abrir este
+  document.querySelectorAll('.modal').forEach(m => {
+    m.classList.remove('active');
+    m.style.display = 'none';
+  });
 
-// 👇 Exposição explícita no escopo global
+  const modal = document.getElementById('modalNovaDespesa');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    modal.style.zIndex  = '9999';
+  }
+}
 window.abrirNovaDespesa = abrirNovaDespesa;
   
 function filtrarDespesas() {
@@ -3429,7 +3442,6 @@ function renderDespesas(lista, mes) {
 }
 
 
-// Abre modal de alteração com dados preenchidos
 function abrirAlterarDespesa(id) {
   if (!temPermissao('podeEditar')) {
     showNotification('🔒 Sem permissão para editar.', 'error');
@@ -3440,23 +3452,27 @@ function abrirAlterarDespesa(id) {
   if (d._fixed) { showNotification('❌ Registro fixo não pode ser alterado.', 'error'); return; }
 
   atualizarSelectsCategoria();
-  document.getElementById('alt-d-id').value        = String(d.id);
-  document.getElementById('alt-d-categoria').value = d.categoria  || '';
-  document.getElementById('alt-d-descricao').value = d.descricao  || '';
-  document.getElementById('alt-d-valor').value     = d.valor      || '';
+  document.getElementById('alt-d-id').value             = String(d.id);
+  document.getElementById('alt-d-categoria').value      = d.categoria || '';
+  document.getElementById('alt-d-descricao').value      = d.descricao || '';
+  document.getElementById('alt-d-valor').value          = d.valor || '';
   document.getElementById('alt-d-nfe').value             = d.nfe || '';
   document.getElementById('alt-d-formaPagamento').value  = d.formaPagamento || 'Caixa';
-  // Garante formato yyyy-mm-dd para o input date
-  let dataVal = (d.data || '').split('T')[0];
-  document.getElementById('alt-d-data').value      = dataVal || new Date().toISOString().split('T')[0];
 
-  // 🔧 CORREÇÃO: linha antiga removida ↓
-  // document.getElementById('modalAlterarDespesa').classList.add('active');
+  const dataVal = (d.data || '').split('T')[0];
+  document.getElementById('alt-d-data').value = dataVal || new Date().toISOString().split('T')[0];
 
-  // 🔧 CORREÇÃO: linha nova adicionada ↓
+  // 🔧 Fecha QUALQUER outro modal aberto no sistema (não só os de despesa)
+  document.querySelectorAll('.modal').forEach(m => {
+    m.classList.remove('active');
+    m.style.display = 'none';
+  });
+
+  // 🔧 Abre o modal de alteração garantindo topo de tudo
   const modal = document.getElementById('modalAlterarDespesa');
-  modal.classList.remove('hidden');   // remove o que está escondendo o modal
-  modal.classList.add('active');      // ativa a exibição (igual ao modal de Nova Despesa)
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  modal.style.zIndex  = '9999';   // força ficar acima de qualquer outro modal
 }
 window.abrirAlterarDespesa = abrirAlterarDespesa;
 
