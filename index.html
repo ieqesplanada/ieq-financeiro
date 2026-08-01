@@ -208,8 +208,8 @@
       font-size: 20px;
     }
 
-    /* ============================================================
-       MODAL ALTERAR DESPESA
+   /* ============================================================
+        MODAL ALTERAR DESPESA
        ============================================================ */
     #modalAlterarDespesa .modal-header {
       background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -1196,7 +1196,6 @@
 </div>
 
 <!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
-<!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
 <div class="modal-overlay" id="modalAlterarDespesa">
   <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
     <div class="bg-gradient-to-r from-yellow-600 to-yellow-400 p-4 flex justify-between items-center rounded-t-2xl">
@@ -1234,23 +1233,24 @@
           </div>
 
           <!-- 🆕 CAMPOS QUE FALTAVAM -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
-              <input type="text" id="alt-d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
-            </div>
-            <div>
-              <label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
-              <select id="d-formaPagamento" class="input-field text-sm">
-                <option value="Caixa">Caixa</option>
-                <option value="PIX">PIX</option>
-                <option value="Cartão">Cartão</option>
-                <option value="Boleto">Boleto</option>
-                <option value="Transferência">Transferência</option>
-              </select>
-            </div>
-          </div>
-          <!-- FIM CAMPOS NOVOS -->
+<div class="grid grid-cols-2 gap-3">
+  <div>
+    <label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
+    <input type="text" id="alt-d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
+  </div>
+  <div>
+    <label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
+    <select id="alt-d-formaPagamento" class="input-field text-sm">
+      <option value="Caixa">Caixa</option>
+      <option value="PIX">PIX</option>
+      <option value="Cartão">Cartão</option>
+      <option value="Boleto">Boleto</option>
+      <option value="Débito Bancário">Débito Bancário</option>
+      <option value="Transferência">Transferência</option>
+    </select>
+  </div>
+</div>
+<!-- FIM CAMPOS NOVOS -->
 
         </div>
         <div class="flex gap-3 mt-4">
