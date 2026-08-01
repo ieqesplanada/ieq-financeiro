@@ -1383,48 +1383,73 @@
 // API — com fallback para fila offline
 // ============================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbxCkdktgLJVfNUNf-XISvs5d6wkHUdIpmyVGWRGBOZZkEQXRbFje4XihmnYKATM_y0/exec";
+const API_TIMEOUT_MS = 10000;
+
+async function fetchJsonComTimeout(url, options = {}, fallbackValue = null) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  try {
+    const resp = await fetch(url, { ...options, signal: controller.signal, cache: 'no-store' });
+    const text = await resp.text();
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    if (!text || !text.trim()) return fallbackValue;
+
+    const trimmed = text.trim();
+    if (/^<!doctype html|^<html|^<!doctype/i.test(trimmed)) {
+      throw new Error('API retornou HTML (serviço indisponível)');
+    }
+
+    try {
+      return JSON.parse(trimmed);
+    } catch (parseErr) {
+      throw new Error('Resposta inválida do Sheets');
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') throw new Error('Tempo limite de conexão com o Sheets');
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 async function apiGet(sheet) {
   const url = `${API_URL}?sheet=${encodeURIComponent(sheet)}&action=getAll`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const text = await resp.text();
-  if (text.trim().startsWith('<!') || text.trim().startsWith('<html'))
-    throw new Error('API retornou HTML (serviço indisponível)');
-  const json = JSON.parse(text);
+  const json = await fetchJsonComTimeout(url, {}, { ok: true, data: [] });
+  if (!json || typeof json !== 'object') throw new Error('Resposta inválida do Sheets');
   if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
-  return json.data || [];
+  return Array.isArray(json.data) ? json.data : [];
 }
 
 async function apiSave(sheet, data) {
-  const resp = await fetch(API_URL, {
+  const json = await fetchJsonComTimeout(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action: 'save', sheet, data })
-  });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const json = await resp.json();
+  }, { ok: false, error: 'Erro ao salvar' });
+
+  if (!json || typeof json !== 'object') throw new Error('Resposta inválida do Sheets');
   if (!json.ok) throw new Error(json.error || 'Erro ao salvar');
   return json.data;
 }
 
 async function apiUpdate(sheet, id, data) {
-  const resp = await fetch(API_URL, {
+  const json = await fetchJsonComTimeout(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action: 'update', sheet, id, data })
-  });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const json = await resp.json();
+  }, { ok: false, error: 'Erro ao atualizar' });
+
+  if (!json || typeof json !== 'object') throw new Error('Resposta inválida do Sheets');
   if (!json.ok) throw new Error(json.error || 'Erro ao atualizar');
   return json.data;
 }
 
 async function apiDelete(sheet, id) {
   const url = `${API_URL}?action=delete&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(id)}`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const json = await resp.json();
+  const json = await fetchJsonComTimeout(url, {}, { ok: false, error: 'Erro ao excluir' });
+  if (!json || typeof json !== 'object') throw new Error('Resposta inválida do Sheets');
   if (!json.ok) throw new Error(json.error || 'Erro ao excluir');
   return json.data;
 }
@@ -1964,31 +1989,47 @@ aplicarConfiguracoes();
   atualizarBadgeSync(); // mostra fila pendente imediatamente
 
   try {
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 6000));
-
-    const res = await Promise.race([
-      Promise.allSettled([apiGet('cultos'), apiGet('despesas'), apiGet('entradas')]),
-      timeout
+    const [cR, dR, eR] = await Promise.allSettled([
+      apiGet('cultos'),
+      apiGet('despesas'),
+      apiGet('entradas')
     ]);
 
-    const [cR, dR, eR] = res;
+    let houveErroParcial = false;
 
-    // Sheets substitui local (fonte de verdade)
-    if (cR.status === 'fulfilled' && cR.value.length > 0)
+    // Sheets substitui local (fonte de verdade), mas preserva os dados locais se a conexão falhar
+    if (cR.status === 'fulfilled') {
       DB.cultos = cR.value.map(normalizarCulto);
+    } else {
+      console.warn('Falha ao carregar cultos do Sheets:', cR.reason?.message || cR.reason);
+      houveErroParcial = true;
+    }
 
-   if (dR.status === 'fulfilled' && dR.value.length > 0)
-  DB.despesas = dR.value.map(normalizarDespesa);
+    if (dR.status === 'fulfilled') {
+      DB.despesas = dR.value.map(normalizarDespesa);
+    } else {
+      console.warn('Falha ao carregar despesas do Sheets:', dR.reason?.message || dR.reason);
+      houveErroParcial = true;
+    }
 
-
-    if (eR.status === 'fulfilled' && eR.value.length > 0)
+    if (eR.status === 'fulfilled') {
       DB.entradas = eR.value.map(normalizarEntrada);
+    } else {
+      console.warn('Falha ao carregar entradas do Sheets:', eR.reason?.message || eR.reason);
+      houveErroParcial = true;
+    }
 
     DB.saveLocal();
-    setSyncStatus('synced');
-    let _ultimaSync = Date.now();
+    _ultimaSync = Date.now();
     localStorage.setItem('ieq_ultima_sync', _ultimaSync);
-    showNotification('✅ Dados sincronizados!', 'success');
+
+    if (houveErroParcial) {
+      setSyncStatus('error');
+      showNotification('⚠️ Sincronização parcial — os dados locais foram preservados.', 'warning');
+    } else {
+      setSyncStatus('synced');
+      showNotification('✅ Dados sincronizados!', 'success');
+    }
 
     // Processa fila offline que ficou pendente
     const { enviados } = await processarFilaOffline();
@@ -2110,33 +2151,49 @@ async function sincronizarTudo(silencioso = false) {
       showNotification(`📤 ${enviados} operação(ões) offline enviada(s)`, 'info');
 
     // 2. Busca tudo do Sheets (fonte de verdade)
-    const [cultosBrutos, despesasBrutos, entradasBrutos] = await Promise.all([
+    const [cultosRes, despesasRes, entradasRes] = await Promise.allSettled([
       apiGet('cultos'),
       apiGet('despesas'),
       apiGet('entradas')
     ]);
 
-   // 3. Sheets substitui local — ele é a fonte de verdade
-if (cultosBrutos.length > 0 || DB.cultos.length > 0) {
-  DB.cultos = cultosBrutos.map(normalizarCulto);
-}
+    let houveErroParcial = false;
 
-if (despesasBrutos.length > 0 || DB.despesas.length > 0) {
-  DB.despesas = despesasBrutos.map(normalizarDespesa);
-}
+    if (cultosRes.status === 'fulfilled') {
+      DB.cultos = cultosRes.value.map(normalizarCulto);
+    } else {
+      houveErroParcial = true;
+      console.warn('Falha ao sincronizar cultos:', cultosRes.reason?.message || cultosRes.reason);
+    }
 
-if (entradasBrutos.length > 0 || DB.entradas.length > 0) {
-  DB.entradas = entradasBrutos.map(normalizarEntrada);
-}
+    if (despesasRes.status === 'fulfilled') {
+      DB.despesas = despesasRes.value.map(normalizarDespesa);
+    } else {
+      houveErroParcial = true;
+      console.warn('Falha ao sincronizar despesas:', despesasRes.reason?.message || despesasRes.reason);
+    }
+
+    if (entradasRes.status === 'fulfilled') {
+      DB.entradas = entradasRes.value.map(normalizarEntrada);
+    } else {
+      houveErroParcial = true;
+      console.warn('Falha ao sincronizar entradas:', entradasRes.reason?.message || entradasRes.reason);
+    }
 
     DB.saveLocal();
-invalidarCacheResumo();
-setSyncStatus('synced');
-_ultimaSync = Date.now();
-localStorage.setItem('ieq_ultima_sync', _ultimaSync);
+    invalidarCacheResumo();
 
-    if (!silencioso)
-      showNotification('✅ Sincronizado! Dados atualizados do Sheets.', 'success');
+    if (houveErroParcial) {
+      setSyncStatus('error');
+      if (!silencioso)
+        showNotification('⚠️ Sincronização parcial com o Sheets. Dados locais preservados.', 'warning');
+    } else {
+      setSyncStatus('synced');
+      _ultimaSync = Date.now();
+      localStorage.setItem('ieq_ultima_sync', _ultimaSync);
+      if (!silencioso)
+        showNotification('✅ Sincronizado! Dados atualizados do Sheets.', 'success');
+    }
 
     // 4. Re-renderiza a página ativa
     _reRenderPaginaAtiva();
