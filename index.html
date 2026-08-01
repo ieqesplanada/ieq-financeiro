@@ -208,8 +208,8 @@
       font-size: 20px;
     }
 
-   /* ============================================================
-        MODAL ALTERAR DESPESA
+    /* ============================================================
+       MODAL ALTERAR DESPESA
        ============================================================ */
     #modalAlterarDespesa .modal-header {
       background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -225,7 +225,7 @@
     .btn-whatsapp-sm { background: #25D366; color: white; padding: 0; width: 28px; height: 28px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .btn-whatsapp-sm:hover { background: #20bd5a; transform: translateY(-1px); }
     
-      /* ============================================================
+               /* ============================================================
        ESTILOS DE IMPRESSÃO — REFC
        ============================================================ */
     @media print {
@@ -858,24 +858,12 @@
       </div>
     </div>
 
-         <!-- ⬇️ NOVO CARD: RECONCILIAÇÃO CAIXA x CONTA — INSERIR AQUI ⬇️ -->
-    <div class="card p-4 flex flex-col h-full">
-      <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-balance-scale text-teal-600"></i> Reconciliação Caixa x Conta</h3>
-      <p class="text-gray-500 text-sm mb-3">Cruza entradas e despesas para apurar o saldo real de cada bolso</p>
-      <select class="input-field mb-3 text-sm" id="relCaixaContaMesSelect"></select>
-      <div class="flex gap-2 mt-auto">
-  <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCaixaConta()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-  <button class="btn-secondary flex-1 text-sm" onclick="compartilharCaixaContaWhatsApp()"><i class="fab fa-whatsapp mr-2"></i> WhatsApp</button>
-</div>
-    </div>
-    <!-- ⬆️ FIM DO NOVO CARD ⬆️ -->
-
-
     <!-- ANÁLISE COMPARATIVA -->
     <div class="card p-4 md:col-span-2">
       <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm"><i class="fas fa-chart-bar text-purple-600"></i> Análise Comparativa 2026</h3>
       <canvas id="chartComparativo"></canvas>
     </div>
+
   </div>
 </div>
 
@@ -1169,22 +1157,21 @@
       </div>
 
                    <!-- 🆕 NOVO BLOCO -->
-<div class="grid grid-cols-2 gap-3">
-  <div><label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
-    <input type="text" id="d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
-  </div>
-  <div><label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
-    <select id="d-formaPagamento" class="input-field text-sm">
-     <option value="Caixa">Caixa</option>
-     <option value="PIX">PIX</option>
-     <option value="Cartão">Cartão</option>
-     <option value="Débito Bancário">Débito Bancário</option>
-     <option value="Boleto">Boleto</option>
-     <option value="Transferência">Transferência</option>
-    </select>
-  </div>
-</div>
-
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
+              <input type="text" id="d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
+            </div>
+            <div><label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
+              <select id="d-formaPagamento" class="input-field text-sm">
+                <option value="Caixa">Caixa</option>
+                <option value="PIX">PIX</option>
+                <option value="Cartão">Cartão</option>
+                <option value="Boleto">Boleto</option>
+                <option value="Transferência">Transferência</option>
+              </select>
+            </div>
+          </div>
+       </div>
           <!-- FIM NOVO BLOCO -->
 
 
@@ -1197,6 +1184,7 @@
   </div>
 </div>
 
+<!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
 <!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
 <div class="modal-overlay" id="modalAlterarDespesa">
   <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
@@ -1235,24 +1223,23 @@
           </div>
 
           <!-- 🆕 CAMPOS QUE FALTAVAM -->
-<div class="grid grid-cols-2 gap-3">
-  <div>
-    <label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
-    <input type="text" id="alt-d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
-  </div>
-  <div>
-    <label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
-    <select id="alt-d-formaPagamento" class="input-field text-sm">
-      <option value="Caixa">Caixa</option>
-      <option value="PIX">PIX</option>
-      <option value="Cartão">Cartão</option>
-      <option value="Boleto">Boleto</option>
-      <option value="Débito Bancário">Débito Bancário</option>
-      <option value="Transferência">Transferência</option>
-    </select>
-  </div>
-</div>
-<!-- FIM CAMPOS NOVOS -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm text-gray-600 mb-1 block">Nº NFe/NFCe</label>
+              <input type="text" id="alt-d-nfe" class="input-field text-sm" placeholder="Ex: 000123456">
+            </div>
+            <div>
+              <label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento</label>
+              <select id="alt-d-formaPagamento" class="input-field text-sm">
+                <option value="Caixa">Caixa</option>
+                <option value="PIX">PIX</option>
+                <option value="Cartão">Cartão</option>
+                <option value="Boleto">Boleto</option>
+                <option value="Transferência">Transferência</option>
+              </select>
+            </div>
+          </div>
+          <!-- FIM CAMPOS NOVOS -->
 
         </div>
         <div class="flex gap-3 mt-4">
@@ -1341,8 +1328,10 @@
 
 
 <script>
- 
-// ============================================================
+  // ============================================================
+  // API
+  // ============================================================
+  // ============================================================
 // API — com fallback para fila offline
 // ============================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbxCkdktgLJVfNUNf-XISvs5d6wkHUdIpmyVGWRGBOZZkEQXRbFje4XihmnYKATM_y0/exec";
@@ -1732,24 +1721,16 @@ function getSegundoDomingoDoMes(mk){
   }
 
   function openModal(id) {
-  // 🔧 CORREÇÃO: modalAlterarDespesa não deve exigir podeLancar (isso é checado em abrirAlterarDespesa)
-  const exigemPodeLancar = ['modalNovoCulto', 'modalNovaDespesa', 'modalNovaEntrada'];
-  if (exigemPodeLancar.includes(id) && !temPermissao('podeLancar')) {
-    showNotification('🔒 Sem permissão para esta ação.', 'error');
-    return;
+    if(['modalNovoCulto','modalNovaDespesa','modalNovaEntrada','modalAlterarDespesa'].includes(id) && !temPermissao('podeLancar')) {
+      showNotification('🔒 Sem permissão para esta ação.','error');
+      return;
+    }
+    document.getElementById(id).classList.add('active');
   }
-
-  const modal = document.getElementById(id);
-  if (!modal) return;
-
-  // 🔧 CORREÇÃO: fecha outros modais abertos antes de abrir este
-  document.querySelectorAll('.modal-overlay.active').forEach(m => {
-    if (m.id !== id) m.classList.remove('active');
+  function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+  document.querySelectorAll('.modal-overlay').forEach(m=>{
+    m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('active'); });
   });
-
-  modal.classList.add('active');
-}
-window.openModal = openModal;
 
   // ===== COLE AQUI A FUNÇÃO NOVA =====
   function confirmarExclusao(mensagem, callback) {
@@ -2868,6 +2849,10 @@ function normalizarHorario(valor) {
 
     atualizarTotaisCultos(lista);
   }
+  // ============================================================
+  // CATEGORIAS DE DESPESAS
+  // ============================================================
+  
    // ============================================================
   // CATEGORIAS DE DESPESAS (BLOCO ÚNICO E COMPLETO)
   // ============================================================
@@ -3031,10 +3016,14 @@ function normalizarHorario(valor) {
     showNotification('🗑️ Categoria removida.','info');
   }
 
+
+
     // ============================================================
   // TOGGLE CATEGORIAS DE DESPESAS
   // ============================================================
 
+
+  // CORREÇÃO 1: totais corretos — missões acumulado separado, Total = diz+of (sem missões)
   // CORREÇÃO: inclui "outras" também no acumulado, mantendo consistência com totalArrecadado
 function atualizarTotaisCultos(lista){
   const t=lista.reduce((a,c)=>({
@@ -3180,6 +3169,7 @@ function atualizarTotaisCultos(lista){
     openModal('modalVerCulto');
   }
 
+
   function imprimirCultoDireto(idx){ verCulto(idx); setTimeout(()=>imprimirCulto(),150); }
   function imprimirCulto(){
   const cont=document.getElementById('printArea').innerHTML;
@@ -3268,24 +3258,13 @@ function abrirNovaDespesa() {
     showNotification('🔒 Sem permissão para esta ação.', 'error');
     return;
   }
-
-  const form = document.getElementById('formDespesa');
-  if (form) form.reset();
-
-  const elData = document.getElementById('d-data');
-  if (elData) elData.value = new Date().toISOString().split('T')[0];
-
-  const elForma = document.getElementById('d-formaPagamento');
-  if (elForma) elForma.value = 'Caixa';
-
+  document.getElementById('formDespesa').reset();
+  document.getElementById('d-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('d-formaPagamento').value = 'Caixa'; // 🆕 LINHA NOVA
   atualizarSelectsCategoria();
-
-  openModal('modalNovaDespesa');   // 🔧 usa a função nativa do sistema
+  document.getElementById('modalNovaDespesa').classList.add('active');
 }
-window.abrirNovaDespesa = abrirNovaDespesa;
 
-
-  
 function filtrarDespesas() {
   const mes    = document.getElementById('filtroDespesaMes')?.value || GLOBAL_MONTH;
   const cat    = document.getElementById('filtroCat')?.value || '';
@@ -3426,7 +3405,7 @@ function renderDespesas(lista, mes) {
   const elQtd = document.getElementById('kpiQtdDespesas');
   if (elQtd) elQtd.textContent = lista.length;
 
-  const entMes = sum(getEntradasMes(mes), e => parseValorSeguro(e.valor));
+  const entMes = sum(getEntradasMes(mes), e => e.valor);
   const elSaldo = document.getElementById('kpiDespesasSaldoMes');
   if (elSaldo) {
     const saldo = entMes - total;
@@ -3435,6 +3414,7 @@ function renderDespesas(lista, mes) {
   }
 }
 
+// Abre modal de alteração com dados preenchidos
 function abrirAlterarDespesa(id) {
   if (!temPermissao('podeEditar')) {
     showNotification('🔒 Sem permissão para editar.', 'error');
@@ -3445,18 +3425,19 @@ function abrirAlterarDespesa(id) {
   if (d._fixed) { showNotification('❌ Registro fixo não pode ser alterado.', 'error'); return; }
 
   atualizarSelectsCategoria();
-  document.getElementById('alt-d-id').value             = String(d.id);
-  document.getElementById('alt-d-categoria').value      = d.categoria || '';
-  document.getElementById('alt-d-descricao').value      = d.descricao || '';
-  document.getElementById('alt-d-valor').value          = d.valor || '';
+  document.getElementById('alt-d-id').value        = String(d.id);
+  document.getElementById('alt-d-categoria').value = d.categoria  || '';
+  document.getElementById('alt-d-descricao').value = d.descricao  || '';
+  document.getElementById('alt-d-valor').value     = d.valor      || '';
   document.getElementById('alt-d-nfe').value             = d.nfe || '';
   document.getElementById('alt-d-formaPagamento').value  = d.formaPagamento || 'Caixa';
-
-  const dataVal = (d.data || '').split('T')[0];
-  document.getElementById('alt-d-data').value = dataVal || new Date().toISOString().split('T')[0];
-
-  openModal('modalAlterarDespesa');   // 🔧 usa a função nativa do sistema
+  // Garante formato yyyy-mm-dd para o input date
+  let dataVal = (d.data || '').split('T')[0];
+  document.getElementById('alt-d-data').value      = dataVal || new Date().toISOString().split('T')[0];
+  document.getElementById('modalAlterarDespesa').classList.add('active');
 }
+// 👇 Exposição explícita no escopo global (necessário se a função estiver
+// dentro de <script type="module">, IIFE ou callback como DOMContentLoaded)
 window.abrirAlterarDespesa = abrirAlterarDespesa;
 
 async function confirmarAlteracaoDespesa(e) {
@@ -3464,7 +3445,7 @@ async function confirmarAlteracaoDespesa(e) {
   const idDespesa = document.getElementById('alt-d-id').value;
   const categoria = document.getElementById('alt-d-categoria').value;
   const descricao = document.getElementById('alt-d-descricao').value.trim();
-  const valor     = parseValorSeguro(document.getElementById('alt-d-valor').value);
+  const valor     = parseFloat(document.getElementById('alt-d-valor').value);
   const dataDesp  = document.getElementById('alt-d-data').value;
   const nfe             = document.getElementById('alt-d-nfe').value.trim();
   const formaPagamento  = document.getElementById('alt-d-formaPagamento').value;
@@ -3541,7 +3522,7 @@ async function salvarDespesa(e) {
   const dd = {
     categoria:       document.getElementById('d-categoria').value,
     descricao:       document.getElementById('d-descricao').value.trim(),
-    valor:           parseValorSeguro(document.getElementById('d-valor').value),
+    valor:           parseFloat(document.getElementById('d-valor').value),
     data:            document.getElementById('d-data').value,
     nfe:             document.getElementById('d-nfe').value.trim(),
     formaPagamento:  document.getElementById('d-formaPagamento').value,
@@ -3586,9 +3567,6 @@ async function salvarDespesa(e) {
   }
 }
 
-// 👇 Exposição explícita no escopo global
-window.salvarDespesa = salvarDespesa;
-
     async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
     const idx=DB.despesas.findIndex(d=>String(d.id)===String(id));
@@ -3608,11 +3586,7 @@ window.salvarDespesa = salvarDespesa;
       }
       filtrarDespesas(); renderDashboard();
     });
-}
-
-// 👇 Exposição explícita no escopo global
-window.excluirDespesa = excluirDespesa;
-
+  }
 
   // ============================================================
   // ENTRADAS
@@ -3642,13 +3616,12 @@ window.excluirDespesa = excluirDespesa;
         </tr>`;
       }).join('');
     }
-    const total=lista.reduce((s,e)=>s+parseValorSeguro(e.valor),0);
+    const total=lista.reduce((s,e)=>s+e.valor,0);
     document.getElementById('totalEntradasFiltro').textContent=fmt(total);
     document.getElementById('kpiEntradasMes').textContent=fmt(total);
     document.getElementById('kpiQtdEntradas').textContent=lista.length;
-    document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(getDespesasMes(mes),d=>parseValorSeguro(d.valor)));
+    document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(getDespesasMes(mes),d=>d.valor));
   }
-  
   function limparFiltroEntradas(){
     document.getElementById('filtroEntradaMes').value='';
     const b=document.getElementById('buscaEntrada'); if(b)b.value='';
@@ -3659,7 +3632,7 @@ window.excluirDespesa = excluirDespesa;
   e.preventDefault();
   const ed={
     descricao:document.getElementById('e-descricao').value,
-    valor:parseValorSeguro(document.getElementById('e-valor').value),
+    valor:+document.getElementById('e-valor').value,
     data:document.getElementById('e-data').value,
     origem:'manual',
     obs:document.getElementById('e-obs').value,
@@ -3777,7 +3750,6 @@ window.excluirDespesa = excluirDespesa;
     document.getElementById('relCultoFim').value = GLOBAL_MONTH + '-01';
     popularSelectMes('relDizimistasMesSelect');
     popularSelectMes('relFormasMesSelect');
-    popularSelectRelCaixaContaMes();
 
         const anoAtual = new Date().getFullYear();
     const resumoAnual = calcularResumoAnual(anoAtual);
@@ -4042,7 +4014,7 @@ function coletarFormasContribuicao(mk) {
 }
 
   function gerarRelatorioFormasContribuicao() {
-    const mk = document.getElementById('relCaixaContaMesSelect')?.value || GLOBAL_MONTH;
+    const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
     const entradas = coletarFormasContribuicao(mk);
     const caixa = entradas.filter(e => e.forma === 'Caixa');
     const conta = entradas.filter(e => e.forma === 'PIX');
@@ -4119,154 +4091,6 @@ function coletarFormasContribuicao(mk) {
     w.document.close();
   }
 
-  function normalizarFormaDespesa(f) {
-  const v = (f || '').toString().trim().toLowerCase();
-  return v === 'caixa' ? 'Caixa' : 'Conta';
-}
-
-function popularSelectRelCaixaContaMes() {
-  const sel = document.getElementById('relCaixaContaMesSelect');
-  if (!sel) return;
-
-  const meses = new Set();
-  (DB.cultos || []).forEach(c => { if (c.data) meses.add((c.data || '').slice(0, 7)); });
-  (DB.entradas || []).forEach(e => { if (e.data) meses.add((e.data || '').slice(0, 7)); });
-  (DB.despesas || []).forEach(d => { if (d.data) meses.add((d.data || '').slice(0, 7)); });
-  meses.add(GLOBAL_MONTH);
-
-  const mesesOrdenados = [...meses].sort().reverse();
-
-  sel.innerHTML = mesesOrdenados.map(mk =>
-    `<option value="${mk}">${monthLabel(mk)}</option>`
-  ).join('');
-
-  sel.value = GLOBAL_MONTH;
-}
-
-function calcularReconciliacaoCaixaConta(mk) {
-  const cultosMes = getCultosMes(mk);
-
-  const entCaixa = cultosMes.reduce((s, c) => {
-    const dizC = (c.dizimistas || []).filter(d => normalizarForma(d.forma) === 'Caixa').reduce((a, d) => a + (parseFloat(d.valor) || 0), 0);
-    const ofC  = (c.ofertas || []).filter(o => normalizarForma(o.forma) === 'Caixa').reduce((a, o) => a + (parseFloat(o.valor) || 0), 0);
-    return s + dizC + ofC + (parseFloat(c.especiais) || 0) + (parseFloat(c.outras) || 0);
-  }, 0);
-
-  const entConta = cultosMes.reduce((s, c) => {
-    const dizP = (c.dizimistas || []).filter(d => normalizarForma(d.forma) === 'PIX').reduce((a, d) => a + (parseFloat(d.valor) || 0), 0);
-    const ofP  = (c.ofertas || []).filter(o => normalizarForma(o.forma) === 'PIX').reduce((a, o) => a + (parseFloat(o.valor) || 0), 0);
-    return s + dizP + ofP;
-  }, 0);
-
-  const entManuais = getEntradasMes(mk).filter(e => e.origem !== 'culto').reduce((s, e) => s + e.valor, 0);
-  const entCaixaTotal = entCaixa + entManuais;
-
-  const despMes = getDespesasMes(mk);
-  const despCaixa = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Caixa').reduce((s, d) => s + parseValorSeguro(d.valor), 0);
-  const despConta = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Conta').reduce((s, d) => s + parseValorSeguro(d.valor), 0);
-
-  return {
-    entCaixaTotal, entConta, despCaixa, despConta, despMes,
-    saldoCaixa: entCaixaTotal - despCaixa,
-    saldoConta: entConta - despConta
-  };
-}
-
-function gerarRelatorioCaixaConta() {
-  const mk = document.getElementById('relCaixaContaMesSelect')?.value || GLOBAL_MONTH;
-  const r = calcularReconciliacaoCaixaConta(mk);
-
-  const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
-  const logoHtml = DB.config.logo
-    ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
-    : `<div style="font-size:30px">⛪</div>`;
-
-  const linhasDespCaixa = r.despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Caixa').map(d => `
-    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria || '')}</td><td>${escapeHtml(d.descricao || '—')}</td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
-  ).join('') || `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhuma despesa em Caixa</td></tr>`;
-
-  const linhasDespConta = r.despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Conta').map(d => `
-    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria || '')}</td><td>${escapeHtml(d.descricao || '—')}</td><td><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:11px">${escapeHtml(d.formaPagamento || '—')}</span></td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
-  ).join('') || `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:12px">Nenhuma despesa em Conta</td></tr>`;
-
-  const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Reconciliação Caixa x Conta — ${monthLabel(mk)}</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;padding:28px;color:#1f2937;background:#fff}
-  .header{background:linear-gradient(135deg,#1e3a5f,#2d5a8f);color:white;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
-  .header h1{font-size:19px;margin:0}
-  .header .tag{margin-top:8px;font-size:13px;letter-spacing:2px;color:#c8a951;font-weight:700}
-  .secao-title{background:#1e3a5f;color:white;padding:10px 14px;font-size:13px;font-weight:700;border-radius:10px 10px 0 0;display:flex;justify-content:space-between}
-  table{width:100%;border-collapse:collapse;margin-bottom:20px;border-radius:0 0 10px 10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
-  th{background:#f1f5f9;color:#475569;padding:9px 14px;text-align:left;font-size:12px}
-  td{padding:9px 14px;border-bottom:1px solid #eee;font-size:13px}
-  tr:nth-child(even) td{background:#f9fafb}
-  .total-row td{font-weight:700;background:#f1f5f9!important;font-size:14px;border-top:2px solid #1e3a5f}
-  .resumo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-  .resumo div{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center}
-  .saldo-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
-  .saldo-box .caixa{background:#ecfdf5;border:2px solid #10b981;border-radius:10px;padding:14px;text-align:center}
-  .saldo-box .conta{background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:14px;text-align:center}
-  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb}
-  .print-btn{display:block;margin:24px auto 0;background:#1e3a5f;color:white;border:none;padding:12px 36px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600}
-  @media print{ @page{margin:10mm;size:A4} body{padding:0;max-width:100%} .no-print{display:none!important} *{-webkit-print-color-adjust:exact!important} tr{break-inside:avoid} }
-</style></head>
-<body>
-  <div class="header">
-    ${logoHtml}
-    <div><h1>${nomeIgreja}</h1><p class="tag">RECONCILIAÇÃO CAIXA x CONTA BANCÁRIA — ${monthLabel(mk).toUpperCase()}</p></div>
-  </div>
-
-  <div class="resumo">
-    <div><span style="font-size:12px;color:#065f46">💵 Entradas CAIXA</span><br><strong style="font-size:18px;color:#059669">${fmt(r.entCaixaTotal)}</strong></div>
-    <div><span style="font-size:12px;color:#1d4ed8">🏦 Entradas CONTA (PIX)</span><br><strong style="font-size:18px;color:#1d4ed8">${fmt(r.entConta)}</strong></div>
-  </div>
-
-  <div class="secao-title"><span>📤 Despesas pagas em CAIXA</span><span>${fmt(r.despCaixa)}</span></div>
-  <table>
-    <tr><th>Categoria</th><th>Descrição</th><th>Data</th><th style="text-align:right">Valor</th></tr>
-    ${linhasDespCaixa}
-    <tr class="total-row"><td colspan="3">TOTAL DESPESAS CAIXA</td><td style="text-align:right">${fmt(r.despCaixa)}</td></tr>
-  </table>
-
-  <div class="secao-title"><span>📤 Despesas pagas em CONTA (PIX/Cartão/Débito/Boleto/Transf.)</span><span>${fmt(r.despConta)}</span></div>
-  <table>
-    <tr><th>Categoria</th><th>Descrição</th><th>Forma</th><th>Data</th><th style="text-align:right">Valor</th></tr>
-    ${linhasDespConta}
-    <tr class="total-row"><td colspan="4">TOTAL DESPESAS CONTA</td><td style="text-align:right">${fmt(r.despConta)}</td></tr>
-  </table>
-
-  <div class="saldo-box">
-    <div class="caixa"><span style="font-size:12px;color:#065f46">SALDO CAIXA (mês)</span><br><strong style="font-size:20px;color:${r.saldoCaixa >= 0 ? '#059669' : '#dc2626'}">${fmt(r.saldoCaixa)}</strong></div>
-    <div class="conta"><span style="font-size:12px;color:#1d4ed8">SALDO CONTA (mês)</span><br><strong style="font-size:20px;color:${r.saldoConta >= 0 ? '#1d4ed8' : '#dc2626'}">${fmt(r.saldoConta)}</strong></div>
-  </div>
-
-  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
-  <div class="no-print" style="text-align:center"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
-</body></html>`);
-  w.document.close();
-}
-
-function compartilharCaixaContaWhatsApp() {
-  const mk = document.getElementById('relCaixaContaMesSelect')?.value || GLOBAL_MONTH;
-  const r = calcularReconciliacaoCaixaConta(mk);
-  const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
-
-  let texto = '🏦 *' + nomeIgreja + ' - Reconciliação Caixa x Conta*\n';
-  texto += '📅 *Mês:* ' + monthLabel(mk) + '\n\n';
-  texto += '💵 *Entradas Caixa:* ' + fmt(r.entCaixaTotal) + '\n';
-  texto += '🏦 *Entradas Conta (PIX):* ' + fmt(r.entConta) + '\n\n';
-  texto += '📤 *Despesas Caixa:* ' + fmt(r.despCaixa) + '\n';
-  texto += '📤 *Despesas Conta:* ' + fmt(r.despConta) + '\n\n';
-  texto += '✅ *Saldo Caixa:* ' + fmt(r.saldoCaixa) + '\n';
-  texto += '✅ *Saldo Conta:* ' + fmt(r.saldoConta) + '\n\n';
-  texto += '✨ Gerado pelo Sistema Financeiro IEQ';
-
-  compartilharWhatsApp(texto);
-}
-  
   function compartilharFormasWhatsApp() {
     const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
     const entradas = coletarFormasContribuicao(mk);
@@ -4552,40 +4376,6 @@ function compartilharCaixaContaWhatsApp() {
     GLOBAL_MONTH=monthKeyFromDate(new Date());
     console.log('✅ IEQ Financeiro v3.8 — 4 correções aplicadas');
   });
-  // ============================================================
-// EXPOSIÇÃO GLOBAL — necessário pois o script está em módulo/IIFE
-// (onclick inline no HTML só acessa window.*)
-// ============================================================
-window.abrirNovaDespesa              = abrirNovaDespesa;
-window.filtrarDespesas               = filtrarDespesas;
-window.limparFiltrosDespesas         = limparFiltrosDespesas;
-window.salvarDespesa                 = salvarDespesa;
-window.excluirDespesa                = excluirDespesa;
-
-window.renderEntradas                = renderEntradas;
-window.limparFiltroEntradas          = limparFiltroEntradas;
-window.salvarEntrada                 = salvarEntrada;
-window.excluirEntrada                = excluirEntrada;
-
-window.renderHistorico               = renderHistorico;
-
-window.renderRelatorios              = renderRelatorios;
-window.gerarRelatorio                = gerarRelatorio;
-window.gerarRelatorioDizimistas      = gerarRelatorioDizimistas;
-window.compartilharDizimistasWhatsApp= compartilharDizimistasWhatsApp;
-window.gerarRelatorioFormasContribuicao = gerarRelatorioFormasContribuicao;
-window.gerarRelatorioCaixaConta      = gerarRelatorioCaixaConta;
-window.compartilharFormasWhatsApp    = compartilharFormasWhatsApp;
-window.gerarRelatorioCultosPDF       = gerarRelatorioCultosPDF;
-window.compartilharCultosWhatsApp    = compartilharCultosWhatsApp;
-window.compartilharCultoWhatsApp     = compartilharCultoWhatsApp;
-window.compartilharRelatorioMensal   = compartilharRelatorioMensal;
-window.compartilharCaixaContaWhatsApp = compartilharCaixaContaWhatsApp;
-window.popularSelectRelCaixaContaMes = popularSelectRelCaixaContaMes;
-
-  
-window.limparCacheLocal              = limparCacheLocal;
-
 </script>
 </body>
 </html>
