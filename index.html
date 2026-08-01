@@ -858,16 +858,18 @@
       </div>
     </div>
 
-     <!-- ⬇️ NOVO CARD: RECONCILIAÇÃO CAIXA x CONTA — INSERIR AQUI ⬇️ -->
+         <!-- ⬇️ NOVO CARD: RECONCILIAÇÃO CAIXA x CONTA — INSERIR AQUI ⬇️ -->
     <div class="card p-4 flex flex-col h-full">
       <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm"><i class="fas fa-balance-scale text-teal-600"></i> Reconciliação Caixa x Conta</h3>
       <p class="text-gray-500 text-sm mb-3">Cruza entradas e despesas para apurar o saldo real de cada bolso</p>
       <select class="input-field mb-3 text-sm" id="relCaixaContaMesSelect"></select>
       <div class="flex gap-2 mt-auto">
-        <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCaixaConta()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
-      </div>
+  <button class="btn-primary flex-1 text-sm" onclick="gerarRelatorioCaixaConta()"><i class="fas fa-download mr-2"></i> Gerar Relatório</button>
+  <button class="btn-secondary flex-1 text-sm" onclick="compartilharCaixaContaWhatsApp()"><i class="fab fa-whatsapp mr-2"></i> WhatsApp</button>
+</div>
     </div>
     <!-- ⬆️ FIM DO NOVO CARD ⬆️ -->
+
 
     <!-- ANÁLISE COMPARATIVA -->
     <div class="card p-4 md:col-span-2">
@@ -3777,6 +3779,7 @@ window.excluirDespesa = excluirDespesa;
     document.getElementById('relCultoFim').value = GLOBAL_MONTH + '-01';
     popularSelectMes('relDizimistasMesSelect');
     popularSelectMes('relFormasMesSelect');
+    popularSelectRelCaixaContaMes();
 
         const anoAtual = new Date().getFullYear();
     const resumoAnual = calcularResumoAnual(anoAtual);
@@ -4123,45 +4126,69 @@ function coletarFormasContribuicao(mk) {
   return v === 'caixa' ? 'Caixa' : 'Conta';
 }
 
-function gerarRelatorioCaixaConta() {
-  const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
+function popularSelectRelCaixaContaMes() {
+  const sel = document.getElementById('relCaixaContaMesSelect');
+  if (!sel) return;
 
-  // Entradas (dízimos + ofertas + especiais + outras dos cultos do mês)
+  const meses = new Set();
+  (DB.cultos || []).forEach(c => { if (c.data) meses.add((c.data || '').slice(0, 7)); });
+  (DB.entradas || []).forEach(e => { if (e.data) meses.add((e.data || '').slice(0, 7)); });
+  (DB.despesas || []).forEach(d => { if (d.data) meses.add((d.data || '').slice(0, 7)); });
+  meses.add(GLOBAL_MONTH);
+
+  const mesesOrdenados = [...meses].sort().reverse();
+
+  sel.innerHTML = mesesOrdenados.map(mk =>
+    `<option value="${mk}">${monthLabel(mk)}</option>`
+  ).join('');
+
+  sel.value = GLOBAL_MONTH;
+}
+
+function calcularReconciliacaoCaixaConta(mk) {
   const cultosMes = getCultosMes(mk);
-  const entCaixa = cultosMes.reduce((s,c) => {
-    const dizC = (c.dizimistas||[]).filter(d=>normalizarForma(d.forma)==='Caixa').reduce((a,d)=>a+(parseFloat(d.valor)||0),0);
-    const ofC  = (c.ofertas||[]).filter(o=>normalizarForma(o.forma)==='Caixa').reduce((a,o)=>a+(parseFloat(o.valor)||0),0);
-    return s + dizC + ofC + (parseFloat(c.especiais)||0) + (parseFloat(c.outras)||0);
+
+  const entCaixa = cultosMes.reduce((s, c) => {
+    const dizC = (c.dizimistas || []).filter(d => normalizarForma(d.forma) === 'Caixa').reduce((a, d) => a + (parseFloat(d.valor) || 0), 0);
+    const ofC  = (c.ofertas || []).filter(o => normalizarForma(o.forma) === 'Caixa').reduce((a, o) => a + (parseFloat(o.valor) || 0), 0);
+    return s + dizC + ofC + (parseFloat(c.especiais) || 0) + (parseFloat(c.outras) || 0);
   }, 0);
-  const entConta = cultosMes.reduce((s,c) => {
-    const dizP = (c.dizimistas||[]).filter(d=>normalizarForma(d.forma)==='PIX').reduce((a,d)=>a+(parseFloat(d.valor)||0),0);
-    const ofP  = (c.ofertas||[]).filter(o=>normalizarForma(o.forma)==='PIX').reduce((a,o)=>a+(parseFloat(o.valor)||0),0);
+
+  const entConta = cultosMes.reduce((s, c) => {
+    const dizP = (c.dizimistas || []).filter(d => normalizarForma(d.forma) === 'PIX').reduce((a, d) => a + (parseFloat(d.valor) || 0), 0);
+    const ofP  = (c.ofertas || []).filter(o => normalizarForma(o.forma) === 'PIX').reduce((a, o) => a + (parseFloat(o.valor) || 0), 0);
     return s + dizP + ofP;
   }, 0);
 
-  // Entradas manuais (sem forma definida — entram como Caixa por padrão, ajustável se necessário)
-  const entManuais = getEntradasMes(mk).filter(e => e.origem !== 'culto').reduce((s,e)=>s+e.valor,0);
+  const entManuais = getEntradasMes(mk).filter(e => e.origem !== 'culto').reduce((s, e) => s + e.valor, 0);
   const entCaixaTotal = entCaixa + entManuais;
 
-  // Despesas por forma
   const despMes = getDespesasMes(mk);
-  const despCaixa = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Caixa').reduce((s,d)=>s+parseValorSeguro(d.valor),0);
-  const despConta = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Conta').reduce((s,d)=>s+parseValorSeguro(d.valor),0);
+  const despCaixa = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Caixa').reduce((s, d) => s + parseValorSeguro(d.valor), 0);
+  const despConta = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Conta').reduce((s, d) => s + parseValorSeguro(d.valor), 0);
 
-  const saldoCaixa = entCaixaTotal - despCaixa;
-  const saldoConta = entConta - despConta;
+  return {
+    entCaixaTotal, entConta, despCaixa, despConta, despMes,
+    saldoCaixa: entCaixaTotal - despCaixa,
+    saldoConta: entConta - despConta
+  };
+}
+
+function gerarRelatorioCaixaConta() {
+  const mk = document.getElementById('relCaixaContaMesSelect')?.value || GLOBAL_MONTH;
+  const r = calcularReconciliacaoCaixaConta(mk);
 
   const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
   const logoHtml = DB.config.logo
     ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
     : `<div style="font-size:30px">⛪</div>`;
 
-  const linhasDespCaixa = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento)==='Caixa').map(d => `
-    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria||'')}</td><td>${escapeHtml(d.descricao||'—')}</td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
+  const linhasDespCaixa = r.despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Caixa').map(d => `
+    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria || '')}</td><td>${escapeHtml(d.descricao || '—')}</td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
   ).join('') || `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhuma despesa em Caixa</td></tr>`;
 
-  const linhasDespConta = despMes.filter(d => normalizarFormaDespesa(d.formaPagamento)==='Conta').map(d => `
-    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria||'')}</td><td>${escapeHtml(d.descricao||'—')}</td><td><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:11px">${escapeHtml(d.formaPagamento||'—')}</span></td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
+  const linhasDespConta = r.despMes.filter(d => normalizarFormaDespesa(d.formaPagamento) === 'Conta').map(d => `
+    <tr><td>${getCatIcon(d.categoria)} ${escapeHtml(d.categoria || '')}</td><td>${escapeHtml(d.descricao || '—')}</td><td><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:11px">${escapeHtml(d.formaPagamento || '—')}</span></td><td>${fmtDate(d.data)}</td><td style="text-align:right;color:#dc2626">${fmt(parseValorSeguro(d.valor))}</td></tr>`
   ).join('') || `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:12px">Nenhuma despesa em Conta</td></tr>`;
 
   const w = window.open('', '_blank');
@@ -4195,27 +4222,27 @@ function gerarRelatorioCaixaConta() {
   </div>
 
   <div class="resumo">
-    <div><span style="font-size:12px;color:#065f46">💵 Entradas CAIXA</span><br><strong style="font-size:18px;color:#059669">${fmt(entCaixaTotal)}</strong></div>
-    <div><span style="font-size:12px;color:#1d4ed8">🏦 Entradas CONTA (PIX)</span><br><strong style="font-size:18px;color:#1d4ed8">${fmt(entConta)}</strong></div>
+    <div><span style="font-size:12px;color:#065f46">💵 Entradas CAIXA</span><br><strong style="font-size:18px;color:#059669">${fmt(r.entCaixaTotal)}</strong></div>
+    <div><span style="font-size:12px;color:#1d4ed8">🏦 Entradas CONTA (PIX)</span><br><strong style="font-size:18px;color:#1d4ed8">${fmt(r.entConta)}</strong></div>
   </div>
 
-  <div class="secao-title"><span>📤 Despesas pagas em CAIXA</span><span>${fmt(despCaixa)}</span></div>
+  <div class="secao-title"><span>📤 Despesas pagas em CAIXA</span><span>${fmt(r.despCaixa)}</span></div>
   <table>
     <tr><th>Categoria</th><th>Descrição</th><th>Data</th><th style="text-align:right">Valor</th></tr>
     ${linhasDespCaixa}
-    <tr class="total-row"><td colspan="3">TOTAL DESPESAS CAIXA</td><td style="text-align:right">${fmt(despCaixa)}</td></tr>
+    <tr class="total-row"><td colspan="3">TOTAL DESPESAS CAIXA</td><td style="text-align:right">${fmt(r.despCaixa)}</td></tr>
   </table>
 
-  <div class="secao-title"><span>📤 Despesas pagas em CONTA (PIX/Cartão/Débito/Boleto/Transf.)</span><span>${fmt(despConta)}</span></div>
+  <div class="secao-title"><span>📤 Despesas pagas em CONTA (PIX/Cartão/Débito/Boleto/Transf.)</span><span>${fmt(r.despConta)}</span></div>
   <table>
     <tr><th>Categoria</th><th>Descrição</th><th>Forma</th><th>Data</th><th style="text-align:right">Valor</th></tr>
     ${linhasDespConta}
-    <tr class="total-row"><td colspan="4">TOTAL DESPESAS CONTA</td><td style="text-align:right">${fmt(despConta)}</td></tr>
+    <tr class="total-row"><td colspan="4">TOTAL DESPESAS CONTA</td><td style="text-align:right">${fmt(r.despConta)}</td></tr>
   </table>
 
   <div class="saldo-box">
-    <div class="caixa"><span style="font-size:12px;color:#065f46">SALDO CAIXA (mês)</span><br><strong style="font-size:20px;color:${saldoCaixa>=0?'#059669':'#dc2626'}">${fmt(saldoCaixa)}</strong></div>
-    <div class="conta"><span style="font-size:12px;color:#1d4ed8">SALDO CONTA (mês)</span><br><strong style="font-size:20px;color:${saldoConta>=0?'#1d4ed8':'#dc2626'}">${fmt(saldoConta)}</strong></div>
+    <div class="caixa"><span style="font-size:12px;color:#065f46">SALDO CAIXA (mês)</span><br><strong style="font-size:20px;color:${r.saldoCaixa >= 0 ? '#059669' : '#dc2626'}">${fmt(r.saldoCaixa)}</strong></div>
+    <div class="conta"><span style="font-size:12px;color:#1d4ed8">SALDO CONTA (mês)</span><br><strong style="font-size:20px;color:${r.saldoConta >= 0 ? '#1d4ed8' : '#dc2626'}">${fmt(r.saldoConta)}</strong></div>
   </div>
 
   <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
@@ -4224,6 +4251,24 @@ function gerarRelatorioCaixaConta() {
   w.document.close();
 }
 
+function compartilharCaixaContaWhatsApp() {
+  const mk = document.getElementById('relCaixaContaMesSelect')?.value || GLOBAL_MONTH;
+  const r = calcularReconciliacaoCaixaConta(mk);
+  const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
+
+  let texto = '🏦 *' + nomeIgreja + ' - Reconciliação Caixa x Conta*\n';
+  texto += '📅 *Mês:* ' + monthLabel(mk) + '\n\n';
+  texto += '💵 *Entradas Caixa:* ' + fmt(r.entCaixaTotal) + '\n';
+  texto += '🏦 *Entradas Conta (PIX):* ' + fmt(r.entConta) + '\n\n';
+  texto += '📤 *Despesas Caixa:* ' + fmt(r.despCaixa) + '\n';
+  texto += '📤 *Despesas Conta:* ' + fmt(r.despConta) + '\n\n';
+  texto += '✅ *Saldo Caixa:* ' + fmt(r.saldoCaixa) + '\n';
+  texto += '✅ *Saldo Conta:* ' + fmt(r.saldoConta) + '\n\n';
+  texto += '✨ Gerado pelo Sistema Financeiro IEQ';
+
+  compartilharWhatsApp(texto);
+}
+  
   function compartilharFormasWhatsApp() {
     const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
     const entradas = coletarFormasContribuicao(mk);
@@ -4537,7 +4582,10 @@ window.gerarRelatorioCultosPDF       = gerarRelatorioCultosPDF;
 window.compartilharCultosWhatsApp    = compartilharCultosWhatsApp;
 window.compartilharCultoWhatsApp     = compartilharCultoWhatsApp;
 window.compartilharRelatorioMensal   = compartilharRelatorioMensal;
+window.compartilharCaixaContaWhatsApp = compartilharCaixaContaWhatsApp;
+window.popularSelectRelCaixaContaMes = popularSelectRelCaixaContaMes;
 
+  
 window.limparCacheLocal              = limparCacheLocal;
 
 </script>
