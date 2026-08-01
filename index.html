@@ -1673,7 +1673,18 @@ async function apiDeleteSeguro(sheet, id) {
   return {...d, valor:parseFloat(d.valor)||0, data: dataNormalizada};
 }
 
-  function normalizarEntrada(e){ return {...e, valor:parseFloat(e.valor)||0}; }
+  function normalizarEntrada(e){
+    const dataNormalizada = (e?.data || '').toString();
+    const data = dataNormalizada.includes('T') ? dataNormalizada.split('T')[0] : dataNormalizada;
+    return {
+      ...e,
+      valor: parseFloat(e?.valor) || 0,
+      data,
+      descricao: e?.descricao || '',
+      obs: e?.obs || '',
+      origem: e?.origem || 'manual'
+    };
+  }
   function parseJsonSafe(v,f){ if(Array.isArray(v))return v; try{return JSON.parse(v)||f;}catch{return f;} }
 
   // ============================================================
@@ -3718,10 +3729,11 @@ async function salvarDespesa(e) {
   // ENTRADAS
   // ============================================================
   function renderEntradas(){
-    const mes=document.getElementById('filtroEntradaMes')?.value||GLOBAL_MONTH;
+    const mes=(document.getElementById('filtroEntradaMes')?.value||'').trim();
     const busca=(document.getElementById('buscaEntrada')?.value||'').toLowerCase();
     const lista=DB.entradas.filter(e=>{
-      const mM=mes?(e.data||'').startsWith(mes):true;
+      const data=(e.data||'').toString();
+      const mM=!mes||data.startsWith(mes);
       const mB=!busca||(e.descricao||'').toLowerCase().includes(busca);
       return mM&&mB;
     });
@@ -3742,42 +3754,52 @@ async function salvarDespesa(e) {
         </tr>`;
       }).join('');
     }
-    const total=lista.reduce((s,e)=>s+e.valor,0);
+    const total=lista.reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
+    const despesasFiltro = mes ? getDespesasMes(mes) : DB.despesas;
     document.getElementById('totalEntradasFiltro').textContent=fmt(total);
     document.getElementById('kpiEntradasMes').textContent=fmt(total);
     document.getElementById('kpiQtdEntradas').textContent=lista.length;
-    document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(getDespesasMes(mes),d=>d.valor));
+    document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(despesasFiltro,d=>d.valor));
   }
   function limparFiltroEntradas(){
-    document.getElementById('filtroEntradaMes').value='';
+    const filtro=document.getElementById('filtroEntradaMes'); if(filtro) filtro.value='';
     const b=document.getElementById('buscaEntrada'); if(b)b.value='';
     renderEntradas();
   }
 
   async function salvarEntrada(e){
   e.preventDefault();
+  const descricao=document.getElementById('e-descricao').value.trim();
+  const valor=parseFloat(document.getElementById('e-valor').value);
+  const data=document.getElementById('e-data').value;
+
+  if(!descricao){ showNotification('⚠️ Informe a descrição da entrada.','warning'); return; }
+  if(!data){ showNotification('⚠️ Informe a data da entrada.','warning'); return; }
+  if(!Number.isFinite(valor) || valor <= 0){ showNotification('⚠️ Informe um valor válido maior que zero.','warning'); return; }
+
   const ed={
-    descricao:document.getElementById('e-descricao').value,
-    valor:+document.getElementById('e-valor').value,
-    data:document.getElementById('e-data').value,
+    descricao,
+    valor,
+    data,
     origem:'manual',
-    obs:document.getElementById('e-obs').value,
+    obs:document.getElementById('e-obs').value.trim(),
     criadoEm:new Date().toISOString()
   };
   setBtnLoading('btnSalvarEntrada',true,'Registrar');
   try{
     const r=await apiSave('entradas',ed);
-    DB.entradas.unshift({...ed,id:r.id});
+    const entradaId = r?.id || Date.now();
+    DB.entradas.unshift({...ed,id:entradaId});
     DB.saveLocal();
     closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
     renderEntradas(); setSyncStatus('synced'); showNotification(`✅ Entrada de ${fmt(ed.valor)} salva!`,'success'); renderDashboard();
   }catch(err){
     const idLocal = Date.now();
-    DB.entradas.unshift({...ed,id:idLocal});
+    const entradaLocal={...ed,id:idLocal};
+    DB.entradas.unshift(entradaLocal);
     DB.saveLocal();
 
-    // ✅ CORREÇÃO: action deve ser 'save' (padrão reconhecido por processarFilaOffline)
-    enfileirarOperacao({ id: idLocal, action: 'save', sheet: 'entradas', data: ed });
+    enfileirarOperacao({ id: idLocal, action: 'save', sheet: 'entradas', data: entradaLocal });
 
     closeModal('modalNovaEntrada'); document.getElementById('formEntrada').reset();
     renderEntradas(); setSyncStatus('error'); showNotification('⚠️ Entrada salva localmente','warning'); renderDashboard();
@@ -3797,7 +3819,8 @@ async function salvarDespesa(e) {
         setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
       }catch(err){
         DB.entradas.splice(idx,1); DB.saveLocal();
-        setSyncStatus('error'); showNotification('⚠️ Excluído localmente','warning');
+        enfileirarOperacao({ id, action:'delete', sheet:'entradas', data:{ id } });
+        setSyncStatus('error'); showNotification('⚠️ Entrada removida localmente e ficará para sincronizar','warning');
       }
       renderEntradas(); renderDashboard();
     });
