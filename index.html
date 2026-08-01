@@ -11,8 +11,10 @@
 
   <style>
     :root { --primary: #1e3a5f; --secondary: #c8a951; --accent: #e63946; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
-        .sidebar { 
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #111827; line-height: 1.5; }
+    #appRoot { width: 100%; min-height: 100vh; }
+    #mainContent { width: 100%; min-height: 100vh; padding-bottom: 24px; }
+    .sidebar { 
       background: linear-gradient(180deg, #1e3a5f 0%, #0f2240 100%); 
       transition: left 0.3s ease; 
       position: fixed; 
@@ -25,15 +27,28 @@
     }
     .nav-item { transition: all 0.2s; }
     .nav-item:hover, .nav-item.active { background: rgba(200,169,81,0.2); border-left: 3px solid #c8a951; }
-    .card { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; }
     .badge-green { background: #d1fae5; color: #065f46; }
     .badge-red { background: #fee2e2; color: #991b1b; }
     .badge-blue { background: #dbeafe; color: #1e40af; }
     .badge-yellow { background: #fef3c7; color: #92400e; }
-    .page { display: none; }
+    .page { display: none; padding: 16px 16px 28px; }
     .page.active { display: block; }
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 16px; }
-    .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72); z-index: 1000; padding: 16px; overflow-y: auto; }
+    .modal-overlay.active { display: flex; align-items: flex-start; justify-content: center; }
+    .modal-shell { width: min(100%, 720px); max-height: min(95vh, 900px); display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; background: white; box-shadow: 0 24px 80px rgba(0,0,0,0.24); border: 1px solid rgba(15, 23, 42, 0.08); }
+    .modal-shell-sm { width: min(100%, 560px); }
+    .modal-shell-lg { width: min(100%, 760px); }
+    .modal-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1e3a5f, #2d5a8f); color: white; }
+    .modal-header-red { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+    .modal-header-yellow { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .modal-header-green { background: linear-gradient(135deg, #166534, #22c55e); }
+    .modal-header-orange { background: linear-gradient(135deg, #c2410c, #f97316); }
+    .modal-title { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-body { padding: 18px; overflow-y: auto; background: #f8fafc; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 16px; }
+    .modal-actions > * { flex: 1; }
+    .btn-primary, .btn-secondary, .btn-danger { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
     .sidebar.open { left: 0; }
     @media (min-width: 1024px) {
       .sidebar { left: 0; }
@@ -41,7 +56,7 @@
       #menuToggle { display: none; }
       #sidebarOverlay { display: none !important; }
     }
-    @media (max-width: 1023px) { #mainContent { margin-left: 0 !important; } }
+    @media (max-width: 1023px) { #mainContent { margin-left: 0 !important; } .sidebar { width: min(88vw, 280px); } }
     #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 998; }
     #sidebarOverlay.active { display: block; }
     .input-field { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; width: 100%; transition: border-color 0.2s; outline: none; }
@@ -67,6 +82,14 @@
     @media (max-width: 640px) {
       .dizimista-row, .oferta-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
       .dizimista-row .btn-remove, .oferta-row .btn-remove { grid-column: 2; grid-row: 2; justify-self: end; }
+      .page { padding: 12px 12px 20px; }
+      .card { border-radius: 14px; }
+      .modal-overlay { padding: 0; }
+      .modal-shell { width: 100%; max-width: 100%; max-height: 100vh; border-radius: 0; }
+      .modal-header { padding: 14px 16px; }
+      .modal-body { padding: 14px; }
+      .modal-actions { flex-direction: column-reverse; }
+      .modal-actions > * { width: 100%; }
     }
     .btn-remove { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; font-size: 14px; transition: background 0.2s; flex-shrink: 0; }
     .btn-remove:hover { background: #fecaca; }
@@ -75,7 +98,7 @@
     .forma-pag { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 13px; background: white; cursor: pointer; outline: none; width: 100%; }
     .input-auto { background: #f0fdf4; font-weight: 600; cursor: default; }
     .input-auto-pix { background: #eff6ff; font-weight: 600; cursor: default; }
-    @media (max-width: 640px) { .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } .table-scroll table { min-width: 500px; } }
+    @media (max-width: 640px) { .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } .table-scroll table { min-width: 500px; } table { font-size: 12px; } th, td { padding-left: 8px; padding-right: 8px; } }
     #loadingOverlay { position: fixed; inset: 0; background: rgba(30,58,95,0.85); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
     #loadingOverlay.hidden { display: none; }
     .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #c8a951; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
@@ -998,12 +1021,12 @@
      MODAL: NOVO/EDITAR CULTO
      ============================================================ -->
 <div class="modal-overlay" id="modalNovoCulto">
-  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
-    <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
-      <h3 class="text-white font-bold text-base flex items-center gap-2"><i class="fas fa-bible"></i><span id="cultoModalTitulo">Novo Relatório de Culto (REFC)</span></h3>
+  <div class="modal-shell modal-shell-lg">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-bible"></i><span id="cultoModalTitulo">Novo Relatório de Culto (REFC)</span></h3>
       <button onclick="closeModal('modalNovoCulto')" class="text-white hover:text-blue-200"><i class="fas fa-times text-xl"></i></button>
     </div>
-    <div class="p-4 overflow-y-auto flex-1">
+    <div class="modal-body">
       <form id="formCulto" onsubmit="salvarCulto(event)">
         <input type="hidden" id="c-id">
         <div class="bg-gray-50 rounded-xl p-3 mb-3">
@@ -1108,26 +1131,26 @@
 
 <!-- MODAL: VER CULTO -->
 <div class="modal-overlay" id="modalVerCulto">
-  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col" style="max-height:95vh">
-    <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
-      <h3 class="text-white font-bold text-base flex items-center gap-2"><i class="fas fa-file-alt"></i> Detalhes do REFC</h3>
+  <div class="modal-shell modal-shell-lg">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-file-alt"></i> Detalhes do REFC</h3>
       <div class="flex items-center gap-2">
         <button onclick="imprimirCulto()" class="bg-white text-blue-800 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-50 flex items-center gap-1"><i class="fas fa-print"></i> Imprimir</button>
         <button onclick="closeModal('modalVerCulto')" class="text-white hover:text-blue-200"><i class="fas fa-times text-xl"></i></button>
       </div>
     </div>
-    <div class="overflow-y-auto flex-1 p-4"><div id="printArea"></div></div>
+    <div class="modal-body"><div id="printArea"></div></div>
   </div>
 </div>
 
 <!-- MODAL: NOVA DESPESA -->
 <div class="modal-overlay" id="modalNovaDespesa">
-  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-    <div class="bg-gradient-to-r from-red-700 to-red-500 p-4 flex justify-between items-center rounded-t-2xl">
-      <h3 class="text-white font-bold text-base"><i class="fas fa-minus-circle mr-2"></i>Nova Despesa</h3>
+  <div class="modal-shell modal-shell-sm">
+    <div class="modal-header modal-header-red">
+      <h3 class="modal-title"><i class="fas fa-minus-circle"></i>Nova Despesa</h3>
       <button onclick="closeModal('modalNovaDespesa')" class="text-white hover:text-red-200"><i class="fas fa-times text-xl"></i></button>
     </div>
-   <div class="p-4">
+   <div class="modal-body">
   <form id="formDespesa" onsubmit="salvarDespesa(event)">
     <div class="space-y-3">
       <div><label class="text-sm text-gray-600 mb-1 block">Categoria*</label>
@@ -1187,12 +1210,12 @@
 <!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
 <!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
 <div class="modal-overlay" id="modalAlterarDespesa">
-  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-    <div class="bg-gradient-to-r from-yellow-600 to-yellow-400 p-4 flex justify-between items-center rounded-t-2xl">
-      <h3 class="text-white font-bold text-base"><i class="fas fa-pen mr-2"></i>Alterar Despesa</h3>
+  <div class="modal-shell modal-shell-sm">
+    <div class="modal-header modal-header-yellow">
+      <h3 class="modal-title"><i class="fas fa-pen"></i>Alterar Despesa</h3>
       <button onclick="closeModal('modalAlterarDespesa')" class="text-white hover:text-yellow-100"><i class="fas fa-times text-xl"></i></button>
     </div>
-    <div class="p-4">
+    <div class="modal-body">
       <form id="formAlterarDespesa" onsubmit="confirmarAlteracaoDespesa(event)">
         <input type="hidden" id="alt-d-id">
         <div class="space-y-3">
@@ -1255,12 +1278,12 @@
 
 <!-- MODAL: NOVA ENTRADA -->
 <div class="modal-overlay" id="modalNovaEntrada">
-  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-    <div class="bg-gradient-to-r from-green-700 to-green-500 p-4 flex justify-between items-center rounded-t-2xl">
-      <h3 class="text-white font-bold text-base"><i class="fas fa-plus-circle mr-2"></i>Nova Entrada Manual</h3>
+  <div class="modal-shell modal-shell-sm">
+    <div class="modal-header modal-header-green">
+      <h3 class="modal-title"><i class="fas fa-plus-circle"></i>Nova Entrada Manual</h3>
       <button onclick="closeModal('modalNovaEntrada')" class="text-white hover:text-green-200"><i class="fas fa-times text-xl"></i></button>
     </div>
-    <div class="p-4">
+    <div class="modal-body">
       <form id="formEntrada" onsubmit="salvarEntrada(event)">
         <div class="space-y-3">
           <div><label class="text-sm text-gray-600 mb-1 block">Descrição*</label><input type="text" id="e-descricao" class="input-field text-sm" required></div>
@@ -1281,12 +1304,12 @@
 
 <!-- MODAL: NOVA/EDITAR CATEGORIA -->
 <div class="modal-overlay" id="modalCategoria">
-  <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
-    <div class="bg-gradient-to-r from-orange-600 to-orange-400 p-4 flex justify-between items-center rounded-t-2xl">
-      <h3 class="text-white font-bold text-base"><i class="fas fa-tag mr-2"></i><span id="catModalTitulo">Nova Categoria</span></h3>
+  <div class="modal-shell modal-shell-sm">
+    <div class="modal-header modal-header-orange">
+      <h3 class="modal-title"><i class="fas fa-tag"></i><span id="catModalTitulo">Nova Categoria</span></h3>
       <button onclick="closeModal('modalCategoria')" class="text-white hover:text-orange-100"><i class="fas fa-times text-xl"></i></button>
     </div>
-    <div class="p-4">
+    <div class="modal-body">
       <form id="formCategoria" onsubmit="salvarCategoria(event)">
         <input type="hidden" id="cat-id">
         <div class="space-y-3">
@@ -1304,8 +1327,8 @@
 
   <!-- MODAL: CONFIRMAÇÃO DE EXCLUSÃO -->
 <div class="modal-overlay" id="modalConfirmarExclusao">
-  <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
-    <div class="p-5 text-center">
+  <div class="modal-shell modal-shell-sm">
+    <div class="modal-body text-center">
       <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
         <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
       </div>
@@ -2773,7 +2796,12 @@ function normalizarHorario(valor) {
   }
   // objeto Date ou timestamp
   const d = new Date(data);
-  if (!isNaN(d)) return d.toISOString().slice(0, 10);
+  if (!isNaN(d)) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
   return '';
 }
   function resetFormCulto(){
@@ -2949,8 +2977,14 @@ function normalizarHorario(valor) {
   function restaurarToggleCategorias() {
     const visiveis = localStorage.getItem('ieq_categorias_visiveis');
     if (visiveis === '0') {
-      _categoriasVisiveis = true;
-      toggleCategoriasDespesas();
+      _categoriasVisiveis = false;
+      const body = document.getElementById('categoriasDespesasBody');
+      const icon = document.getElementById('iconeToggleCategorias');
+      if (body) {
+        body.style.maxHeight = '0px';
+        body.style.opacity = '0';
+      }
+      if (icon) icon.style.transform = 'rotate(-90deg)';
     }
   }
 
@@ -3746,8 +3780,8 @@ async function salvarDespesa(e) {
       selCulto.innerHTML = `<option value="">-- Intervalo abaixo --</option>` + keysC.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
     }
 
-    document.getElementById('relCultoIni').value = GLOBAL_MONTH + '-01';
-    document.getElementById('relCultoFim').value = GLOBAL_MONTH + '-01';
+    document.getElementById('relCultoIni').value = GLOBAL_MONTH;
+    document.getElementById('relCultoFim').value = GLOBAL_MONTH;
     popularSelectMes('relDizimistasMesSelect');
     popularSelectMes('relFormasMesSelect');
 
