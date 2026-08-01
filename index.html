@@ -1339,10 +1339,8 @@
 
 
 <script>
-  // ============================================================
-  // API
-  // ============================================================
-  // ============================================================
+ 
+// ============================================================
 // API — com fallback para fila offline
 // ============================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbxCkdktgLJVfNUNf-XISvs5d6wkHUdIpmyVGWRGBOZZkEQXRbFje4XihmnYKATM_y0/exec";
@@ -3428,6 +3426,7 @@ function renderDespesas(lista, mes) {
   }
 }
 
+
 // Abre modal de alteração com dados preenchidos
 function abrirAlterarDespesa(id) {
   if (!temPermissao('podeEditar')) {
@@ -3448,11 +3447,17 @@ function abrirAlterarDespesa(id) {
   // Garante formato yyyy-mm-dd para o input date
   let dataVal = (d.data || '').split('T')[0];
   document.getElementById('alt-d-data').value      = dataVal || new Date().toISOString().split('T')[0];
-  document.getElementById('modalAlterarDespesa').classList.add('active');
+
+  // 🔧 CORREÇÃO: linha antiga removida ↓
+  // document.getElementById('modalAlterarDespesa').classList.add('active');
+
+  // 🔧 CORREÇÃO: linha nova adicionada ↓
+  const modal = document.getElementById('modalAlterarDespesa');
+  modal.classList.remove('hidden');   // remove o que está escondendo o modal
+  modal.classList.add('active');      // ativa a exibição (igual ao modal de Nova Despesa)
 }
-// 👇 Exposição explícita no escopo global (necessário se a função estiver
-// dentro de <script type="module">, IIFE ou callback como DOMContentLoaded)
 window.abrirAlterarDespesa = abrirAlterarDespesa;
+
 
 async function confirmarAlteracaoDespesa(e) {
   e.preventDefault();
@@ -3583,7 +3588,6 @@ async function salvarDespesa(e) {
 
 // 👇 Exposição explícita no escopo global
 window.salvarDespesa = salvarDespesa;
-
 
     async function excluirDespesa(id){
     if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
