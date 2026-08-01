@@ -225,7 +225,7 @@
     .btn-whatsapp-sm { background: #25D366; color: white; padding: 0; width: 28px; height: 28px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .btn-whatsapp-sm:hover { background: #20bd5a; transform: translateY(-1px); }
     
-               /* ============================================================
+      /* ============================================================
        ESTILOS DE IMPRESSÃO — REFC
        ============================================================ */
     @media print {
@@ -1732,20 +1732,24 @@ function getSegundoDomingoDoMes(mk){
   }
 
   function openModal(id) {
-    if(['modalNovoCulto','modalNovaDespesa','modalNovaEntrada','modalAlterarDespesa'].includes(id) && !temPermissao('podeLancar')) {
-      showNotification('🔒 Sem permissão para esta ação.','error');
-      return;
-    }
-    document.getElementById(id).classList.add('active');
+  // 🔧 CORREÇÃO: modalAlterarDespesa não deve exigir podeLancar (isso é checado em abrirAlterarDespesa)
+  const exigemPodeLancar = ['modalNovoCulto', 'modalNovaDespesa', 'modalNovaEntrada'];
+  if (exigemPodeLancar.includes(id) && !temPermissao('podeLancar')) {
+    showNotification('🔒 Sem permissão para esta ação.', 'error');
+    return;
   }
-  
-  function closeModal(id) {
+
   const modal = document.getElementById(id);
-  if (modal) modal.classList.remove('active');
+  if (!modal) return;
+
+  // 🔧 CORREÇÃO: fecha outros modais abertos antes de abrir este
+  document.querySelectorAll('.modal-overlay.active').forEach(m => {
+    if (m.id !== id) m.classList.remove('active');
+  });
+
+  modal.classList.add('active');
 }
-window.closeModal = closeModal;
-
-
+window.openModal = openModal;
 
   // ===== COLE AQUI A FUNÇÃO NOVA =====
   function confirmarExclusao(mensagem, callback) {
@@ -3276,13 +3280,10 @@ function abrirNovaDespesa() {
 
   atualizarSelectsCategoria();
 
-  // 🔧 CORREÇÃO: fecha todos os modal-overlay abertos
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-
-  const modal = document.getElementById('modalNovaDespesa');
-  if (modal) modal.classList.add('active');
+  openModal('modalNovaDespesa');   // 🔧 usa a função nativa do sistema
 }
 window.abrirNovaDespesa = abrirNovaDespesa;
+
 
   
 function filtrarDespesas() {
@@ -3434,7 +3435,6 @@ function renderDespesas(lista, mes) {
   }
 }
 
-
 function abrirAlterarDespesa(id) {
   if (!temPermissao('podeEditar')) {
     showNotification('🔒 Sem permissão para editar.', 'error');
@@ -3455,11 +3455,7 @@ function abrirAlterarDespesa(id) {
   const dataVal = (d.data || '').split('T')[0];
   document.getElementById('alt-d-data').value = dataVal || new Date().toISOString().split('T')[0];
 
-  // 🔧 CORREÇÃO: fecha todos os modal-overlay abertos
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-
-  // 🔧 abre o modal correto
-  document.getElementById('modalAlterarDespesa').classList.add('active');
+  openModal('modalAlterarDespesa');   // 🔧 usa a função nativa do sistema
 }
 window.abrirAlterarDespesa = abrirAlterarDespesa;
 
