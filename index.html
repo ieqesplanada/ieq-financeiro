@@ -2000,9 +2000,14 @@ aplicarConfiguracoes();
     showNotification('⚠️ Modo offline — dados locais carregados', 'warning');
   } finally {
     clearTimeout(safetyTimer);
-    buildGlobalMonthOptions();
-    setGlobalMonth(GLOBAL_MONTH);
-    renderRelatorios();
+    try {
+      buildGlobalMonthOptions();
+      setGlobalMonth(GLOBAL_MONTH);
+      renderRelatorios();
+      renderDashboard();
+    } catch (err) {
+      console.error('Erro ao renderizar a interface inicial:', err);
+    }
     mostrarLoading(false);
     atualizarBadgeSync();
     atualizarInfoUltimaSync();
@@ -3795,9 +3800,7 @@ async function salvarDespesa(e) {
     return 'CAIXA';
   }
 
-  function calcularResumoConciliacaoMes(mk) {
-    const prevKey = prevMonthKey(mk);
-    const prevResumo = prevKey ? calcularResumoConciliacaoMes(prevKey) : null;
+  function calcularResumoConciliacaoMesMensal(mk) {
     const cultos = getCultosMes(mk);
     const despesas = DB.despesas.filter(d => (d.data || '').startsWith(mk));
 
@@ -3809,9 +3812,6 @@ async function salvarDespesa(e) {
     const despesasConta = despesas.filter(d => normalizarFormaPagamentoConciliacao(d.formaPagamento) === 'CONTA CORRENTE')
       .reduce((s, d) => s + (parseFloat(d.valor) || 0), 0);
 
-    const saldoCaixaInicial = prevResumo ? prevResumo.saldoCaixa : 0;
-    const saldoContaInicial = prevResumo ? prevResumo.saldoConta : 0;
-
     return {
       mk,
       cultos,
@@ -3820,11 +3820,42 @@ async function salvarDespesa(e) {
       entradasConta,
       despesasCaixa,
       despesasConta,
+      saldoCaixa: entradasCaixa - despesasCaixa,
+      saldoConta: entradasConta - despesasConta
+    };
+  }
+
+  function calcularResumoConciliacaoMes(mk) {
+    const cacheKey = `conc-${mk}`;
+    if (window.__conciliacaoCache && window.__conciliacaoCache[cacheKey]) {
+      return window.__conciliacaoCache[cacheKey];
+    }
+
+    const [ano, mes] = mk.split('-').map(Number);
+    let saldoCaixaInicial = 0;
+    let saldoContaInicial = 0;
+    const start = new Date(ano, 0, 1);
+    const end = new Date(ano, mes - 1, 1);
+
+    for (let cursor = new Date(start); cursor <= end; cursor.setMonth(cursor.getMonth() + 1)) {
+      const key = monthKeyFromDate(cursor);
+      const resumoMes = calcularResumoConciliacaoMesMensal(key);
+      saldoCaixaInicial += resumoMes.saldoCaixa;
+      saldoContaInicial += resumoMes.saldoConta;
+    }
+
+    const resumoAtual = calcularResumoConciliacaoMesMensal(mk);
+    const resultado = {
+      ...resumoAtual,
       saldoCaixaInicial,
       saldoContaInicial,
-      saldoCaixa: saldoCaixaInicial + entradasCaixa - despesasCaixa,
-      saldoConta: saldoContaInicial + entradasConta - despesasConta
+      saldoCaixa: saldoCaixaInicial + resumoAtual.saldoCaixa,
+      saldoConta: saldoContaInicial + resumoAtual.saldoConta
     };
+
+    window.__conciliacaoCache = window.__conciliacaoCache || {};
+    window.__conciliacaoCache[cacheKey] = resultado;
+    return resultado;
   }
 
   function gerarResumoConciliacao(mk) {
