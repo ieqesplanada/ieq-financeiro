@@ -2449,23 +2449,22 @@ function invalidarCacheResumo() {
 
   function renderChartEvolucao(){
     const ctx = document.getElementById('chartEvolucao');
+    if (!ctx) return;
     if (charts.evolucao) charts.evolucao.destroy();
-    
-    const anoAtual = new Date().getFullYear();
-    const resumoAnual = calcularResumoAnual(anoAtual);
-    
-    const hoje = new Date();
-    const mesesFiltrados = resumoAnual.filter(r => r.mes <= (hoje.getMonth() + 1));
+
+    const [anoSelecionado, mesSelecionado] = (GLOBAL_MONTH || '').split('-').map(Number);
+    const resumoAnual = calcularResumoAnual(anoSelecionado || new Date().getFullYear());
+    const mesesFiltrados = resumoAnual.filter(r => r.mes <= (mesSelecionado || 12));
     const dados = mesesFiltrados.length > 0 ? mesesFiltrados : resumoAnual;
-    
+
     charts.evolucao = new Chart(ctx, {
       type: 'line',
       data: {
         labels: dados.map(r => r.nome),
         datasets: [
-          { label: 'Entradas', data: dados.map(r => r.entradas), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saídas',   data: dados.map(r => r.saidas),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
-          { label: 'Saldo',    data: dados.map(r => r.saldoFinal), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
+          { label: 'Entradas', data: dados.map(r => Number(r.entradas) || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saídas',   data: dados.map(r => Number(r.saidas) || 0), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',  tension: 0.4, fill: true, borderWidth: 2 },
+          { label: 'Saldo',    data: dados.map(r => Number(r.saldoFinal) || 0), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, fill: false, borderWidth: 2 }
         ]
       },
       options: {
@@ -2475,12 +2474,19 @@ function invalidarCacheResumo() {
       }
     });
 }
-  
+
   function renderChartDespesasMes(){
     const ctx = document.getElementById('chartDespesas');
+    if (!ctx) return;
     if (charts.despesas) charts.despesas.destroy();
+
     const cats = {};
-    getDespesasMes(GLOBAL_MONTH).forEach(d => { cats[d.categoria] = (cats[d.categoria] || 0) + d.valor; });
+    getDespesasMes(GLOBAL_MONTH).forEach(d => {
+      const categoria = (d.categoria || 'OUTROS').toString().trim() || 'OUTROS';
+      const valor = parseFloat(d.valor) || 0;
+      if (valor > 0) cats[categoria] = (cats[categoria] || 0) + valor;
+    });
+
     const entries = Object.entries(cats);
     if (!entries.length) {
       charts.despesas = new Chart(ctx, { type: 'doughnut', data: { labels: ['Sem dados'], datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }] }, options: { plugins: { legend: { display: false } } } });
@@ -3936,10 +3942,9 @@ async function salvarDespesa(e) {
     const [ano, mes] = mk.split('-').map(Number);
     let saldoCaixaInicial = 0;
     let saldoContaInicial = 0;
-    const start = new Date(ano, 0, 1);
-    const end = new Date(ano, mes - 1, 1);
+    const currentMonthStart = new Date(ano, mes - 1, 1);
 
-    for (let cursor = new Date(start); cursor <= end; cursor.setMonth(cursor.getMonth() + 1)) {
+    for (let cursor = new Date(ano, 0, 1); cursor < currentMonthStart; cursor.setMonth(cursor.getMonth() + 1)) {
       const key = monthKeyFromDate(cursor);
       const resumoMes = calcularResumoConciliacaoMesMensal(key);
       saldoCaixaInicial += resumoMes.saldoCaixa;
