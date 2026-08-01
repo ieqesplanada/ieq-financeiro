@@ -553,6 +553,18 @@
           </div>
           <p class="text-lg sm:text-2xl font-bold text-yellow-600" id="kpi-saldo">R$ 0,00</p>
           <p class="text-xs text-gray-500 mt-1" id="kpi-saldo-sub">—</p>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <div class="rounded-lg border border-green-200 bg-green-50 p-2 text-center">
+              <p class="text-[10px] uppercase tracking-wide text-gray-500">Caixa Local</p>
+              <p class="text-sm font-bold text-green-700" id="kpi-caixa-local">R$ 0,00</p>
+              <p class="text-[10px] text-green-600 mt-1" id="kpi-caixa-local-sub">—</p>
+            </div>
+            <div class="rounded-lg border border-blue-200 bg-blue-50 p-2 text-center">
+              <p class="text-[10px] uppercase tracking-wide text-gray-500">Conta Bancária</p>
+              <p class="text-sm font-bold text-blue-700" id="kpi-conta-bancaria">R$ 0,00</p>
+              <p class="text-[10px] text-blue-600 mt-1" id="kpi-conta-bancaria-sub">—</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2275,6 +2287,7 @@ function invalidarCacheResumo() {
     updatePageSubtitleForMonth();
     const resumoAtual = calcularResumoMes(GLOBAL_MONTH);
     const resumoPrev  = calcularResumoMes(prevMonthKey(GLOBAL_MONTH));
+    const conciliacao = calcularResumoConciliacaoMes(GLOBAL_MONTH);
     
     const entMes   = resumoAtual ? resumoAtual.entradas : sum(getEntradasMes(GLOBAL_MONTH), e => e.valor);
     const saiMes   = resumoAtual ? resumoAtual.saidas   : sum(getDespesasMes(GLOBAL_MONTH), d => d.valor);
@@ -2290,6 +2303,10 @@ function invalidarCacheResumo() {
     document.getElementById('kpi-saidas').textContent       = fmt(saiMes);
     document.getElementById('kpi-saldo').textContent        = fmt(saldoFinal);
     document.getElementById('kpi-saldo-sub').textContent    = `Mês: ${monthLabel(GLOBAL_MONTH)}`;
+    document.getElementById('kpi-caixa-local').textContent = fmt(conciliacao.saldoCaixa);
+    document.getElementById('kpi-caixa-local-sub').textContent = `Transferido ${fmt(conciliacao.saldoCaixaInicial)} • Entradas ${fmt(conciliacao.entradasCaixa)}`;
+    document.getElementById('kpi-conta-bancaria').textContent = fmt(conciliacao.saldoConta);
+    document.getElementById('kpi-conta-bancaria-sub').textContent = `Transferido ${fmt(conciliacao.saldoContaInicial)} • Entradas ${fmt(conciliacao.entradasConta)}`;
     
     const vE = (resumoPrev && resumoPrev.entradas) ? ((entMes - resumoPrev.entradas) / resumoPrev.entradas) * 100 : null;
     const vS = (resumoPrev && resumoPrev.saidas)   ? ((saiMes - resumoPrev.saidas)   / resumoPrev.saidas)   * 100 : null;
@@ -3778,7 +3795,9 @@ async function salvarDespesa(e) {
     return 'CAIXA';
   }
 
-  function gerarResumoConciliacao(mk) {
+  function calcularResumoConciliacaoMes(mk) {
+    const prevKey = prevMonthKey(mk);
+    const prevResumo = prevKey ? calcularResumoConciliacaoMes(prevKey) : null;
     const cultos = getCultosMes(mk);
     const despesas = DB.despesas.filter(d => (d.data || '').startsWith(mk));
 
@@ -3790,6 +3809,9 @@ async function salvarDespesa(e) {
     const despesasConta = despesas.filter(d => normalizarFormaPagamentoConciliacao(d.formaPagamento) === 'CONTA CORRENTE')
       .reduce((s, d) => s + (parseFloat(d.valor) || 0), 0);
 
+    const saldoCaixaInicial = prevResumo ? prevResumo.saldoCaixa : 0;
+    const saldoContaInicial = prevResumo ? prevResumo.saldoConta : 0;
+
     return {
       mk,
       cultos,
@@ -3798,9 +3820,15 @@ async function salvarDespesa(e) {
       entradasConta,
       despesasCaixa,
       despesasConta,
-      saldoCaixa: entradasCaixa - despesasCaixa,
-      saldoConta: entradasConta - despesasConta
+      saldoCaixaInicial,
+      saldoContaInicial,
+      saldoCaixa: saldoCaixaInicial + entradasCaixa - despesasCaixa,
+      saldoConta: saldoContaInicial + entradasConta - despesasConta
     };
+  }
+
+  function gerarResumoConciliacao(mk) {
+    return calcularResumoConciliacaoMes(mk);
   }
 
   function gerarRelatorioConciliacao() {
