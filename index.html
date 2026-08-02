@@ -599,30 +599,46 @@
 }
 
 @media print {
-  /* Esconde tudo no body, exceto o appRoot */
   body.printing-viagem > *:not(#appRoot) {
     display: none !important;
   }
 
-  /* Dentro do appRoot, esconde tudo exceto o mainContent */
-  body.printing-viagem #appRoot > *:not(#mainContent) {
+  body.printing-viagem #appRoot > *:not(#page-viagens) {
     display: none !important;
   }
 
-  /* Dentro do mainContent, esconde tudo exceto a page-viagens */
-  body.printing-viagem #mainContent > *:not(#page-viagens) {
+  body.printing-viagem #page-viagens > *:not(#viagem-relatorio-container) {
     display: none !important;
   }
 
-  /* Garante que a page-viagens seja exibida corretamente */
-  body.printing-viagem #page-viagens {
+  body.printing-viagem #viagem-relatorio-container {
     display: block !important;
     position: static !important;
     width: 100%;
     max-width: 100%;
     margin: 0;
     padding: 0;
+    box-shadow: none;
   }
+
+  .btn-print-wrap { display: none !important; }
+  #logo-placeholder { display: none !important; }
+  #btn-remove-logo { display: none !important; }
+  .linha-add-item { display: none !important; }
+
+  .despesas thead th:last-child,
+  .linha-item td:last-child {
+    display: none !important;
+  }
+
+  .despesas th:nth-child(2) { width: 55% !important; }
+  .despesas th:nth-child(3) { width: 45% !important; }
+
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+}
 
   .relatorio-container {
     box-shadow: none;
