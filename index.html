@@ -247,6 +247,87 @@
     .btn-whatsapp:hover { background: #20bd5a; transform: translateY(-1px); }
     .btn-whatsapp-sm { background: #25D366; color: white; padding: 0; width: 28px; height: 28px; border-radius: 8px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .btn-whatsapp-sm:hover { background: #20bd5a; transform: translateY(-1px); }
+
+    .viagem-relatorio-wrapper .relatorio-container {
+      background: #fff; width: 100%; max-width: 100%; min-height: auto; margin: 0; padding: 1rem; box-shadow: none; border: 1px solid #e5e7eb; border-radius: 14px;
+    }
+    .viagem-relatorio-wrapper .secao-titulo { background: #2b6cb0; color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 10px; margin: 14px 0 8px; border-radius: 6px; }
+    .viagem-relatorio-wrapper .header { position: relative; text-align: center; padding: 6px 0 14px; margin-bottom: 10px; border-bottom: 2px solid #000; }
+    .viagem-relatorio-wrapper .header h1 { font-size: 16px; font-weight: 700; margin: 0; }
+    .viagem-relatorio-wrapper .header h2 { font-size: 24px; font-weight: 700; margin: 6px 0 0; letter-spacing: 1px; }
+    .viagem-relatorio-wrapper .header .recibo { position: absolute; top: 6px; right: 0; font-size: 13px; }
+    .viagem-relatorio-wrapper .header .recibo label { margin-right: 4px; font-weight: 600; }
+    .viagem-relatorio-wrapper .header .recibo input { width: 90px; border: none; border-bottom: 1px solid #000; font-size: 13px; text-align: center; }
+    .viagem-relatorio-wrapper .logo-area { position: absolute; top: 6px; left: 0; width: 90px; text-align: center; }
+    .viagem-relatorio-wrapper .logo-wrapper { position: relative; width: 90px; height: 78px; margin: 0 auto; }
+    .viagem-relatorio-wrapper #logo-preview-viagem { max-width: 90px; max-height: 78px; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto; }
+    .viagem-relatorio-wrapper .logo-placeholder { width: 80px; height: 66px; border: 1px dashed #999; border-radius: 4px; font-size: 10px; color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.2; padding: 4px; margin: 0 auto; }
+    .viagem-relatorio-wrapper .logo-placeholder:hover { background: #f0f0f0; border-color: #2b6cb0; color: #2b6cb0; }
+    .viagem-relatorio-wrapper #btn-remove-logo-viagem { position: absolute; top: -6px; right: -6px; background: #c0392b; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; line-height: 1; cursor: pointer; opacity: 0; visibility: hidden; transition: opacity .2s ease; }
+    .viagem-relatorio-wrapper .logo-wrapper:hover #btn-remove-logo-viagem { opacity: 1; visibility: visible; }
+    .viagem-relatorio-wrapper #btn-remove-logo-viagem:hover { background: #992d22; }
+    .viagem-relatorio-wrapper .dados-viagem { border: 1px solid #ccc; border-radius: 4px; padding: 10px 14px; margin-bottom: 4px; background: #fafafa; }
+    .viagem-relatorio-wrapper .dados-viagem .campo { display: flex; align-items: baseline; margin-bottom: 6px; font-size: 13px; }
+    .viagem-relatorio-wrapper .dados-viagem .campo:last-child { margin-bottom: 0; }
+    .viagem-relatorio-wrapper .dados-viagem .campo label { font-weight: 700; white-space: nowrap; margin-right: 8px; width: 140px; flex-shrink: 0; }
+    .viagem-relatorio-wrapper .dados-viagem .campo input { flex: 1; width: 100%; min-width: 0; border: none; border-bottom: 1px solid #000; background: transparent; font-size: 13px; padding: 2px 4px; }
+    .viagem-relatorio-wrapper .secao-principal { display: flex; border: 1px solid #000; border-radius: 4px; margin-bottom: 4px; overflow: visible; }
+    .viagem-relatorio-wrapper .cargos { width: 34%; padding: 12px; border-right: 1px solid #000; font-size: 13px; background: #fafafa; overflow: visible; }
+    .viagem-relatorio-wrapper .cargo { display: flex; align-items: center; min-height: 30px; gap: 8px; }
+    .viagem-relatorio-wrapper .cargo input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; }
+    .viagem-relatorio-wrapper .cargo label { cursor: pointer; }
+    .viagem-relatorio-wrapper .nome-viajante { margin-top: 10px; text-align: center; }
+    .viagem-relatorio-wrapper .nome-viajante input { width: 100%; border: none; border-bottom: 1px solid #000; background: transparent; text-align: center; font-size: 13px; padding: 4px 0; }
+    .viagem-relatorio-wrapper .nome-viajante .instrucao { font-size: 11px; text-align: center; margin-top: 2px; color: #333; }
+    .viagem-relatorio-wrapper .despesas { width: 66%; padding: 12px; min-width: 0; overflow: visible; }
+    .viagem-relatorio-wrapper .despesas table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    .viagem-relatorio-wrapper .despesas th, .viagem-relatorio-wrapper .despesas td { border: 1px solid #000; padding: 4px 6px; overflow: hidden; }
+    .viagem-relatorio-wrapper .despesas th { font-weight: 700; background: #f0f0f0; text-align: center; }
+    .viagem-relatorio-wrapper .despesas td.categoria-nome { font-weight: 700; background: #e8eef7; color: #1a3a5c; }
+    .viagem-relatorio-wrapper .despesas input { width: 100%; min-width: 0; max-width: 100%; border: none; font-size: 12px; background: transparent; padding: 0; white-space: nowrap; }
+    .viagem-relatorio-wrapper .despesas input.valor-input { text-align: right; }
+    .viagem-relatorio-wrapper .despesas input.valor-input.invalido { border: 1px solid #c0392b !important; background: #fdecea !important; }
+    .viagem-relatorio-wrapper .despesas tfoot td { font-weight: 700; text-align: right; font-size: 15px; background: #f7f7f7; white-space: nowrap; }
+    .viagem-relatorio-wrapper .despesas tfoot td.total-label { text-align: left; }
+    .viagem-relatorio-wrapper .linha-add-item td { border: none; padding: 4px 6px 8px; background: #fff; }
+    .viagem-relatorio-wrapper .btn-add-item { display: inline-flex; align-items: center; gap: 5px; background: #eef5ff; color: #2b6cb0; border: 1px solid #2b6cb0; border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .2s, color .2s; white-space: nowrap; }
+    .viagem-relatorio-wrapper .btn-add-item:hover { background: #2b6cb0; color: #fff; }
+    .viagem-relatorio-wrapper .btn-add-item .icone { font-size: 13px; line-height: 1; }
+    .viagem-relatorio-wrapper .despesas .btn-remove { background: #c0392b; color: #fff; border: none; width: 20px; height: 20px; border-radius: 3px; cursor: pointer; font-size: 12px; line-height: 1; opacity: .85; }
+    .viagem-relatorio-wrapper .despesas .btn-remove:hover { background: #992d22; opacity: 1; }
+    .viagem-relatorio-wrapper .despesas .linha-item td { padding: 3px 6px; }
+    .viagem-relatorio-wrapper .valor-extenso-wrap { display: flex; gap: 12px; align-items: stretch; margin-bottom: 4px; }
+    .viagem-relatorio-wrapper .box-extenso { flex: 1; min-width: 0; border: 1px solid #000; border-radius: 4px; padding: 6px 10px; background: #fafafa; }
+    .viagem-relatorio-wrapper .box-extenso label { font-weight: 700; font-size: 12px; display: block; margin-bottom: 3px; color: #333; }
+    .viagem-relatorio-wrapper .box-extenso textarea { width: 100%; min-height: 32px; max-height: 70px; resize: none; border: none; border-bottom: 1px solid #999; background: transparent; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.35; padding: 3px 2px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
+    .viagem-relatorio-wrapper .box-total { flex-shrink: 0; width: 200px; border: 2px solid #2b6cb0; border-radius: 4px; background: #eef5ff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 10px; text-align: center; }
+    .viagem-relatorio-wrapper .box-total .rotulo { font-size: 10.5px; font-weight: 700; color: #2b6cb0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .viagem-relatorio-wrapper .box-total .valor { font-size: 18px; font-weight: 700; color: #1a3a5c; white-space: nowrap; line-height: 1.2; }
+    .viagem-relatorio-wrapper .declaracao { border: 1px solid #ccc; border-radius: 4px; padding: 8px 14px; margin-bottom: 4px; background: #fafafa; font-size: 13px; line-height: 1.9; }
+    .viagem-relatorio-wrapper .declaracao input { border: none; border-bottom: 1px solid #000; background: transparent; font-size: 13px; padding: 1px 4px; max-width: 100%; }
+    .viagem-relatorio-wrapper .assinaturas { margin-top: 14px; }
+    .viagem-relatorio-wrapper .campos-assinatura { display: flex; gap: 24px; margin-bottom: 50px; }
+    .viagem-relatorio-wrapper .campos-assinatura > div { flex: 1; min-width: 0; }
+    .viagem-relatorio-wrapper .campos-assinatura label { font-weight: 700; font-size: 13px; display: block; margin-bottom: 4px; }
+    .viagem-relatorio-wrapper .campos-assinatura input { width: 100%; min-width: 0; border: none; border-bottom: 1px solid #000; background: transparent; font-size: 13px; padding: 3px 4px; }
+    .viagem-relatorio-wrapper .linha-assinatura-resp { text-align: center; margin-top: 55px; }
+    .viagem-relatorio-wrapper .linha-assinatura-resp .linha { border-bottom: 1px solid #000; height: 1px; margin-bottom: 8px; }
+    .viagem-relatorio-wrapper .ass-resp { font-family: 'Times New Roman', serif; font-size: 18px; margin: 0; }
+    @media (max-width: 640px) {
+      .viagem-relatorio-wrapper .secao-principal { flex-direction: column; }
+      .viagem-relatorio-wrapper .cargos { width: 100%; border-right: none; border-bottom: 1px solid #000; }
+      .viagem-relatorio-wrapper .despesas { width: 100%; }
+      .viagem-relatorio-wrapper .dados-viagem .campo { flex-direction: column; align-items: stretch; }
+      .viagem-relatorio-wrapper .dados-viagem .campo label { width: auto; margin-bottom: 3px; }
+      .viagem-relatorio-wrapper .valor-extenso-wrap { flex-direction: column; }
+      .viagem-relatorio-wrapper .box-total { width: 100%; }
+      .viagem-relatorio-wrapper .campos-assinatura { flex-direction: column; gap: 24px; }
+    }
+    @media print {
+      .viagem-relatorio-wrapper .btn-print-wrap, .viagem-relatorio-wrapper .btn-limpar { display: none !important; }
+      .viagem-relatorio-wrapper .relatorio-container { box-shadow: none !important; border: none !important; padding: 0; }
+      .viagem-relatorio-wrapper .relatorio-container * { color: #000 !important; }
+    }
     
                /* ============================================================
        ESTILOS DE IMPRESSÃO — REFC
@@ -348,8 +429,189 @@
     .print-header, .print-footer {
       display: none;
     }
+	
+	<style>
+#page-viagens * { box-sizing: border-box; }
+#page-viagens .relatorio-container {
+  background: #fff;
+  width: 21cm;
+  max-width: 100%;
+  min-height: 29.7cm;
+  margin: 0 auto;
+  padding: 1cm 1.2cm;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+#page-viagens .secao-titulo {
+  background: #2b6cb0; color: #fff; font-size: 12px; font-weight: bold;
+  text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 10px;
+  margin: 14px 0 8px 0; border-radius: 3px;
+}
+#page-viagens .secao-titulo:first-of-type { margin-top: 4px; }
+#page-viagens .header { position: relative; text-align: center; padding: 6px 0 14px 0; margin-bottom: 10px; border-bottom: 2px solid #000; }
+#page-viagens .header h1 { font-size: 16px; font-weight: bold; margin: 0; }
+#page-viagens .header h2 { font-size: 24px; font-weight: bold; margin: 6px 0 0 0; letter-spacing: 1px; }
+#page-viagens .header .recibo { position: absolute; top: 6px; right: 0; font-size: 13px; }
+#page-viagens .header .recibo label { margin-right: 4px; }
+#page-viagens .header .recibo input { width: 90px; border: none; border-bottom: 1px solid #000; font-size: 13px; text-align: center; }
+#page-viagens .logo-area { position: absolute; top: 6px; left: 0; width: 90px; text-align: center; }
+#page-viagens .logo-wrapper { position: relative; width: 90px; height: 78px; margin: 0 auto; }
+#page-viagens #logo-preview { max-width: 90px; max-height: 78px; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto; }
+#page-viagens .logo-placeholder {
+  width: 80px; height: 66px; border: 1px dashed #999; border-radius: 4px; font-size: 10px; color: #666;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center;
+  line-height: 1.2; padding: 4px; margin: 0 auto;
+}
+#page-viagens .logo-placeholder:hover { background: #f0f0f0; border-color: #2b6cb0; color: #2b6cb0; }
+#page-viagens #btn-remove-logo {
+  position: absolute; top: -6px; right: -6px; background: #c0392b; color: #fff; border: none;
+  border-radius: 50%; width: 18px; height: 18px; font-size: 11px; line-height: 1; cursor: pointer;
+  opacity: 0; visibility: hidden; transition: opacity 0.2s ease;
+}
+#page-viagens .logo-wrapper:hover #btn-remove-logo { opacity: 1; visibility: visible; }
+#page-viagens #btn-remove-logo:hover { background: #992d22; }
 
-  </style>
+#page-viagens .dados-viagem { border: 1px solid #ccc; border-radius: 4px; padding: 10px 14px; margin-bottom: 4px; background: #fafafa; }
+#page-viagens .dados-viagem .campo { display: flex; align-items: baseline; margin-bottom: 6px; font-size: 13px; }
+#page-viagens .dados-viagem .campo:last-child { margin-bottom: 0; }
+#page-viagens #viagem-import-bar {
+  background: #eef5ff;
+  border: 1px solid #2b6cb0;
+}
+#page-viagens #viagem-import-bar .campo label {
+  color: #1a3a5c;
+}
+@media print {
+  body.printing-viagem #page-viagens #viagem-import-bar { display: none !important; }
+}
+
+#page-viagens .dados-viagem .campo label { font-weight: bold; white-space: nowrap; margin-right: 8px; width: 140px; flex-shrink: 0; }
+#page-viagens .dados-viagem .campo input { flex: 1; width: 100%; min-width: 0; border: none; border-bottom: 1px solid #000; background: transparent; font-size: 13px; padding: 2px 4px; }
+
+#page-viagens .secao-principal { display: flex; border: 1px solid #000; border-radius: 4px; margin-bottom: 4px; overflow: visible; }
+#page-viagens .cargos { width: 34%; padding: 12px; border-right: 1px solid #000; font-size: 13px; background: #fafafa; overflow: visible; }
+#page-viagens .cargo { display: flex; align-items: center; min-height: 30px; gap: 8px; }
+#page-viagens .cargo input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; }
+#page-viagens .cargo label { cursor: pointer; }
+#page-viagens .nome-viajante { margin-top: 10px; text-align: center; }
+#page-viagens .nome-viajante input { width: 100%; border: none; border-bottom: 1px solid #000; background: transparent; text-align: center; font-size: 13px; padding: 4px 0; }
+#page-viagens .nome-viajante .instrucao { font-size: 11px; text-align: center; margin-top: 2px; color: #333; }
+
+#page-viagens .despesas { width: 66%; padding: 12px; min-width: 0; overflow: visible; }
+#page-viagens .despesas-scroll { overflow-x: auto; }
+#page-viagens .despesas table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+#page-viagens .despesas col.col-desc { width: 0; }
+#page-viagens .despesas th:nth-child(1), #page-viagens .despesas td:nth-child(1) { width: 0; padding: 0; border: none; }
+#page-viagens .despesas th:nth-child(2) { width: 48%; }
+#page-viagens .despesas th:nth-child(3) { width: 32%; }
+#page-viagens .despesas th:nth-child(4), #page-viagens .despesas td:nth-child(4) { width: 30px; padding: 2px; text-align: center; }
+#page-viagens .despesas th, #page-viagens .despesas td { border: 1px solid #000; padding: 4px 6px; overflow: hidden; }
+#page-viagens .despesas th { font-weight: bold; background: #f0f0f0; text-align: center; }
+#page-viagens .despesas td.categoria-nome { font-weight: bold; background: #e8eef7; color: #1a3a5c; }
+#page-viagens .despesas input { width: 100%; min-width: 0; max-width: 100%; border: none; font-size: 12px; background: transparent; padding: 0; white-space: nowrap; }
+#page-viagens .despesas input.valor-input { text-align: right; }
+#page-viagens .despesas input.valor-input.invalido { border: 1px solid #c0392b !important; background: #fdecea !important; }
+#page-viagens .despesas tfoot td { font-weight: bold; text-align: right; font-size: 15px; background: #f7f7f7; white-space: nowrap; }
+#page-viagens .despesas tfoot td.total-label { text-align: left; }
+
+#page-viagens .linha-add-item td { border: none; padding: 4px 6px 8px 6px; background: #fff; }
+#page-viagens .btn-add-item {
+  display: inline-flex; align-items: center; gap: 5px; background: #eef5ff; color: #2b6cb0;
+  border: 1px solid #2b6cb0; border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: bold;
+  cursor: pointer; transition: background 0.2s, color 0.2s; white-space: nowrap;
+}
+#page-viagens .btn-add-item:hover { background: #2b6cb0; color: #fff; }
+#page-viagens .btn-add-item .icone { font-size: 13px; line-height: 1; }
+#page-viagens .despesas .btn-remove {
+  background: #c0392b; color: #fff; border: none; width: 20px; height: 20px; border-radius: 3px;
+  cursor: pointer; font-size: 12px; line-height: 1; opacity: 0.85;
+}
+#page-viagens .despesas .btn-remove:hover { background: #992d22; opacity: 1; }
+#page-viagens .despesas .linha-item td { padding: 3px 6px; }
+#page-viagens .despesas .linha-item:hover { background: #fafafa; }
+
+#page-viagens .valor-extenso-wrap { display: flex; gap: 12px; align-items: stretch; margin-bottom: 4px; }
+#page-viagens .box-extenso { flex: 1; min-width: 0; border: 1px solid #000; border-radius: 4px; padding: 6px 10px; background: #fafafa; }
+#page-viagens .box-extenso label { font-weight: bold; font-size: 12px; display: block; margin-bottom: 3px; color: #333; }
+#page-viagens .box-extenso textarea {
+  width: 100%; min-height: 32px; max-height: 70px; resize: none; border: none; border-bottom: 1px solid #999;
+  background: transparent; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.35; padding: 3px 2px;
+  overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;
+}
+#page-viagens .box-total {
+  flex-shrink: 0; width: 200px; border: 2px solid #2b6cb0; border-radius: 4px; background: #eef5ff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 10px; text-align: center;
+}
+#page-viagens .box-total .rotulo { font-size: 10.5px; font-weight: bold; color: #2b6cb0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+#page-viagens .box-total .valor { font-size: 18px; font-weight: bold; color: #1a3a5c; white-space: nowrap; line-height: 1.2; }
+
+#page-viagens .declaracao { border: 1px solid #ccc; border-radius: 4px; padding: 8px 14px; margin-bottom: 4px; background: #fafafa; font-size: 13px; line-height: 1.9; }
+#page-viagens .declaracao input { border: none; border-bottom: 1px solid #000; background: transparent; font-size: 13px; padding: 1px 4px; max-width: 100%; }
+#page-viagens .declaracao input#nome-viajante-decl { width: 260px; max-width: 100%; }
+#page-viagens .declaracao input#prontuario { width: 100px; max-width: 100%; }
+#page-viagens .declaracao input#cidade { width: 160px; max-width: 100%; }
+
+#page-viagens .assinaturas { margin-top: 14px; }
+#page-viagens .campos-assinatura { display: flex; gap: 24px; margin-bottom: 50px; }
+#page-viagens .campos-assinatura > div { flex: 1; min-width: 0; }
+#page-viagens .campos-assinatura label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 4px; }
+#page-viagens .campos-assinatura input { width: 100%; min-width: 0; border: none; border-bottom: 1px solid #000; background: transparent; font-size: 13px; padding: 3px 4px; }
+#page-viagens .linha-assinatura-resp { text-align: center; margin-top: 55px; }
+#page-viagens .linha-assinatura-resp .linha { border-bottom: 1px solid #000; height: 1px; margin-bottom: 8px; }
+#page-viagens .ass-resp { font-family: "Times New Roman", serif; font-size: 18px; margin: 0; }
+
+#page-viagens .btn-print-wrap { text-align: center; margin: 20px 0; }
+#page-viagens .btn-print { background: #2b6cb0; color: #fff; border: none; padding: 10px 24px; font-size: 15px; border-radius: 4px; cursor: pointer; }
+#page-viagens .btn-print:hover { background: #245a94; }
+#page-viagens .btn-limpar { background: #888; color: #fff; border: none; padding: 10px 24px; font-size: 15px; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+#page-viagens .btn-limpar:hover { background: #666; }
+
+@media screen and (max-width: 900px) {
+  #page-viagens .relatorio-container { width: 100%; padding: 0.8cm 0.8cm; min-height: auto; }
+  #page-viagens .header { padding-top: 90px; }
+  #page-viagens .header .recibo { position: static; text-align: center; margin-top: 8px; }
+  #page-viagens .logo-area { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); }
+  #page-viagens .header h2 { font-size: 20px; }
+}
+@media screen and (max-width: 640px) {
+  #page-viagens .secao-principal { flex-direction: column; }
+  #page-viagens .cargos { width: 100%; border-right: none; border-bottom: 1px solid #000; }
+  #page-viagens .despesas { width: 100%; }
+  #page-viagens .despesas-scroll { overflow-x: auto; }
+  #page-viagens .despesas table { min-width: 480px; }
+  #page-viagens .dados-viagem .campo { flex-direction: column; align-items: stretch; }
+  #page-viagens .dados-viagem .campo label { width: auto; margin-bottom: 3px; }
+  #page-viagens .valor-extenso-wrap { flex-direction: column; }
+  #page-viagens .box-total { width: 100%; }
+  #page-viagens .declaracao input { display: block; width: 100%; margin: 4px 0; }
+  #page-viagens .declaracao input#nome-viajante-decl,
+  #page-viagens .declaracao input#prontuario,
+  #page-viagens .declaracao input#cidade { width: 100%; }
+  #page-viagens .campos-assinatura { flex-direction: column; gap: 24px; }
+  #page-viagens .header h1 { font-size: 13px; }
+  #page-viagens .header h2 { font-size: 18px; }
+  #page-viagens .btn-print-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  #page-viagens .btn-limpar { margin-left: 0; }
+}
+@media screen and (max-width: 380px) {
+  #page-viagens .header h2 { font-size: 15px; }
+  #page-viagens .secao-titulo { font-size: 11px; }
+  #page-viagens .despesas table { font-size: 11px; }
+}
+
+@media print {
+  body.printing-viagem #page-viagens .relatorio-container { box-shadow: none; width: 100%; max-width: 100%; min-height: auto; margin: 0; padding: 0; }
+  body.printing-viagem .btn-print-wrap { display: none; }
+  body.printing-viagem #page-viagens .logo-placeholder { display: none !important; }
+  body.printing-viagem #page-viagens #btn-remove-logo { display: none !important; }
+  body.printing-viagem #page-viagens .despesas .btn-remove { display: none !important; }
+  body.printing-viagem #page-viagens .linha-add-item { display: none !important; }
+  body.printing-viagem #page-viagens .despesas thead th:last-child { display: none; }
+  body.printing-viagem #page-viagens .despesas .linha-item td:last-child { display: none; }
+  body.printing-viagem #page-viagens .despesas th:nth-child(2) { width: 55% !important; }
+  body.printing-viagem #page-viagens .despesas th:nth-child(3) { width: 45% !important; }
+  @page { size: A4; margin: 1cm; }
+}
+</style>
 
 
 </head>
@@ -448,6 +710,7 @@
     <button onclick="showPage('despesas')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-despesas"><i class="fas fa-arrow-up w-4"></i> Despesas</button>
     <button onclick="showPage('distribuicoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-distribuicoes"><i class="fas fa-share-alt w-4"></i> Distribuições</button>
     <button onclick="showPage('relatorios')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-relatorios"><i class="fas fa-file-alt w-4"></i> Relatórios</button>
+    <button onclick="showPage('viagens')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-viagens"><i class="fas fa-plane w-4"></i> Relatório de Viagens</button>
     <button onclick="showPage('historico')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-historico"><i class="fas fa-history w-4"></i> Histórico</button>
     <button onclick="showPage('configuracoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 text-sm" id="nav-configuracoes"><i class="fas fa-cog w-4"></i> Configurações</button>
   </nav>
@@ -1181,6 +1444,7 @@
           <option value="">Selecione...</option>
           <option>ENERGIA</option><option>AGUA</option><option>CED</option><option>CND</option>
           <option>CONTADOR</option><option>TAXA REGIONAL</option><option>COMBUSTIVEL</option>
+          <option>HOSPEDAGEM</option><option>ALIMENTACAO</option><option>PEDAGIO</option><option>TRANSPORTE</option>
           <option>PREBENDA</option><option>PAPELARIA</option><option>DARF</option><option>MATERIAL</option><option>OUTROS</option>
         </select>
       </div>
@@ -1232,7 +1496,6 @@
 </div>
 
 <!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
-<!-- CORREÇÃO 3: MODAL ALTERAR DESPESA -->
 <div class="modal-overlay" id="modalAlterarDespesa">
   <div class="modal-shell modal-shell-sm">
     <div class="modal-header modal-header-yellow">
@@ -1249,6 +1512,7 @@
               <option value="">Selecione...</option>
               <option>ENERGIA</option><option>AGUA</option><option>CED</option><option>CND</option>
               <option>CONTADOR</option><option>TAXA REGIONAL</option><option>COMBUSTIVEL</option>
+              <option>HOSPEDAGEM</option><option>ALIMENTACAO</option><option>PEDAGIO</option><option>TRANSPORTE</option>
               <option>PREBENDA</option><option>PAPELARIA</option><option>DARF</option><option>MATERIAL</option><option>OUTROS</option>
             </select>
           </div>
@@ -1371,6 +1635,155 @@
   </div>
 </div>
 
+<div id="page-viagens" class="page">
+  <div class="relatorio-container" id="viagem-relatorio-container">
+
+    <!-- Cabeçalho -->
+    <div class="header">
+      <div class="logo-area">
+        <div class="logo-wrapper">
+          <img id="logo-preview" src="" alt="Logo da instituição" style="display:none;">
+          <label for="logo-input" id="logo-placeholder" class="logo-placeholder">
+            Adicionar Logo
+          </label>
+          <input type="file" id="logo-input" accept="image/*" style="display:none;" aria-label="Selecionar arquivo de logo">
+          <button type="button" id="btn-remove-logo" title="Remover logo" aria-label="Remover logo" style="display:none;">✕</button>
+        </div>
+      </div>
+      <h1>Igreja do Evangelho Quadrangular</h1>
+      <h2>RELATÓRIO DE VIAGENS</h2>
+      <div class="recibo">
+        <label for="numero-recibo">No. Recibo:</label>
+        <input type="text" id="numero-recibo">
+      </div>
+    </div>
+
+    <!-- Dados da Viagem -->
+    <div class="secao-titulo">Dados da Viagem</div>
+    <div class="dados-viagem">
+      <div class="campo">
+        <label for="local-saida">Local de Saída:</label>
+        <input type="text" id="local-saida" value="BEBEDOURO-SP">
+      </div>
+      <div class="campo">
+        <label for="local-destino">Local de Destino:</label>
+        <input type="text" id="local-destino" value="BEBEDOURO-SP">
+      </div>
+      <div class="campo">
+        <label for="motivo-viagem">Motivo da Viagem:</label>
+        <input type="text" id="motivo-viagem" value="EVANGELISMO">
+      </div>
+    </div>
+
+    <!-- Seção Principal -->
+    <div class="secao-titulo">Cargo do Viajante e Despesas</div>
+	<!-- Importar despesas automaticamente -->
+<div class="dados-viagem" id="viagem-import-bar" style="margin-bottom:10px;">
+  <div class="campo">
+    <label for="viagem-periodo-ini">Período (de):</label>
+    <input type="date" id="viagem-periodo-ini">
+  </div>
+  <div class="campo">
+    <label for="viagem-periodo-fim">Período (até):</label>
+    <input type="date" id="viagem-periodo-fim">
+  </div>
+  <div class="campo" style="justify-content:flex-end;border:none;">
+    <button type="button" class="btn-add-item" onclick="importarDespesasViagem()">
+      <span class="icone">⤓</span> Importar Despesas do Sistema
+    </button>
+  </div>
+</div>
+    <div class="secao-principal">
+      <div class="cargos">
+        <div class="cargo"><input type="checkbox" id="cargo-supervisor" name="cargo" data-cargo><label for="cargo-supervisor">Supervisor</label></div>
+        <div class="cargo"><input type="checkbox" id="cargo-superintendente" name="cargo" data-cargo><label for="cargo-superintendente">Superintendente/Diretor de Campo</label></div>
+        <div class="cargo"><input type="checkbox" id="cargo-coordenador" name="cargo" data-cargo><label for="cargo-coordenador">Coordenador</label></div>
+        <div class="cargo"><input type="checkbox" id="cargo-pastor" name="cargo" data-cargo checked><label for="cargo-pastor">Pastor</label></div>
+        <div class="cargo"><input type="checkbox" id="cargo-funcionario" name="cargo" data-cargo><label for="cargo-funcionario">Funcionário</label></div>
+        <div class="nome-viajante">
+          <label for="nome-viajante-topo" class="sr-only">Nome por Extenso</label>
+          <input type="text" id="nome-viajante-topo" value="DANILO DE OLIVEIRA FALCÃO">
+          <div class="instrucao">Nome por Extenso</div>
+        </div>
+      </div>
+
+      <div class="despesas">
+        <div class="despesas-scroll">
+          <table id="tabela-despesas">
+            <thead>
+              <tr>
+                <th></th>
+                <th>No. Nota Fiscal / Recibo</th>
+                <th>Total R$</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="corpo-despesas"></tbody>
+            <tfoot>
+              <tr>
+                <td class="total-label" colspan="2">Total</td>
+                <td id="total-geral">R$ 0,00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Valor por Extenso + Total Geral -->
+    <div class="valor-extenso-wrap">
+      <div class="box-extenso">
+        <label for="valor-extenso-input">Valor Total por Extenso</label>
+        <textarea id="valor-extenso-input" rows="2" readonly></textarea>
+      </div>
+      <div class="box-total">
+        <div class="rotulo">Total Geral</div>
+        <div class="valor">R$ <span id="total-display">0,00</span></div>
+      </div>
+    </div>
+
+    <!-- Declaração -->
+    <div class="secao-titulo">Declaração de Quitação</div>
+    <div class="declaracao">
+      <p>
+        Eu <input type="text" id="nome-viajante-decl" value="DANILO DE OLIVEIRA FALCÃO">,
+        Prontuário: <input type="text" id="prontuario" value="72957">,
+        declaro ter recebido da IEQ em
+        <input type="text" id="cidade" value="BEBEDOURO-SP">,
+        CNPJ 62.955.505/9126-70 o valor acima, do qual dou plena quitação.
+      </p>
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="secao-titulo">Assinaturas</div>
+    <div class="assinaturas">
+      <div class="campos-assinatura">
+        <div>
+          <label for="assinatura-local">Local</label>
+          <input type="text" id="assinatura-local" value="BEBEDOURO-SP">
+        </div>
+        <div>
+          <label for="assinatura-data">Data</label>
+          <input type="text" id="assinatura-data">
+        </div>
+        <div>
+          <label for="assinatura-nome">Assinatura</label>
+          <input type="text" id="assinatura-nome">
+        </div>
+      </div>
+      <div class="linha-assinatura-resp">
+        <div class="linha"></div>
+        <p class="ass-resp">Assinatura do responsável</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="btn-print-wrap">
+    <button class="btn-print" onclick="window.print()">Imprimir Relatório</button>
+    <button class="btn-limpar" onclick="limparFormularioViagem()">Limpar Formulário</button>
+  </div>
+</div>
 
 </div><!-- fim #appRoot -->
 
@@ -1778,6 +2191,7 @@ function getSegundoDomingoDoMes(mk){
       despesas:['Despesas','Controle de saídas financeiras'],
       distribuicoes:['Distribuições','Taxas e repasses obrigatórios'],
       relatorios:['Relatórios','Análises e exportações'],
+      viagens:['Relatório de Viagens','Formulário e impressão para viagens'],
       historico:['Histórico','Dados históricos 2026'],
       configuracoes:['Configurações','Logo, dados da igreja e sistema'],
     };
@@ -1866,6 +2280,7 @@ function getSegundoDomingoDoMes(mk){
     if(page==='entradas')     renderEntradas();
     if(page==='historico')    renderHistorico();
     if(page==='relatorios')   renderRelatorios();
+    if(page==='viagens')      renderFormularioViagem();
     if(page==='distribuicoes')renderDistribuicoesMes();
     if(page==='configuracoes')renderConfiguracoes();
   }
@@ -4538,6 +4953,474 @@ function coletarFormasContribuicao(mk) {
 </body></html>`);
   w.document.close();
 }
+
+// ============================================================
+// RELATÓRIO DE VIAGENS
+// ============================================================
+(function(){
+  const LOGO_STORAGE_KEY = 'relatorio-viagens-logo';
+  const DADOS_STORAGE_KEY = 'relatorio-viagens-dados';
+
+  let vg = {}; // cache de elementos, preenchido em initViagens()
+
+  function initViagens() {
+    vg.logoInput = document.getElementById('logo-input');
+    vg.logoPreview = document.getElementById('logo-preview');
+    vg.logoPlaceholder = document.getElementById('logo-placeholder');
+    vg.btnRemoveLogo = document.getElementById('btn-remove-logo');
+    vg.corpoDespesas = document.getElementById('corpo-despesas');
+    vg.totalGeralEl = document.getElementById('total-geral');
+    vg.totalDisplayEl = document.getElementById('total-display');
+    vg.extensoInput = document.getElementById('valor-extenso-input');
+    vg.nomeTopo = document.getElementById('nome-viajante-topo');
+    vg.nomeDecl = document.getElementById('nome-viajante-decl');
+
+    if (!vg.logoInput || vg._init) return;
+    vg._init = true;
+
+    carregarLogoViagem();
+
+    vg.logoInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { showNotification('⚠️ A imagem deve ter no máximo 2MB.', 'warning'); return; }
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const base64 = evt.target.result;
+        exibirLogoViagem(base64);
+        try { localStorage.setItem(LOGO_STORAGE_KEY, base64); } catch(err){}
+      };
+      reader.readAsDataURL(file);
+    });
+
+    vg.btnRemoveLogo.addEventListener('click', function (e) {
+      e.preventDefault();
+      removerLogoViagem();
+    });
+
+    document.querySelectorAll('#page-viagens [data-cargo]').forEach(cb => {
+      cb.addEventListener('change', function () {
+        if (this.checked) {
+          document.querySelectorAll('#page-viagens [data-cargo]').forEach(other => {
+            if (other !== this) other.checked = false;
+          });
+        }
+        salvarDadosViagem();
+      });
+    });
+
+    vg.nomeTopo.addEventListener('input', function () { vg.nomeDecl.value = this.value; salvarDadosViagem(); });
+    vg.nomeDecl.addEventListener('input', function () { vg.nomeTopo.value = this.value; salvarDadosViagem(); });
+
+    const camposSimples = [
+      'numero-recibo', 'local-saida', 'local-destino', 'motivo-viagem',
+      'prontuario', 'cidade', 'assinatura-local', 'assinatura-data', 'assinatura-nome'
+    ];
+    camposSimples.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', salvarDadosViagem);
+    });
+
+    carregarDadosViagem();
+    calcularTotalViagem();
+  }
+
+  function exibirLogoViagem(base64) {
+    vg.logoPreview.src = base64;
+    vg.logoPreview.style.display = 'block';
+    vg.logoPlaceholder.style.display = 'none';
+    vg.btnRemoveLogo.style.display = 'flex';
+  }
+
+  function removerLogoViagem() {
+    vg.logoPreview.src = '';
+    vg.logoPreview.style.display = 'none';
+    vg.logoPlaceholder.style.display = 'flex';
+    vg.btnRemoveLogo.style.display = 'none';
+    localStorage.removeItem(LOGO_STORAGE_KEY);
+    vg.logoInput.value = '';
+  }
+
+  function carregarLogoViagem() {
+    const logoSalva = localStorage.getItem(LOGO_STORAGE_KEY);
+    if (logoSalva) exibirLogoViagem(logoSalva);
+    else if (DB.config.logo) exibirLogoViagem(DB.config.logo); // usa logo da igreja como padrão
+  }
+
+  const categoriasViagem = [
+    { id: 'hospedagem', nome: 'Hospedagem' },
+    { id: 'alimentacao', nome: 'Alimentação' },
+    { id: 'transporte', nome: 'Transporte' },
+    { id: 'pedagio', nome: 'Pedágio' },
+    { id: 'combustivel', nome: 'Combustível' },
+    { id: 'outros', nome: 'Outros' }
+  ];
+
+  const dadosIniciaisPadraoViagem = {
+    combustivel: [{ nf: '', valor: '' }]
+  };
+
+  function parseValorViagem(str) {
+    if (!str) return 0;
+    const limpo = str.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+    const num = parseFloat(limpo);
+    return isNaN(num) ? 0 : Math.abs(num);
+  }
+
+  function formatarMoedaViagem(valor) {
+    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function criarLinhaItemViagem(catId, nf = '', valor = '') {
+    const tr = document.createElement('tr');
+    tr.className = 'linha-item';
+    tr.dataset.categoria = catId;
+
+    const tdVazio = document.createElement('td');
+
+    const tdNf = document.createElement('td');
+    const inputNf = document.createElement('input');
+    inputNf.type = 'text';
+    inputNf.value = nf;
+    inputNf.placeholder = 'Nº da nota/recibo';
+    inputNf.addEventListener('input', salvarDadosViagem);
+    tdNf.appendChild(inputNf);
+
+    const tdValor = document.createElement('td');
+    const inputValor = document.createElement('input');
+    inputValor.type = 'text';
+    inputValor.className = 'valor-input';
+    inputValor.placeholder = '0,00';
+    inputValor.value = valor;
+
+    inputValor.addEventListener('input', function () {
+      this.classList.remove('invalido');
+      calcularTotalViagem();
+    });
+
+    inputValor.addEventListener('blur', function () {
+      const texto = this.value.trim();
+      if (texto !== '' && !/^-?\d{1,}([.,]\d{1,2})?$/.test(texto.replace(/\./g, ''))) {
+        this.classList.add('invalido');
+      } else {
+        this.classList.remove('invalido');
+        const num = parseValorViagem(this.value);
+        this.value = num ? formatarMoedaViagem(num) : '';
+      }
+      calcularTotalViagem();
+      salvarDadosViagem();
+    });
+
+    tdValor.appendChild(inputValor);
+
+    const tdAcao = document.createElement('td');
+    const btnRemove = document.createElement('button');
+    btnRemove.type = 'button';
+    btnRemove.className = 'btn-remove';
+    btnRemove.textContent = '−';
+    btnRemove.title = 'Remover lançamento';
+    btnRemove.addEventListener('click', function () {
+      const linhas = vg.corpoDespesas.querySelectorAll(`tr[data-categoria="${catId}"]`);
+      if (linhas.length > 1) tr.remove();
+      else { inputNf.value = ''; inputValor.value = ''; }
+      calcularTotalViagem();
+      salvarDadosViagem();
+    });
+    tdAcao.appendChild(btnRemove);
+
+    tr.appendChild(tdVazio);
+    tr.appendChild(tdNf);
+    tr.appendChild(tdValor);
+    tr.appendChild(tdAcao);
+    return tr;
+  }
+
+  function criarLinhaBotaoAddViagem(catId, nomeCategoria) {
+    const tr = document.createElement('tr');
+    tr.className = 'linha-add-item';
+    tr.dataset.categoriaAdd = catId;
+
+    const td = document.createElement('td');
+    td.colSpan = 4;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-add-item';
+    btn.innerHTML = '<span class="icone">+</span> Adicionar item em ' + nomeCategoria;
+    btn.addEventListener('click', function () {
+      const novaLinha = criarLinhaItemViagem(catId);
+      tr.before(novaLinha);
+      calcularTotalViagem();
+      salvarDadosViagem();
+    });
+
+    td.appendChild(btn);
+    tr.appendChild(td);
+    return tr;
+  }
+
+  function montarTabelaViagem(dadosSalvos) {
+    vg.corpoDespesas.innerHTML = '';
+    const fonteDados = dadosSalvos || dadosIniciaisPadraoViagem;
+
+    categoriasViagem.forEach(cat => {
+      const trCat = document.createElement('tr');
+      trCat.className = 'linha-categoria';
+
+      const tdNome = document.createElement('td');
+      tdNome.className = 'categoria-nome';
+      tdNome.colSpan = 4;
+      tdNome.textContent = cat.nome;
+
+      trCat.appendChild(tdNome);
+      vg.corpoDespesas.appendChild(trCat);
+
+      const itensIniciais = fonteDados[cat.id] || [{ nf: '', valor: '' }];
+      itensIniciais.forEach(item => {
+        vg.corpoDespesas.appendChild(criarLinhaItemViagem(cat.id, item.nf, item.valor));
+      });
+
+      vg.corpoDespesas.appendChild(criarLinhaBotaoAddViagem(cat.id, cat.nome));
+    });
+  }
+
+  // ============================================================
+  // IMPORTAÇÃO AUTOMÁTICA DE DESPESAS DO SISTEMA
+  // ============================================================
+
+  // Mapeia o texto da categoria salva em DB.despesas para o id usado na tabela de viagem
+      const categoriaMapViagem = {
+    'combustivel': 'combustivel',
+    'hospedagem': 'hospedagem',
+    'alimentacao': 'alimentacao',
+    'pedagio': 'pedagio',
+    'transporte': 'transporte'
+  };
+
+    function normalizarCategoriaViagem(cat) {
+    const v = (cat || '').toString().trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // remove acentos
+    return categoriaMapViagem[v] || null;
+  }
+
+  function coletarDespesasDoSistemaViagem(dataIni, dataFim) {
+    const dados = { hospedagem: [], alimentacao: [], transporte: [], pedagio: [], combustivel: [], outros: [] };
+
+    (DB.despesas || []).forEach(d => {
+      const catId = normalizarCategoriaViagem(d.categoria);
+      if (!catId) return; // ignora categorias que não pertencem à viagem
+
+      const dataDespesa = (d.data || '').toString();
+      if (dataIni && dataDespesa < dataIni) return;
+      if (dataFim && dataDespesa > dataFim) return;
+
+      dados[catId].push({
+        nf: (d.nfe || d.descricao || '').toString(),
+        valor: formatarMoedaViagem(parseFloat(d.valor) || 0)
+      });
+    });
+
+    return dados;
+  }
+
+  function importarDespesasViagem() {
+    const ini = document.getElementById('viagem-periodo-ini').value;
+    const fim = document.getElementById('viagem-periodo-fim').value;
+
+    if (!ini || !fim) {
+      showNotification('⚠️ Selecione o período (de/até) antes de importar.', 'warning');
+      return;
+    }
+
+    const dadosImportados = coletarDespesasDoSistemaViagem(ini, fim);
+    const totalItens = Object.values(dadosImportados).reduce((s, arr) => s + arr.length, 0);
+
+    if (!totalItens) {
+      showNotification('⚠️ Nenhuma despesa de viagem encontrada nesse período.', 'warning');
+      return;
+    }
+
+    montarTabelaViagem(dadosImportados);
+    calcularTotalViagem();
+    salvarDadosViagem();
+    showNotification(`✅ ${totalItens} despesa(s) importada(s) do sistema!`, 'success');
+  }
+
+  window.importarDespesasViagem = importarDespesasViagem;
+
+  function calcularTotalViagem() {
+    let total = 0;
+    document.querySelectorAll('#page-viagens .valor-input').forEach(input => {
+      total += parseValorViagem(input.value);
+    });
+    const formatado = formatarMoedaViagem(total);
+    vg.totalGeralEl.textContent = 'R$ ' + formatado;
+    vg.totalDisplayEl.textContent = formatado;
+    vg.extensoInput.value = numeroPorExtensoViagem(total);
+  }
+
+  function numeroPorExtensoViagem(valor) {
+    valor = Math.round(valor * 100) / 100;
+    if (valor === 0) return 'zero reais';
+
+    const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+    const dez_a_dezenove = ['dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+    const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+    const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+
+    function centena(n) {
+      if (n === 0) return '';
+      if (n === 100) return 'cem';
+      let c = Math.floor(n / 100);
+      let resto = n % 100;
+      let partes = [];
+      if (c > 0) partes.push(centenas[c]);
+      if (resto > 0) {
+        if (resto < 10) partes.push(unidades[resto]);
+        else if (resto < 20) partes.push(dez_a_dezenove[resto - 10]);
+        else {
+          let d = Math.floor(resto / 10);
+          let u = resto % 10;
+          let str = dezenas[d];
+          if (u > 0) str += ' e ' + unidades[u];
+          partes.push(str);
+        }
+      }
+      return partes.join(' e ');
+    }
+
+    function grupo(n, singular, plural) {
+      if (n === 0) return '';
+      if (n === 1) return 'um ' + singular;
+      return centena(n) + ' ' + plural;
+    }
+
+    const inteiro = Math.floor(valor);
+    const centavos = Math.round((valor * 100) % 100);
+    let partesTexto = [];
+
+    if (inteiro > 0) {
+      if (inteiro >= 1000000) {
+        const milhoes = Math.floor(inteiro / 1000000);
+        const resto = inteiro % 1000000;
+        partesTexto.push(grupo(milhoes, 'milhão', 'milhões'));
+        if (resto > 0) partesTexto.push(inteiro >= 1000 ? centena(Math.floor(resto/1000)) + ' mil' : centena(resto));
+      } else if (inteiro >= 1000) {
+        const milhar = Math.floor(inteiro / 1000);
+        const resto = inteiro % 1000;
+        if (milhar === 1) partesTexto.push('mil');
+        else partesTexto.push(centena(milhar) + ' mil');
+        if (resto > 0) partesTexto.push(centena(resto));
+      } else {
+        partesTexto.push(centena(inteiro));
+      }
+      partesTexto = [partesTexto.join(' e ')];
+      partesTexto.push(inteiro === 1 ? 'real' : 'reais');
+    }
+
+    let resultado = partesTexto.join(' ');
+    if (centavos > 0) {
+      const centavosTexto = centena(centavos);
+      resultado += (resultado ? ' e ' : '') + centavosTexto + (centavos === 1 ? ' centavo' : ' centavos');
+    }
+    return resultado.trim();
+  }
+
+  function coletarDespesasViagem() {
+    const dados = {};
+    categoriasViagem.forEach(cat => {
+      dados[cat.id] = [];
+      vg.corpoDespesas.querySelectorAll(`tr[data-categoria="${cat.id}"]`).forEach(tr => {
+        const inputs = tr.querySelectorAll('input');
+        dados[cat.id].push({
+          nf: inputs[0] ? inputs[0].value : '',
+          valor: inputs[1] ? inputs[1].value : ''
+        });
+      });
+    });
+    return dados;
+  }
+
+  function salvarDadosViagem() {
+    const dados = {
+      numeroRecibo: document.getElementById('numero-recibo').value,
+      localSaida: document.getElementById('local-saida').value,
+      localDestino: document.getElementById('local-destino').value,
+      motivoViagem: document.getElementById('motivo-viagem').value,
+      nomeViajante: vg.nomeTopo.value,
+      cargos: {},
+      despesas: coletarDespesasViagem(),
+      prontuario: document.getElementById('prontuario').value,
+      cidade: document.getElementById('cidade').value,
+      assinaturaLocal: document.getElementById('assinatura-local').value,
+      assinaturaData: document.getElementById('assinatura-data').value,
+      assinaturaNome: document.getElementById('assinatura-nome').value
+    };
+
+    document.querySelectorAll('#page-viagens [data-cargo]').forEach(cb => {
+      dados.cargos[cb.id] = cb.checked;
+    });
+
+    try { localStorage.setItem(DADOS_STORAGE_KEY, JSON.stringify(dados)); } catch(err){}
+  }
+
+  function carregarDadosViagem() {
+    const salvos = localStorage.getItem(DADOS_STORAGE_KEY);
+    if (!salvos) { montarTabelaViagem(); return; }
+
+    try {
+      const dados = JSON.parse(salvos);
+      if (dados.numeroRecibo !== undefined) document.getElementById('numero-recibo').value = dados.numeroRecibo;
+      if (dados.localSaida !== undefined) document.getElementById('local-saida').value = dados.localSaida;
+      if (dados.localDestino !== undefined) document.getElementById('local-destino').value = dados.localDestino;
+      if (dados.motivoViagem !== undefined) document.getElementById('motivo-viagem').value = dados.motivoViagem;
+      if (dados.nomeViajante !== undefined) { vg.nomeTopo.value = dados.nomeViajante; vg.nomeDecl.value = dados.nomeViajante; }
+      if (dados.prontuario !== undefined) document.getElementById('prontuario').value = dados.prontuario;
+      if (dados.cidade !== undefined) document.getElementById('cidade').value = dados.cidade;
+      if (dados.assinaturaLocal !== undefined) document.getElementById('assinatura-local').value = dados.assinaturaLocal;
+      if (dados.assinaturaData !== undefined) document.getElementById('assinatura-data').value = dados.assinaturaData;
+      if (dados.assinaturaNome !== undefined) document.getElementById('assinatura-nome').value = dados.assinaturaNome;
+
+      if (dados.cargos) {
+        Object.keys(dados.cargos).forEach(id => {
+          const cb = document.getElementById(id);
+          if (cb) cb.checked = dados.cargos[id];
+        });
+      }
+      montarTabelaViagem(dados.despesas);
+    } catch(err) {
+      montarTabelaViagem();
+    }
+  }
+
+  function limparFormularioViagem() {
+    if (!confirm('Deseja realmente limpar todos os campos do formulário de viagem?')) return;
+    localStorage.removeItem(DADOS_STORAGE_KEY);
+    montarTabelaViagem();
+    document.getElementById('numero-recibo').value = '';
+    document.getElementById('local-saida').value = 'BEBEDOURO-SP';
+    document.getElementById('local-destino').value = 'BEBEDOURO-SP';
+    document.getElementById('motivo-viagem').value = '';
+    document.getElementById('prontuario').value = '';
+    document.getElementById('cidade').value = 'BEBEDOURO-SP';
+    document.getElementById('assinatura-local').value = '';
+    document.getElementById('assinatura-data').value = '';
+    document.getElementById('assinatura-nome').value = '';
+    vg.nomeTopo.value = ''; vg.nomeDecl.value = '';
+    calcularTotalViagem();
+  }
+
+  // Impressão isolada: adiciona classe no body para o CSS @media print ocultar o resto do sistema
+  window.imprimirRelatorioViagem = function () {
+    document.body.classList.add('printing-viagem');
+    window.print();
+    setTimeout(() => document.body.classList.remove('printing-viagem'), 500);
+  };
+
+   window.limparFormularioViagem = limparFormularioViagem;
+  window.initViagens = initViagens;
+  window.importarDespesasViagem = importarDespesasViagem; // NOVO
+})();
 
 
     // ============================================================
