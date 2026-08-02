@@ -599,27 +599,57 @@
 }
 
 @media print {
-  /* 🔧 Força a página de viagens a aparecer e oculta todo o resto do sistema */
-  body.printing-viagem #appRoot > *:not(#page-viagens) {
-  display: none !important;
-}
+  /* Esconde tudo no body, exceto o appRoot */
+  body.printing-viagem > *:not(#appRoot) {
+    display: none !important;
+  }
 
+  /* Dentro do appRoot, esconde tudo exceto o mainContent */
+  body.printing-viagem #appRoot > *:not(#mainContent) {
+    display: none !important;
+  }
+
+  /* Dentro do mainContent, esconde tudo exceto a page-viagens */
+  body.printing-viagem #mainContent > *:not(#page-viagens) {
+    display: none !important;
+  }
+
+  /* Garante que a page-viagens seja exibida corretamente */
   body.printing-viagem #page-viagens {
     display: block !important;
     position: static !important;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
-  body.printing-viagem #page-viagens .relatorio-container { box-shadow: none; width: 100%; max-width: 100%; min-height: auto; margin: 0; padding: 0; }
-  body.printing-viagem .btn-print-wrap { display: none; }
-  body.printing-viagem #page-viagens .logo-placeholder { display: none !important; }
-  body.printing-viagem #page-viagens #btn-remove-logo { display: none !important; }
-  body.printing-viagem #page-viagens .despesas .btn-remove { display: none !important; }
-  body.printing-viagem #page-viagens .linha-add-item { display: none !important; }
-  body.printing-viagem #page-viagens .despesas thead th:last-child { display: none; }
-  body.printing-viagem #page-viagens .despesas .linha-item td:last-child { display: none; }
-  body.printing-viagem #page-viagens .despesas th:nth-child(2) { width: 55% !important; }
-  body.printing-viagem #page-viagens .despesas th:nth-child(3) { width: 45% !important; }
-  @page { size: A4; margin: 1cm; }
+  .relatorio-container {
+    box-shadow: none;
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  .btn-print-wrap { display: none !important; }
+  #logo-placeholder { display: none !important; }
+  #btn-remove-logo { display: none !important; }
+  .linha-add-item { display: none !important; }
+
+  .despesas thead th:last-child,
+  .linha-item td:last-child {
+    display: none !important;
+  }
+
+  .despesas th:nth-child(2) { width: 55% !important; }
+  .despesas th:nth-child(3) { width: 45% !important; }
+
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
 }
 
 </style>
