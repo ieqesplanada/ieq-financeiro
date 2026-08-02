@@ -599,11 +599,12 @@
 }
 
 @media print {
-  body.printing-viagem > *:not(#appRoot) {
-    display: none !important;
+  @page {
+    size: A4;
+    margin: 1cm;
   }
 
-  body.printing-viagem #appRoot > *:not(#page-viagens) {
+  body.printing-viagem #mainContent > *:not(#page-viagens) {
     display: none !important;
   }
 
@@ -621,62 +622,67 @@
     box-shadow: none;
   }
 
-  .relatorio-container {
-    box-shadow: none;
-    width: 100%;
-    max-width: 100%;
-    min-height: auto;
-    margin: 0;
-    padding: 0;
+  /* Corrige conflito com a regra global "body * { visibility: hidden }"
+     usada por outro relatório (#printArea) */
+  body.printing-viagem #viagem-relatorio-container,
+  body.printing-viagem #viagem-relatorio-container * {
+    visibility: visible !important;
   }
 
-  .btn-print-wrap { display: none !important; }
-  #logo-placeholder { display: none !important; }
-  #btn-remove-logo { display: none !important; }
-  .linha-add-item { display: none !important; }
-
-  .despesas thead th:last-child,
-  .linha-item td:last-child {
+  body.printing-viagem #page-viagens #viagem-import-bar {
     display: none !important;
   }
 
-  .despesas th:nth-child(2) { width: 55% !important; }
-  .despesas th:nth-child(3) { width: 45% !important; }
-
-  @page {
-    size: A4;
-    margin: 1cm;
-  }
-}
-
-  .relatorio-container {
-    box-shadow: none;
-    width: 100%;
-    max-width: 100%;
-    min-height: auto;
-    margin: 0;
-    padding: 0;
-  }
-
-  .btn-print-wrap { display: none !important; }
-  #logo-placeholder { display: none !important; }
-  #btn-remove-logo { display: none !important; }
-  .linha-add-item { display: none !important; }
-
-  .despesas thead th:last-child,
-  .linha-item td:last-child {
+  body.printing-viagem .btn-print-wrap {
     display: none !important;
   }
 
-  .despesas th:nth-child(2) { width: 55% !important; }
-  .despesas th:nth-child(3) { width: 45% !important; }
+  body.printing-viagem #logo-placeholder {
+    display: none !important;
+  }
 
-  @page {
-    size: A4;
-    margin: 1cm;
+  body.printing-viagem #btn-remove-logo {
+    display: none !important;
+  }
+
+  body.printing-viagem .linha-add-item {
+    display: none !important;
+  }
+
+  body.printing-viagem .despesas thead th:last-child,
+  body.printing-viagem .linha-item td:last-child {
+    display: none !important;
+  }
+
+  body.printing-viagem .despesas th:nth-child(2) {
+    width: 55% !important;
+  }
+
+  body.printing-viagem .despesas th:nth-child(3) {
+    width: 45% !important;
+  }
+
+  /* Evita corte de seções entre páginas */
+  body.printing-viagem .secao-principal,
+  body.printing-viagem .despesas table,
+  body.printing-viagem .valor-extenso-wrap,
+  body.printing-viagem .declaracao,
+  body.printing-viagem .assinaturas {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  body.printing-viagem .despesas tbody tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  body.printing-viagem * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
-
+ 
 </style>
 
 
