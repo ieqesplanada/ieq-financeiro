@@ -599,6 +599,16 @@
 }
 
 @media print {
+  /* 🔧 Força a página de viagens a aparecer e oculta todo o resto do sistema */
+  body.printing-viagem #appRoot > *:not(#page-viagens) {
+  display: none !important;
+}
+
+  body.printing-viagem #page-viagens {
+    display: block !important;
+    position: static !important;
+  }
+
   body.printing-viagem #page-viagens .relatorio-container { box-shadow: none; width: 100%; max-width: 100%; min-height: auto; margin: 0; padding: 0; }
   body.printing-viagem .btn-print-wrap { display: none; }
   body.printing-viagem #page-viagens .logo-placeholder { display: none !important; }
@@ -611,6 +621,7 @@
   body.printing-viagem #page-viagens .despesas th:nth-child(3) { width: 45% !important; }
   @page { size: A4; margin: 1cm; }
 }
+
 </style>
 
 
@@ -1780,7 +1791,7 @@
   </div>
 
   <div class="btn-print-wrap">
-    <button class="btn-print" onclick="window.print()">Imprimir Relatório</button>
+    <button class="btn-print" onclick="imprimirRelatorioViagem()">Imprimir Relatório</button>
     <button class="btn-limpar" onclick="limparFormularioViagem()">Limpar Formulário</button>
   </div>
 </div>
@@ -5224,8 +5235,10 @@ function coletarFormasContribuicao(mk) {
   }
 
   function importarDespesasViagem() {
-    const ini = document.getElementById('viagem-periodo-ini').value;
-    const fim = document.getElementById('viagem-periodo-fim').value;
+  if (!vg.corpoDespesas) initViagens(); // 🔧 garante que os elementos foram carregados
+
+  const ini = document.getElementById('viagem-periodo-ini').value;
+  const fim = document.getElementById('viagem-periodo-fim').value;
 
     if (!ini || !fim) {
       showNotification('⚠️ Selecione o período (de/até) antes de importar.', 'warning');
@@ -5249,15 +5262,18 @@ function coletarFormasContribuicao(mk) {
   window.importarDespesasViagem = importarDespesasViagem;
 
   function calcularTotalViagem() {
-    let total = 0;
-    document.querySelectorAll('#page-viagens .valor-input').forEach(input => {
-      total += parseValorViagem(input.value);
-    });
-    const formatado = formatarMoedaViagem(total);
-    vg.totalGeralEl.textContent = 'R$ ' + formatado;
-    vg.totalDisplayEl.textContent = formatado;
-    vg.extensoInput.value = numeroPorExtensoViagem(total);
-  }
+  if (!vg.corpoDespesas) return; // 🔧 evita erro se a página ainda não foi inicializada
+
+  let total = 0;
+  document.querySelectorAll('#page-viagens .valor-input').forEach(input => {
+    total += parseValorViagem(input.value);
+  });
+  const formatado = formatarMoedaViagem(total);
+  vg.totalGeralEl.textContent = 'R$ ' + formatado;
+  vg.totalDisplayEl.textContent = formatado;
+  vg.extensoInput.value = numeroPorExtensoViagem(total);
+}
+
 
   function numeroPorExtensoViagem(valor) {
     valor = Math.round(valor * 100) / 100;
@@ -5342,9 +5358,11 @@ function coletarFormasContribuicao(mk) {
   }
 
   function salvarDadosViagem() {
-    const dados = {
-      numeroRecibo: document.getElementById('numero-recibo').value,
-      localSaida: document.getElementById('local-saida').value,
+  if (!vg.corpoDespesas) return; // 🔧 evita erro se a página ainda não foi inicializada
+
+  const dados = {
+    numeroRecibo: document.getElementById('numero-recibo').value,
+    localSaida: document.getElementById('local-saida').value,
       localDestino: document.getElementById('local-destino').value,
       motivoViagem: document.getElementById('motivo-viagem').value,
       nomeViajante: vg.nomeTopo.value,
@@ -5417,10 +5435,23 @@ function coletarFormasContribuicao(mk) {
     setTimeout(() => document.body.classList.remove('printing-viagem'), 500);
   };
 
-   window.limparFormularioViagem = limparFormularioViagem;
+    window.limparFormularioViagem = limparFormularioViagem;
   window.initViagens = initViagens;
-  window.importarDespesasViagem = importarDespesasViagem; // NOVO
+  window.importarDespesasViagem = importarDespesasViagem;
+  window.renderFormularioViagem = initViagens; // 🔧 alias usado pelo showPage()
 })();
+
+function imprimirRelatorioViagem() {
+  document.body.classList.add('printing-viagem');
+  window.print();
+}
+
+// Remove a classe depois que a caixa de impressão for fechada
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing-viagem');
+});
+
+window.imprimirRelatorioViagem = imprimirRelatorioViagem;
 
 
     // ============================================================
