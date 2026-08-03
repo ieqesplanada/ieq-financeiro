@@ -1660,6 +1660,12 @@
             <div><label class="text-sm text-gray-600 mb-1 block">Valor (R$)*</label><input type="number" id="e-valor" class="input-field text-sm" min="0" step="0.01" required></div>
             <div><label class="text-sm text-gray-600 mb-1 block">Data*</label><input type="date" id="e-data" class="input-field text-sm" required></div>
           </div>
+          <div><label class="text-sm text-gray-600 mb-1 block">Forma de Pagamento*</label>
+            <select id="e-forma" class="input-field text-sm" required>
+              <option value="Caixa">💵 Caixa</option>
+              <option value="PIX">🏦 Conta Bancária (PIX)</option>
+            </select>
+          </div>
           <div><label class="text-sm text-gray-600 mb-1 block">Observações</label><textarea id="e-obs" class="input-field text-sm h-16 resize-none"></textarea></div>
         </div>
         <div class="flex gap-3 mt-4">
@@ -4255,50 +4261,59 @@ async function salvarDespesa(e) {
   // ============================================================
   // ENTRADAS
   // ============================================================
-  function renderEntradas(){
-    const mes=(document.getElementById('filtroEntradaMes')?.value||'').trim();
-    const busca=(document.getElementById('buscaEntrada')?.value||'').toLowerCase();
-    const lista=DB.entradas.filter(e=>{
-      const data=(e.data||'').toString();
-      const mM=!mes||data.startsWith(mes);
-      const mB=!busca||(e.descricao||'').toLowerCase().includes(busca);
-      return mM&&mB;
-    });
-    const tbody=document.getElementById('tabelaEntradas'),podeEx=temPermissao('podeExcluir');
-    if(!lista.length){
-      tbody.innerHTML=`<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">${DB.entradas.length===0?'Registre cultos para ver as entradas automaticamente':'Nenhuma entrada encontrada'}</td></tr>`;
-    } else {
-      tbody.innerHTML=lista.map(ent=>{
-        const delBtn=podeEx
-          ?`<button onclick="excluirEntrada('${String(ent.id).replaceAll("'","")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>`
-          :`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
-        return `<tr class="table-row border-b border-gray-50">
-          <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
-          <td class="py-2 text-sm text-gray-700">${escapeHtml(ent.descricao||'')}</td>
-          <td class="py-2 hidden sm:table-cell"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span></td>
-          <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
-          <td class="py-2 text-center">${delBtn}</td>
-        </tr>`;
-      }).join('');
-    }
-    const total=lista.reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
-    const despesasFiltro = mes ? getDespesasMes(mes) : DB.despesas;
-    document.getElementById('totalEntradasFiltro').textContent=fmt(total);
-    document.getElementById('kpiEntradasMes').textContent=fmt(total);
-    document.getElementById('kpiQtdEntradas').textContent=lista.length;
-    document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(despesasFiltro,d=>d.valor));
+  // ============================================================
+// ENTRADAS
+// ============================================================
+function renderEntradas(){
+  const mes=(document.getElementById('filtroEntradaMes')?.value||'').trim();
+  const busca=(document.getElementById('buscaEntrada')?.value||'').toLowerCase();
+  const lista=DB.entradas.filter(e=>{
+    const data=(e.data||'').toString();
+    const mM=!mes||data.startsWith(mes);
+    const mB=!busca||(e.descricao||'').toLowerCase().includes(busca);
+    return mM&&mB;
+  });
+  const tbody=document.getElementById('tabelaEntradas'),podeEx=temPermissao('podeExcluir');
+  if(!lista.length){
+    tbody.innerHTML=`<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">${DB.entradas.length===0?'Registre cultos ou lance entradas manuais para vê-las aqui':'Nenhuma entrada encontrada'}</td></tr>`;
+  } else {
+    tbody.innerHTML=lista.map(ent=>{
+      const delBtn=podeEx
+        ?`<button onclick="excluirEntrada('${String(ent.id).replaceAll("'","")}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-xs inline-flex items-center justify-center"><i class="fas fa-trash"></i></button>`
+        :`<button class="w-7 h-7 bg-gray-50 text-gray-300 rounded-lg text-xs inline-flex items-center justify-center cursor-not-allowed" disabled title="Sem permissão"><i class="fas fa-trash"></i></button>`;
+      const forma = ent.forma || 'Caixa';
+      return `<tr class="table-row border-b border-gray-50">
+        <td class="py-2 text-sm">${fmtDate(ent.data)}</td>
+        <td class="py-2 text-sm text-gray-700">${escapeHtml(ent.descricao||'')}</td>
+        <td class="py-2 hidden sm:table-cell">
+          <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${ent.origem==='culto'?'badge-blue':'badge-green'}">${ent.origem==='culto'?'⛪ Culto':'✏️ Manual'}</span>
+          <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold ${forma==='PIX'?'bg-blue-50 text-blue-700':'bg-emerald-50 text-emerald-700'}">${forma==='PIX'?'🏦 PIX':'💵 Caixa'}</span>
+        </td>
+        <td class="py-2 text-sm font-bold text-green-600 text-right">${fmt(ent.valor)}</td>
+        <td class="py-2 text-center">${delBtn}</td>
+      </tr>`;
+    }).join('');
   }
-  function limparFiltroEntradas(){
-    const filtro=document.getElementById('filtroEntradaMes'); if(filtro) filtro.value='';
-    const b=document.getElementById('buscaEntrada'); if(b)b.value='';
-    renderEntradas();
-  }
+  const total=lista.reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
+  const despesasFiltro = mes ? getDespesasMes(mes) : DB.despesas;
+  document.getElementById('totalEntradasFiltro').textContent=fmt(total);
+  document.getElementById('kpiEntradasMes').textContent=fmt(total);
+  document.getElementById('kpiQtdEntradas').textContent=lista.length;
+  document.getElementById('kpiEntradasSaldoMes').textContent=fmt(total-sum(despesasFiltro,d=>d.valor));
+}
 
-  async function salvarEntrada(e){
+function limparFiltroEntradas(){
+  const filtro=document.getElementById('filtroEntradaMes'); if(filtro) filtro.value='';
+  const b=document.getElementById('buscaEntrada'); if(b)b.value='';
+  renderEntradas();
+}
+
+async function salvarEntrada(e){
   e.preventDefault();
   const descricao=document.getElementById('e-descricao').value.trim();
   const valor=parseFloat(document.getElementById('e-valor').value);
   const data=document.getElementById('e-data').value;
+  const forma=document.getElementById('e-forma')?.value || 'Caixa';
 
   if(!descricao){ showNotification('⚠️ Informe a descrição da entrada.','warning'); return; }
   if(!data){ showNotification('⚠️ Informe a data da entrada.','warning'); return; }
@@ -4308,6 +4323,7 @@ async function salvarDespesa(e) {
     descricao,
     valor,
     data,
+    forma,
     origem:'manual',
     obs:document.getElementById('e-obs').value.trim(),
     criadoEm:new Date().toISOString()
@@ -4333,25 +4349,25 @@ async function salvarDespesa(e) {
   }finally{setBtnLoading('btnSalvarEntrada',false,'Registrar');}
 }
 
-   async function excluirEntrada(id){
-    if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
-    const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
-    const ent = DB.entradas[idx];
+async function excluirEntrada(id){
+  if(!temPermissao('podeExcluir')){showNotification('🔒 Sem permissão.','error');return;}
+  const idx=DB.entradas.findIndex(e=>String(e.id)===String(id)); if(idx===-1)return;
+  const ent = DB.entradas[idx];
 
-    confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
-      setSyncStatus('syncing');
-      try{
-        await apiDelete('entradas',id);
-        DB.entradas.splice(idx,1); DB.saveLocal();
-        setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
-      }catch(err){
-        DB.entradas.splice(idx,1); DB.saveLocal();
-        enfileirarOperacao({ id, action:'delete', sheet:'entradas', data:{ id } });
-        setSyncStatus('error'); showNotification('⚠️ Entrada removida localmente e ficará para sincronizar','warning');
-      }
-      renderEntradas(); renderDashboard();
-    });
-  }
+  confirmarExclusao(`Excluir a entrada "${ent.descricao}" de ${fmt(ent.valor)}?`, async () => {
+    setSyncStatus('syncing');
+    try{
+      await apiDelete('entradas',id);
+      DB.entradas.splice(idx,1); DB.saveLocal();
+      setSyncStatus('synced'); showNotification('🗑️ Entrada excluída','info');
+    }catch(err){
+      DB.entradas.splice(idx,1); DB.saveLocal();
+      enfileirarOperacao({ id, action:'delete', sheet:'entradas', data:{ id } });
+      setSyncStatus('error'); showNotification('⚠️ Entrada removida localmente e ficará para sincronizar','warning');
+    }
+    renderEntradas(); renderDashboard();
+  });
+}
 
   // ============================================================
   // HISTÓRICO
