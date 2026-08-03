@@ -1308,42 +1308,50 @@
     </div>
 
     <!-- INFORMAÇÕES DA IGREJA -->
-    <div class="card p-4 lg:col-span-2">
-      <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Informações da Igreja</h3>
-      <p class="text-xs text-gray-400 mb-4">Aparecerá nos relatórios e no cabeçalho.</p>
-      <div class="space-y-3">
-        <div>
-          <label class="text-sm text-gray-600 mb-1 block">Nome da Igreja</label>
-          <input type="text" id="cfg-nome-igreja" class="input-field text-sm" placeholder="Ex: IEQ Esplanada" value="IEQ Esplanada">
-        </div>
-        <div>
-          <label class="text-sm text-gray-600 mb-1 block">Endereço</label>
-          <input type="text" id="cfg-endereco" class="input-field text-sm" placeholder="Endereço completo">
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label>
-            <input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão">
-          </div>
-          <div>
-            <label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label>
-            <input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão">
-          </div>
-        </div>
-        <div>
-          <label class="text-sm text-gray-600 mb-1 block">
-            <i class="fab fa-whatsapp text-green-500 mr-1"></i> WhatsApp (com DDD)
-          </label>
-          <input type="text" id="cfg-whatsapp" class="input-field text-sm" placeholder="Ex: 16999999999">
-          <p class="text-xs text-gray-400 mt-1">Usado para envio de relatórios via WhatsApp</p>
-        </div>
+<div class="card p-4 lg:col-span-2">
+  <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-sm"><i class="fas fa-church text-blue-600"></i> Informações da Igreja</h3>
+  <p class="text-xs text-gray-400 mb-4">Aparecerá nos relatórios e no cabeçalho.</p>
+  <div class="space-y-3">
+    <div>
+      <label class="text-sm text-gray-600 mb-1 block">Nome da Igreja</label>
+      <input type="text" id="cfg-nome-igreja" class="input-field text-sm" placeholder="Ex: IEQ Esplanada" value="IEQ Esplanada">
+    </div>
+    <div>
+      <label class="text-sm text-gray-600 mb-1 block">Endereço Completo</label>
+      <input type="text" id="cfg-endereco" class="input-field text-sm" placeholder="Rua, número, bairro, cidade - UF, CEP">
+    </div>
+    <div>
+      <label class="text-sm text-gray-600 mb-1 block">CNPJ</label>
+      <input type="text" id="cfg-cnpj" class="input-field text-sm" placeholder="00.000.000/0000-00">
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-sm text-gray-600 mb-1 block">Pastor Responsável</label>
+        <input type="text" id="cfg-pastor" class="input-field text-sm" value="Danilo de Oliveira Falcão">
       </div>
-      <div class="flex justify-end mt-4">
-        <button class="btn-primary" onclick="salvarConfiguracoes()">
-          <i class="fas fa-save mr-2"></i> Salvar Configurações
-        </button>
+      <div>
+        <label class="text-sm text-gray-600 mb-1 block">Nº da Credencial</label>
+        <input type="text" id="cfg-credencial-pastor" class="input-field text-sm" placeholder="Ex: 12345">
       </div>
     </div>
+    <div>
+      <label class="text-sm text-gray-600 mb-1 block">Tesoureiro</label>
+      <input type="text" id="cfg-tesoureiro" class="input-field text-sm" value="Danilo Falcão">
+    </div>
+    <div>
+      <label class="text-sm text-gray-600 mb-1 block">
+        <i class="fab fa-whatsapp text-green-500 mr-1"></i> WhatsApp (com DDD)
+      </label>
+      <input type="text" id="cfg-whatsapp" class="input-field text-sm" placeholder="Ex: 16999999999">
+      <p class="text-xs text-gray-400 mt-1">Usado para envio de relatórios via WhatsApp</p>
+    </div>
+  </div>
+  <div class="flex justify-end mt-4">
+    <button class="btn-primary" onclick="salvarConfiguracoes()">
+      <i class="fas fa-save mr-2"></i> Salvar Configurações
+    </button>
+  </div>
+</div>
 
     <!-- USUÁRIOS DO SISTEMA -->
     <div class="card p-4" id="cardUsuarios">
@@ -2442,7 +2450,9 @@ function getSegundoDomingoDoMes(mk){
   function salvarConfiguracoes(){
     DB.config.nomeIgreja=document.getElementById('cfg-nome-igreja').value.trim()||'IEQ Esplanada';
     DB.config.endereco  =document.getElementById('cfg-endereco').value.trim();
+    DB.config.cnpj      =document.getElementById('cfg-cnpj').value.trim();
     DB.config.pastor    =document.getElementById('cfg-pastor').value.trim();
+    DB.config.credencialPastor=document.getElementById('cfg-credencial-pastor').value.trim();
     DB.config.tesoureiro=document.getElementById('cfg-tesoureiro').value.trim();
     DB.config.whatsapp=document.getElementById('cfg-whatsapp').value.trim();
     localStorage.setItem('ieq_config',JSON.stringify(DB.config));
@@ -2454,7 +2464,9 @@ function getSegundoDomingoDoMes(mk){
     const cfg=DB.config;
     if(cfg.nomeIgreja)document.getElementById('cfg-nome-igreja').value=cfg.nomeIgreja;
     if(cfg.endereco)  document.getElementById('cfg-endereco').value=cfg.endereco;
+    if(cfg.cnpj)      document.getElementById('cfg-cnpj').value=cfg.cnpj;
     if(cfg.pastor)    document.getElementById('cfg-pastor').value=cfg.pastor;
+    if(cfg.credencialPastor) document.getElementById('cfg-credencial-pastor').value=cfg.credencialPastor;
     if(cfg.tesoureiro)document.getElementById('cfg-tesoureiro').value=cfg.tesoureiro;
     if(cfg.whatsapp)  document.getElementById('cfg-whatsapp').value=cfg.whatsapp;
     if(cfg.logo) mostrarPreviewLogo(cfg.logo);
@@ -4615,6 +4627,7 @@ async function salvarDespesa(e) {
     : `<div style="font-size:34px">⛪</div>`;
   const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
   const endereco = escapeHtml(DB.config.endereco || '');
+  const cnpj = escapeHtml(DB.config.cnpj || '');
   const despLista = getDespesasMes(ms);
 
   const linhasDespesas = despLista.length
@@ -4668,11 +4681,12 @@ async function salvarDespesa(e) {
 </style></head>
 <body>
 
-  <div class="header">
+    <div class="header">
     ${logoHtml}
     <div>
       <h1>${nomeIgreja}</h1>
       ${endereco ? `<p>${endereco}</p>` : ''}
+      ${cnpj ? `<p>CNPJ: ${cnpj}</p>` : ''}
       <p class="tag">RELATÓRIO FINANCEIRO MENSAL — ${monthLabel(ms).toUpperCase()}</p>
     </div>
   </div>
@@ -4710,54 +4724,56 @@ async function salvarDespesa(e) {
   w.document.close();
 }
 
-    // ============================================================
-  // RELATÓRIO DE DIZIMISTAS (nome, data, valor) — vindo do Sheets/DB.cultos
-  // ============================================================
-  function popularSelectMes(id) {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const now = new Date();
-    const keys = [];
-    for (let i = 12; i >= 0; i--) keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
-    keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
-    sel.innerHTML = keys.map(k => `<option value="${k}" ${k===GLOBAL_MONTH?'selected':''}>${monthLabel(k)}</option>`).join('');
-  }
+// ============================================================
+// RELATÓRIO DE DIZIMISTAS (nome, data, valor) — vindo do Sheets/DB.cultos
+// ============================================================
+function popularSelectMes(id) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  const now = new Date();
+  const keys = [];
+  for (let i = 12; i >= 0; i--) keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() - i, 1)));
+  keys.push(monthKeyFromDate(new Date(now.getFullYear(), now.getMonth() + 1, 1)));
+  sel.innerHTML = keys.map(k => `<option value="${k}" ${k===GLOBAL_MONTH?'selected':''}>${monthLabel(k)}</option>`).join('');
+}
 
-  function coletarDizimistasDoPeriodo(mk) {
-    const cultos = getCultosMes(mk);
-    const linhas = [];
-    cultos.forEach(c => {
-      (c.dizimistas || []).forEach(d => {
-        if (d.valor > 0 || d.nome) {
-          linhas.push({ nome: d.nome || '—', data: c.data, valor: parseFloat(d.valor) || 0, forma: d.forma || 'Caixa' });
-        }
-      });
+function coletarDizimistasDoPeriodo(mk) {
+  const cultos = getCultosMes(mk);
+  const linhas = [];
+  cultos.forEach(c => {
+    (c.dizimistas || []).forEach(d => {
+      if (d.valor > 0 || d.nome) {
+        linhas.push({ nome: d.nome || '—', data: c.data, valor: parseFloat(d.valor) || 0, forma: d.forma || 'Caixa' });
+      }
     });
-    linhas.sort((a,b) => (a.data||'').localeCompare(b.data||'') || (a.nome||'').localeCompare(b.nome||''));
-    return linhas;
-  }
+  });
+  linhas.sort((a,b) => (a.data||'').localeCompare(b.data||'') || (a.nome||'').localeCompare(b.nome||''));
+  return linhas;
+}
 
-  function gerarRelatorioDizimistas() {
-    const mk = document.getElementById('relDizimistasMesSelect')?.value || GLOBAL_MONTH;
-    const lista = coletarDizimistasDoPeriodo(mk);
-    const total = lista.reduce((s,d) => s + d.valor, 0);
-    const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
-    const logoHtml = DB.config.logo
-      ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
-      : `<div style="font-size:30px">⛪</div>`;
+function gerarRelatorioDizimistas() {
+  const mk = document.getElementById('relDizimistasMesSelect')?.value || GLOBAL_MONTH;
+  const lista = coletarDizimistasDoPeriodo(mk);
+  const total = lista.reduce((s,d) => s + d.valor, 0);
+  const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
+  const endereco = escapeHtml(DB.config.endereco || '');
+  const cnpj = escapeHtml(DB.config.cnpj || '');
+  const logoHtml = DB.config.logo
+    ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
+    : `<div style="font-size:30px">⛪</div>`;
 
-    const linhasHtml = lista.length
-      ? lista.map(d => `
-          <tr>
-            <td>${escapeHtml(d.nome)}</td>
-            <td>${fmtDate(d.data)}</td>
-            <td><span style="background:${d.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${d.forma==='PIX'?'#1d4ed8':'#065f46'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(d.forma)}</span></td>
-            <td style="text-align:right;color:#059669;font-weight:600">${fmt(d.valor)}</td>
-          </tr>`).join('')
-      : `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:16px">Nenhum dizimista no período</td></tr>`;
+  const linhasHtml = lista.length
+    ? lista.map(d => `
+        <tr>
+          <td>${escapeHtml(d.nome)}</td>
+          <td>${fmtDate(d.data)}</td>
+          <td><span style="background:${d.forma==='PIX'?'#dbeafe':'#d1fae5'};color:${d.forma==='PIX'?'#1d4ed8':'#065f46'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${escapeHtml(d.forma)}</span></td>
+          <td style="text-align:right;color:#059669;font-weight:600">${fmt(d.valor)}</td>
+        </tr>`).join('')
+    : `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:16px">Nenhum dizimista no período</td></tr>`;
 
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html>
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Relatório de Dizimistas — ${monthLabel(mk)}</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
@@ -4780,6 +4796,8 @@ async function salvarDespesa(e) {
     ${logoHtml}
     <div>
       <h1>${nomeIgreja}</h1>
+      ${endereco ? `<p>${endereco}</p>` : ''}
+      ${cnpj ? `<p>CNPJ: ${cnpj}</p>` : ''}
       <p class="tag">RELATÓRIO DE DIZIMISTAS — ${monthLabel(mk).toUpperCase()}</p>
     </div>
   </div>
@@ -4791,8 +4809,129 @@ async function salvarDespesa(e) {
   <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
   <div class="no-print" style="text-align:center"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
 </body></html>`);
-    w.document.close();
+  w.document.close();
+}
+
+function compartilharDizimistasWhatsApp() {
+  const mk = document.getElementById('relDizimistasMesSelect')?.value || GLOBAL_MONTH;
+  const lista = coletarDizimistasDoPeriodo(mk);
+  if (!lista.length) { showNotification('⚠️ Nenhum dizimista no período.', 'warning'); return; }
+  const total = lista.reduce((s,d) => s + d.valor, 0);
+  const nomeIgreja = DB.config.nomeIgreja || 'IEQ Esplanada';
+  let texto = '🙏 *' + nomeIgreja + ' - Relatório de Dizimistas*\n📅 *Mês:* ' + monthLabel(mk) + '\n\n';
+  lista.forEach(d => { texto += '👤 ' + d.nome + ' | ' + fmtDate(d.data) + ' | ' + fmt(d.valor) + ' (' + d.forma + ')\n'; });
+  texto += '\n💰 *Total:* ' + fmt(total) + '\n\n✨ Gerado pelo Sistema Financeiro IEQ';
+  compartilharWhatsApp(texto);
+}
+
+// ============================================================
+// RELATÓRIO POR FORMA DE CONTRIBUIÇÃO (Caixa x Conta Bancária/PIX)
+// ============================================================
+function normalizarForma(f) {
+  const v = (f || '').toString().trim().toLowerCase();
+  return v === 'pix' ? 'PIX' : 'Caixa';
+}
+
+function coletarFormasContribuicao(mk) {
+  const cultos = getCultosMes(mk);
+  const entradas = [];
+  cultos.forEach(c => {
+    (c.dizimistas || []).forEach(d => {
+      if (d.valor > 0) entradas.push({ origem:'Dízimo', nome:d.nome||'—', data:c.data, valor:parseFloat(d.valor)||0, forma:normalizarForma(d.forma) });
+    });
+    (c.ofertas || []).forEach(o => {
+      if (o.valor > 0) entradas.push({ origem:'Oferta', nome:o.nome||'—', data:c.data, valor:parseFloat(o.valor)||0, forma:normalizarForma(o.forma) });
+    });
+  });
+  entradas.sort((a,b) => (a.data||'').localeCompare(b.data||''));
+  return entradas;
+}
+
+function gerarRelatorioFormasContribuicao() {
+  const mk = document.getElementById('relFormasMesSelect')?.value || GLOBAL_MONTH;
+  const entradas = coletarFormasContribuicao(mk);
+  const caixa = entradas.filter(e => e.forma === 'Caixa');
+  const conta = entradas.filter(e => e.forma === 'PIX');
+  const totalCaixa = caixa.reduce((s,e) => s + e.valor, 0);
+  const totalConta = conta.reduce((s,e) => s + e.valor, 0);
+  const totalGeral = entradas.reduce((s,e) => s + e.valor, 0);
+  if (Math.abs(totalGeral - (totalCaixa + totalConta)) > 0.01) {
+    console.warn('⚠️ Divergência entre total geral e soma Caixa+Conta:', totalGeral, totalCaixa + totalConta);
   }
+  const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
+  const endereco = escapeHtml(DB.config.endereco || '');
+  const cnpj = escapeHtml(DB.config.cnpj || '');
+  const logoHtml = DB.config.logo
+    ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
+    : `<div style="font-size:30px">⛪</div>`;
+
+  const linhas = (lista) => lista.length
+    ? lista.map(e => `
+        <tr>
+          <td>${escapeHtml(e.origem)}</td>
+          <td>${escapeHtml(e.nome)}</td>
+          <td>${fmtDate(e.data)}</td>
+          <td style="text-align:right;color:#059669;font-weight:600">${fmt(e.valor)}</td>
+        </tr>`).join('')
+    : `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:16px">Nenhum registro</td></tr>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Formas de Contribuição — ${monthLabel(mk)}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;padding:28px;color:#1f2937;background:#fff}
+  .header{background:linear-gradient(135deg,#1e3a5f,#2d5a8f);color:white;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  .header h1{font-size:19px;margin:0}
+  .header p{font-size:12px;color:#93c5fd;margin:2px 0 0}
+  .header .tag{margin-top:8px;font-size:13px;letter-spacing:2px;color:#c8a951;font-weight:700}
+  .secao-title{background:#1e3a5f;color:white;padding:10px 14px;font-size:13px;font-weight:700;border-radius:10px 10px 0 0;display:flex;justify-content:space-between}
+  table{width:100%;border-collapse:collapse;margin-bottom:20px;border-radius:0 0 10px 10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
+  th{background:#f1f5f9;color:#475569;padding:9px 14px;text-align:left;font-size:12px}
+  td{padding:9px 14px;border-bottom:1px solid #eee;font-size:13px}
+  tr:nth-child(even) td{background:#f9fafb}
+  .total-row td{font-weight:700;background:#f1f5f9!important;font-size:14px;border-top:2px solid #1e3a5f}
+  .resumo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+  .resumo div{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center}
+  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb}
+  .print-btn{display:block;margin:24px auto 0;background:#1e3a5f;color:white;border:none;padding:12px 36px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600}
+  @media print{ @page{margin:10mm;size:A4} body{padding:0;max-width:100%} .no-print{display:none!important} *{-webkit-print-color-adjust:exact!important} tr{break-inside:avoid} }
+</style></head>
+<body>
+  <div class="header">
+    ${logoHtml}
+    <div>
+      <h1>${nomeIgreja}</h1>
+      ${endereco ? `<p>${endereco}</p>` : ''}
+      ${cnpj ? `<p>CNPJ: ${cnpj}</p>` : ''}
+      <p class="tag">FORMAS DE CONTRIBUIÇÃO — ${monthLabel(mk).toUpperCase()}</p>
+    </div>
+  </div>
+
+  <div class="resumo">
+    <div><span style="font-size:12px;color:#065f46">💵 Total CAIXA</span><br><strong style="font-size:18px;color:#059669">${fmt(totalCaixa)}</strong></div>
+    <div><span style="font-size:12px;color:#1d4ed8">🏦 Total CONTA BANCÁRIA (PIX)</span><br><strong style="font-size:18px;color:#1d4ed8">${fmt(totalConta)}</strong></div>
+  </div>
+
+  <div class="secao-title"><span>💵 CAIXA</span><span>${fmt(totalCaixa)}</span></div>
+  <table>
+    <tr><th>Origem</th><th>Nome</th><th>Data</th><th style="text-align:right">Valor</th></tr>
+    ${linhas(caixa)}
+    <tr class="total-row"><td colspan="3">TOTAL CAIXA</td><td style="text-align:right">${fmt(totalCaixa)}</td></tr>
+  </table>
+
+  <div class="secao-title"><span>🏦 CONTA BANCÁRIA (PIX)</span><span>${fmt(totalConta)}</span></div>
+  <table>
+    <tr><th>Origem</th><th>Nome</th><th>Data</th><th style="text-align:right">Valor</th></tr>
+    ${linhas(conta)}
+    <tr class="total-row"><td colspan="3">TOTAL CONTA BANCÁRIA</td><td style="text-align:right">${fmt(totalConta)}</td></tr>
+  </table>
+
+  <div class="footer">Gerado em ${new Date().toLocaleString('pt-BR')} — ${nomeIgreja}<br>Sistema Financeiro Quadrangular - Desenvolvido por: Pr. Danilo Falcão</div>
+  <div class="no-print" style="text-align:center"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
+</body></html>`);
+  w.document.close();
+}
 
   function compartilharDizimistasWhatsApp() {
     const mk = document.getElementById('relDizimistasMesSelect')?.value || GLOBAL_MONTH;
@@ -4958,6 +5097,8 @@ function coletarFormasContribuicao(mk) {
   const totGer = lista.reduce((s,c)=>s+(parseFloat(c.totalArrecadado)||0),0);
 
   const nomeIgreja = escapeHtml(DB.config.nomeIgreja || 'IEQ Esplanada');
+  const endereco = escapeHtml(DB.config.endereco || '');
+  const cnpj = escapeHtml(DB.config.cnpj || '');
   const logoHtml = DB.config.logo
     ? `<img src="${DB.config.logo}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:2px solid rgba(255,255,255,0.3)">`
     : `<div style="font-size:30px">⛪</div>`;
@@ -4984,6 +5125,7 @@ function coletarFormasContribuicao(mk) {
   body{font-family:'Segoe UI',Arial,sans-serif;max-width:900px;margin:0 auto;padding:28px;color:#1f2937;background:#fff}
   .header{background:linear-gradient(135deg,#1e3a5f,#2d5a8f);color:white;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
   .header h1{font-size:19px;margin:0}
+  .header p{font-size:12px;color:#93c5fd;margin:2px 0 0}
   .header .tag{margin-top:8px;font-size:13px;letter-spacing:2px;color:#c8a951;font-weight:700}
   table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);font-size:12px}
   th{background:#1e3a5f;color:white;padding:8px 10px;text-align:left}
@@ -4997,7 +5139,12 @@ function coletarFormasContribuicao(mk) {
 <body>
   <div class="header">
     ${logoHtml}
-    <div><h1>${nomeIgreja}</h1><p class="tag">RELATÓRIO DE CULTOS — ${periodoLabel.toUpperCase()}</p></div>
+    <div>
+      <h1>${nomeIgreja}</h1>
+      ${endereco ? `<p>${endereco}</p>` : ''}
+      ${cnpj ? `<p>CNPJ: ${cnpj}</p>` : ''}
+      <p class="tag">RELATÓRIO DE CULTOS — ${periodoLabel.toUpperCase()}</p>
+    </div>
   </div>
   <table>
     <tr>
@@ -5025,6 +5172,7 @@ function coletarFormasContribuicao(mk) {
 </body></html>`);
   w.document.close();
 }
+
 
 // ============================================================
 // RELATÓRIO DE VIAGENS
