@@ -1875,24 +1875,19 @@
 
 
 <script>
-  // ============================================================
-  // API
-  // ============================================================
-  // ============================================================
-// API — com fallback para fila offline
-// ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxCkdktgLJVfNUNf-XISvs5d6wkHUdIpmyVGWRGBOZZkEQXRbFje4XihmnYKATM_y0/exec";
-const API_TIMEOUT_MS = 10000;
+ const API_URL = "https://script.google.com/macros/s/AKfycbyLSsI2U_0lSi0LD0ZjW1_zevxF96hCs8DLKgX9qUx1Co-836nlreKMLGqcxdxC3x8T/exec";
+const API_TIMEOUT_MS = 20000; // 20s — Apps Script pode ter cold start
 
-async function fetchJsonComTimeout(url, options = {}, fallbackValue = null) {
+async function fetchJsonComTimeout(url, options = {}, fallbackValue = null, tentativa = 1) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   try {
     const resp = await fetch(url, { ...options, signal: controller.signal, cache: 'no-store' });
     const text = await resp.text();
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    clearTimeout(timer);
 
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     if (!text || !text.trim()) return fallbackValue;
 
     const trimmed = text.trim();
@@ -1902,14 +1897,18 @@ async function fetchJsonComTimeout(url, options = {}, fallbackValue = null) {
 
     try {
       return JSON.parse(trimmed);
-    } catch (parseErr) {
+    } catch {
       throw new Error('Resposta inválida do Sheets');
     }
   } catch (err) {
+    clearTimeout(timer);
+
+    // Retry automático 1x em caso de timeout (cold start do Apps Script)
+    if (err.name === 'AbortError' && tentativa < 2) {
+      return fetchJsonComTimeout(url, options, fallbackValue, tentativa + 1);
+    }
     if (err.name === 'AbortError') throw new Error('Tempo limite de conexão com o Sheets');
     throw err;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -1959,7 +1958,7 @@ async function apiSaveSeguro(sheet, data) {
     return await apiSave(sheet, data);
   } catch (err) {
     const opId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    enfileirarOperacao({ action: 'save', sheet, data: { ...data, _tmpId: opId }, id: opId });
+    enfileirarOperacao({ action: 'save', sheet, data: { ...data, id: opId, _tmpId: opId }, id: opId });
     return { id: opId, _offline: true };
   }
 }
@@ -1969,8 +1968,6 @@ async function apiUpdateSeguro(sheet, id, data) {
     return await apiUpdate(sheet, id, data);
   } catch (err) {
     enfileirarOperacao({ action: 'update', sheet, id, data });
-    // CORREÇÃO: não relança o erro — a operação foi enfileirada com sucesso,
-    // então tratamos como sucesso offline (consistente com apiSaveSeguro)
     return { id, _offline: true };
   }
 }
@@ -1980,7 +1977,6 @@ async function apiDeleteSeguro(sheet, id) {
     return await apiDelete(sheet, id);
   } catch (err) {
     enfileirarOperacao({ action: 'delete', sheet, id, data: { id } });
-    // CORREÇÃO: idem — evita erro falso ao usuário quando já está na fila offline
     return { id, _offline: true };
   }
 }
